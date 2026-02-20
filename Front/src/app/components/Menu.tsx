@@ -6,12 +6,12 @@ import { ShoppingCart, Ticket, Music, Store, Users, Calendar } from 'lucide-reac
 import { motion } from 'motion/react';
 import { mockEvents } from '../data/mockData';
 
-export const Dashboard: React.FC = () => {
+export const Menu: React.FC = () => {
   const { user } = useAuth();
   const { purchasedTickets, getTotalItems } = useCart();
   const navigate = useNavigate();
 
-  const dashboardCards = [
+  const menuCards = [
     {
       title: 'Mis Entradas',
       description: `Tienes ${purchasedTickets.length} entrada${purchasedTickets.length !== 1 ? 's' : ''}`,
@@ -68,12 +68,12 @@ export const Dashboard: React.FC = () => {
           <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
             ¡Hola, {user?.name}!
           </h1>
-          <p className="text-xl text-gray-400">Bienvenido a tu dashboard de Subsonic Festival</p>
+          <p className="text-xl text-gray-400">Bienvenido a tu menú de Subsonic Festival</p>
         </motion.div>
 
-        {/* Dashboard Cards Grid */}
+        {/* Menu Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {dashboardCards.map((card, index) => (
+          {menuCards.map((card, index) => (
             <motion.div
               key={card.title}
               initial={{ opacity: 0, y: 20 }}

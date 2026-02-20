@@ -21,13 +21,13 @@ export const Register: React.FC = () => {
     }
     register(name, email, address, role);
     toast.success('¡Cuenta creada exitosamente!');
-    navigate(role === 'vendor' ? '/vendor/dashboard' : '/dashboard');
+    navigate(role === 'vendor' ? '/vendor/menu' : '/menu');
   };
 
   const handleOAuthLogin = (provider: 'google' | 'github') => {
     loginWithOAuth(provider);
     toast.success(`¡Cuenta creada con ${provider}!`);
-    navigate('/dashboard');
+    navigate('/menu');
   };
 
   return (

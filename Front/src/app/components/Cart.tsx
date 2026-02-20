@@ -41,10 +41,10 @@ export const Cart: React.FC = () => {
             <h2 className="text-2xl mb-4 text-white">Tu carrito está vacío</h2>
             <p className="text-gray-400 mb-8">Añade algunos productos para continuar</p>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/menu')}
               className="px-8 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all"
             >
-              Ir al Dashboard
+              Ir al Menú
             </button>
           </div>
         ) : (

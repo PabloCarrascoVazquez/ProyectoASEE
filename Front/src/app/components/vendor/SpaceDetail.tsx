@@ -22,7 +22,7 @@ export const SpaceDetail: React.FC = () => {
   const handleRequest = () => {
     toast.success('Solicitud enviada correctamente');
     setTimeout(() => {
-      navigate('/vendor/dashboard');
+      navigate('/vendor/menu');
     }, 1500);
   };
 
@@ -63,7 +63,7 @@ export const SpaceDetail: React.FC = () => {
                         : 'bg-red-500/80 text-white'
                     }`}
                   >
-                    {space.available ? 'Disponible' : 'Ocupado'}
+                    {space.available ? 'Disponible' : 'Reservado'}
                   </span>
                   <span className="px-3 py-1 rounded-full bg-purple-500/80 text-white text-sm capitalize">
                     {space.type}

@@ -7,13 +7,13 @@ import { Home } from './components/Home';
 import { EventDetail } from './components/EventDetail';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
-import { Dashboard } from './components/Dashboard';
+import { Menu } from './components/Menu';
 import { Cart } from './components/Cart';
 import { MyTickets } from './components/MyTickets';
 import { MusicPlayer } from './components/MusicPlayer';
 import { Merchandise } from './components/Merchandise';
 import { FriendsRadar } from './components/FriendsRadar';
-import { VendorDashboard } from './components/vendor/VendorDashboard';
+import { VendorMenu } from './components/vendor/VendorMenu';
 import { SpacesSearch } from './components/vendor/SpacesSearch';
 import { SpaceDetail } from './components/vendor/SpaceDetail';
 import { VendorProfile } from './components/vendor/VendorProfile';
@@ -58,7 +58,7 @@ function AppContent() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Menu />
             </ProtectedRoute>
           }
         />
@@ -116,7 +116,7 @@ function AppContent() {
           path="/vendor/dashboard"
           element={
             <ProtectedRoute vendorOnly>
-              <VendorDashboard />
+              <VendorMenu />
             </ProtectedRoute>
           }
         />
@@ -148,7 +148,7 @@ function AppContent() {
           path="/vendor/my-spaces"
           element={
             <ProtectedRoute vendorOnly>
-              <VendorDashboard />
+              <VendorMenu />
             </ProtectedRoute>
           }
         />

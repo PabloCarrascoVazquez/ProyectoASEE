@@ -19,13 +19,13 @@ export const Login: React.FC = () => {
     }
     login(email, password);
     toast.success('¡Bienvenido a Subsonic!');
-    navigate('/dashboard');
+    navigate('/menu');
   };
 
   const handleOAuthLogin = (provider: 'google' | 'github') => {
     loginWithOAuth(provider);
     toast.success(`¡Conectado con ${provider}!`);
-    navigate('/dashboard');
+    navigate('/menu');
   };
 
   return (

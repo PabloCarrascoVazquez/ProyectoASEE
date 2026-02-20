@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { Store, Search, History, User, TrendingUp, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export const VendorDashboard: React.FC = () => {
+export const VendorMenu: React.FC = () => {
   const navigate = useNavigate();
 
   const stats = [
@@ -12,10 +12,10 @@ export const VendorDashboard: React.FC = () => {
     { label: 'Próximos Eventos', value: '5', change: '2 pendientes', icon: Calendar },
   ];
 
-  const dashboardCards = [
+  const menuCards = [
     {
       title: 'Buscar Espacios',
-      description: 'Encuentra el espacio perfecto para tu negocio',
+      description: 'Encuentra el espacio para tu negocio',
       icon: <Search className="w-8 h-8" />,
       color: 'from-pink-500 to-purple-500',
       action: () => navigate('/vendor/spaces'),
@@ -52,7 +52,7 @@ export const VendorDashboard: React.FC = () => {
           className="mb-12"
         >
           <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-            Dashboard de Proveedor
+            Menú de Proveedor
           </h1>
           <p className="text-xl text-gray-400">Gestiona tus espacios en Subsonic Festival</p>
         </motion.div>
@@ -79,7 +79,7 @@ export const VendorDashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {dashboardCards.map((card, index) => (
+          {menuCards.map((card, index) => (
             <motion.div
               key={card.title}
               initial={{ opacity: 0, y: 20 }}
@@ -113,9 +113,9 @@ export const VendorDashboard: React.FC = () => {
           <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-6">
             <div className="space-y-4">
               {[
-                { action: 'Solicitud aprobada', detail: 'Food Court Spot A - Subsonic 2026', time: 'Hace 2 días' },
+                { action: 'Solicitud aprobada', detail: 'Food Court Spot A - Festival 2026', time: 'Hace 2 días' },
                 { action: 'Pago recibido', detail: '€5,000 - Depósito inicial', time: 'Hace 4 días' },
-                { action: 'Nueva solicitud enviada', detail: 'Beverage Stand B - Afterparty', time: 'Hace 1 semana' },
+                { action: 'Nueva solicitud enviada', detail: 'Premium Beverage Stand B - Afterparty', time: 'Hace 1 semana' },
               ].map((activity, index) => (
                 <div
                   key={index}

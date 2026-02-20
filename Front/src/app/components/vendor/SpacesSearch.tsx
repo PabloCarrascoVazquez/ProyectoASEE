@@ -140,7 +140,7 @@ export const SpacesSearch: React.FC = () => {
                           : 'bg-red-500/80 text-white'
                       }`}
                     >
-                      {space.available ? 'Disponible' : 'Ocupado'}
+                      {space.available ? 'Disponible' : 'Reservado'}
                     </span>
                   </div>
                 </div>

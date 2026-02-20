@@ -12,7 +12,7 @@ export const Navbar: React.FC = () => {
 
   const handleLogoClick = () => {
     if (user) {
-      navigate(user.role === 'vendor' ? '/vendor/dashboard' : '/dashboard');
+      navigate(user.role === 'vendor' ? '/vendor/menu' : '/menu');
     } else {
       navigate('/');
     }
@@ -38,9 +38,9 @@ export const Navbar: React.FC = () => {
               <div className="hidden md:flex space-x-1">
                 <NavButton
                   icon={<Home className="w-4 h-4" />}
-                  label="Dashboard"
-                  onClick={() => navigate('/dashboard')}
-                  active={isActive('/dashboard')}
+                  label="Menu"
+                  onClick={() => navigate('/menu')}
+                  active={isActive('/menu')}
                 />
                 <NavButton
                   icon={<Radio className="w-4 h-4" />}
@@ -61,9 +61,9 @@ export const Navbar: React.FC = () => {
               <div className="hidden md:flex space-x-1">
                 <NavButton
                   icon={<Home className="w-4 h-4" />}
-                  label="Dashboard"
-                  onClick={() => navigate('/vendor/dashboard')}
-                  active={isActive('/vendor/dashboard')}
+                  label="Menu"
+                  onClick={() => navigate('/vendor/menu')}
+                  active={isActive('/vendor/menu')}
                 />
                 <NavButton
                   icon={<Store className="w-4 h-4" />}
@@ -105,7 +105,7 @@ export const Navbar: React.FC = () => {
                   onChange={(e) => {
                     const newRole = e.target.value as 'user' | 'vendor';
                     switchRole(newRole);
-                    navigate(newRole === 'vendor' ? '/vendor/dashboard' : '/dashboard');
+                    navigate(newRole === 'vendor' ? '/vendor/menu' : '/menu');
                   }}
                   className="px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 >
