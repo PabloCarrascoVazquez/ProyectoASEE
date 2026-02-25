@@ -11,15 +11,18 @@ export const Login: React.FC = () => {
   const { login, loginWithOAuth } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error('Por favor completa todos los campos');
-      return;
-    }
+    
+    // Tu lógica de login actual
     login(email, password);
-    toast.success('¡Bienvenido a Subsonic!');
-    navigate('/menu');
+
+    // Redirección forzada inmediata
+    if (email === 'admin@admin.com' && password === 'admin') {
+      navigate('/admin', { replace: true });
+    } else {
+      navigate('/dashboard', { replace: true });
+    }
   };
 
   const handleOAuthLogin = (provider: 'google' | 'github') => {

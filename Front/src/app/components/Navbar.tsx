@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { Music, ShoppingCart, User, LogOut, Home, Store, Radio } from 'lucide-react';
+import { Music, ShoppingCart, User, LogOut, Home, Store, Radio, ShieldCheck } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 
 export const Navbar: React.FC = () => {
@@ -12,15 +12,14 @@ export const Navbar: React.FC = () => {
 
   const handleLogoClick = () => {
     if (user) {
-      navigate(user.role === 'vendor' ? '/vendor/menu' : '/menu');
+      if (user.role === 'admin') navigate('/admin');
+      else navigate(user.role === 'vendor' ? '/vendor/menu' : '/menu');
     } else {
       navigate('/');
     }
   };
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <nav className="bg-[#0B0F19] border-b border-[#FF2A5F]/30 sticky top-0 z-50 backdrop-blur-sm">
@@ -34,6 +33,19 @@ export const Navbar: React.FC = () => {
               </span>
             </button>
 
+            {/* SECCIÓN LINKS ADMIN */}
+            {user && user.role === 'admin' && (
+              <div className="hidden md:flex space-x-1">
+                <NavButton
+                  icon={<ShieldCheck className="w-4 h-4" />}
+                  label="Panel de Gestión"
+                  onClick={() => navigate('/admin')}
+                  active={isActive('/admin')}
+                />
+              </div>
+            )}
+
+            {/* SECCIÓN LINKS USUARIO */}
             {user && user.role === 'user' && (
               <div className="hidden md:flex space-x-1">
                 <NavButton
@@ -57,6 +69,7 @@ export const Navbar: React.FC = () => {
               </div>
             )}
 
+            {/* SECCIÓN LINKS VENDOR */}
             {user && user.role === 'vendor' && (
               <div className="hidden md:flex space-x-1">
                 <NavButton
@@ -92,14 +105,17 @@ export const Navbar: React.FC = () => {
 
             {user && (
               <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => navigate(user.role === 'vendor' ? '/vendor/profile' : '/profile')}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 transition-colors"
-                >
-                  <User className="w-4 h-4 text-[#00F0FF]" />
-                  <span className="text-sm text-[#00F0FF]/80">{user.name}</span>
-                </button>
+              <button
+                onClick={() => navigate(user.role === 'vendor' ? '/vendor/profile' : '/profile')}
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 transition-colors"
+              >
+                <User className="w-4 h-4 text-[#00F0FF]" />
+                <span className="text-sm text-[#00F0FF]/80">
+                  {user.role === 'admin' ? 'ADMINISTRADOR' : user.name}
+                </span>
+              </button>
 
+              {user.role !== 'admin' && (
                 <select
                   value={user.role || ''}
                   onChange={(e) => {
@@ -112,15 +128,16 @@ export const Navbar: React.FC = () => {
                   <option value="user">Usuario</option>
                   <option value="vendor">Proveedor</option>
                 </select>
+              )}
 
                 <button
                   onClick={() => {
                     logout();
                     navigate('/');
                   }}
-                  className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors"
+                  className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors group"
                 >
-                  <LogOut className="w-5 h-5 text-red-400" />
+                  <LogOut className="w-5 h-5 text-red-400 group-hover:text-red-300" />
                 </button>
               </div>
             )}
@@ -129,13 +146,13 @@ export const Navbar: React.FC = () => {
               <div className="flex space-x-2">
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-4 py-2 rounded-lg bg-[#FF2A5F]/10 hover:bg-[#FF2A5F]/20 text-[#FF2A5F] transition-colors"
+                  className="px-4 py-2 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 transition-colors"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => navigate('/register')}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] hover:from-[#E62555] hover:to-[#00D8E6] text-[#F8FAFC] transition-colors"
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-colors"
                 >
                   Register
                 </button>
@@ -158,11 +175,11 @@ const NavButton: React.FC<{
     onClick={onClick}
     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
       active
-        ? 'bg-[#FF2A5F]/20 text-[#FF2A5F]/80'
-        : 'text-[#94A3B8] hover:bg-[#FF2A5F]/10 hover:text-[#FF2A5F]'
+        ? 'bg-pink-500/30 text-white border border-pink-500/50'
+        : 'text-gray-300 hover:bg-pink-500/10 hover:text-pink-400'
     }`}
   >
     {icon}
-    <span className="text-sm">{label}</span>
+    <span className="text-sm font-medium">{label}</span>
   </button>
 );

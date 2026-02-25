@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { Navbar } from './components/Navbar';
@@ -19,23 +19,40 @@ import { SpaceDetail } from './components/vendor/SpaceDetail';
 import { VendorProfile } from './components/vendor/VendorProfile';
 import { Profile } from './components/Profile';
 import { Toaster } from 'sonner';
+import { Admin } from './components/Admin';
+import { AdminPanel } from './components/AdminPanel';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode; vendorOnly?: boolean }> = ({
+const ProtectedRoute: React.FC<{ 
+  children: React.ReactNode; 
+  vendorOnly?: boolean;
+  adminOnly?: boolean;
+}> = ({
   children,
   vendorOnly = false,
+  adminOnly = false,
 }) => {
   const { user } = useAuth();
+  const location = useLocation(); // Necesitas importar useLocation de 'react-router'
 
+  // 1. Si no hay usuario, al login
   if (!user) {
     return <Navigate to="/login" />;
   }
 
-  if (vendorOnly && user.role !== 'vendor') {
-    return <Navigate to="/dashboard" />;
+  // 2. LÓGICA ESTRICTA: Si es admin y no está en /admin, lo mandamos allí
+  // Esto evita que el admin navegue por el menú de usuarios o la tienda
+  if (user.role === 'admin' && location.pathname !== '/admin') {
+    return <Navigate to="/admin" replace />;
   }
 
-  if (!vendorOnly && user.role === 'vendor') {
-    return <Navigate to="/vendor/dashboard" />;
+  // 3. Si la ruta es SOLO para Admin y el usuario no lo es (por si acaso intenta entrar por URL)
+  if (adminOnly && user.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
+
+  // 4. Lógica para Vendors (Permitimos que el admin también entre aquí si quieres)
+  if (vendorOnly && user.role !== 'vendor' && user.role !== 'admin') {
+    return <Navigate to="/dashboard" />;
   }
 
   return <>{children}</>;
@@ -159,6 +176,16 @@ function AppContent() {
               <VendorProfile />
             </ProtectedRoute>
           }
+        />
+
+        {/* Admin Route */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminPanel />
+            </ProtectedRoute>
+          } 
         />
 
         {/* Catch all */}
