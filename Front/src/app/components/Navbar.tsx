@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { Music, ShoppingCart, User, LogOut, Home, Store, Radio } from 'lucide-react';
+import { Music, ShoppingCart, User, LogOut, Home, Store, Radio, ShieldCheck } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 
 export const Navbar: React.FC = () => {
@@ -12,15 +12,14 @@ export const Navbar: React.FC = () => {
 
   const handleLogoClick = () => {
     if (user) {
-      navigate(user.role === 'vendor' ? '/vendor/menu' : '/menu');
+      if (user.role === 'admin') navigate('/admin');
+      else navigate(user.role === 'vendor' ? '/vendor/menu' : '/menu');
     } else {
       navigate('/');
     }
   };
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <nav className="bg-gradient-to-r from-purple-900 via-pink-900 to-purple-900 border-b border-pink-500/30 sticky top-0 z-50 backdrop-blur-sm">
@@ -34,6 +33,19 @@ export const Navbar: React.FC = () => {
               </span>
             </button>
 
+            {/* SECCIÓN LINKS ADMIN */}
+            {user && user.role === 'admin' && (
+              <div className="hidden md:flex space-x-1">
+                <NavButton
+                  icon={<ShieldCheck className="w-4 h-4" />}
+                  label="Panel de Gestión"
+                  onClick={() => navigate('/admin')}
+                  active={isActive('/admin')}
+                />
+              </div>
+            )}
+
+            {/* SECCIÓN LINKS USUARIO */}
             {user && user.role === 'user' && (
               <div className="hidden md:flex space-x-1">
                 <NavButton
@@ -57,6 +69,7 @@ export const Navbar: React.FC = () => {
               </div>
             )}
 
+            {/* SECCIÓN LINKS VENDOR */}
             {user && user.role === 'vendor' && (
               <div className="hidden md:flex space-x-1">
                 <NavButton
@@ -92,53 +105,44 @@ export const Navbar: React.FC = () => {
 
             {user && (
               <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => navigate(user.role === 'vendor' ? '/vendor/profile' : '/profile')}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 transition-colors"
-                >
+                <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
                   <User className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm text-purple-200">{user.name}</span>
-                </button>
+                  <span className="text-sm text-purple-200 font-medium">
+                    {user.role === 'admin' ? 'ADMINISTRADOR' : user.name}
+                  </span>
+                </div>
 
-                <select
-                  value={user.role || ''}
-                  onChange={(e) => {
-                    const newRole = e.target.value as 'user' | 'vendor';
-                    switchRole(newRole);
-                    navigate(newRole === 'vendor' ? '/vendor/menu' : '/menu');
-                  }}
-                  className="px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                >
-                  <option value="user">Usuario</option>
-                  <option value="vendor">Proveedor</option>
-                </select>
+                {user.role !== 'admin' && (
+                  <select
+                    value={user.role || ''}
+                    onChange={(e) => {
+                      const newRole = e.target.value as 'user' | 'vendor';
+                      switchRole(newRole);
+                      navigate(newRole === 'vendor' ? '/vendor/menu' : '/menu');
+                    }}
+                    className="px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-200 text-sm focus:outline-none cursor-pointer"
+                  >
+                    <option value="user">Usuario</option>
+                    <option value="vendor">Proveedor</option>
+                  </select>
+                )}
 
                 <button
                   onClick={() => {
                     logout();
                     navigate('/');
                   }}
-                  className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors"
+                  className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors group"
                 >
-                  <LogOut className="w-5 h-5 text-red-400" />
+                  <LogOut className="w-5 h-5 text-red-400 group-hover:text-red-300" />
                 </button>
               </div>
             )}
 
             {!user && (
               <div className="flex space-x-2">
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-4 py-2 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 transition-colors"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => navigate('/register')}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-colors"
-                >
-                  Register
-                </button>
+                <button onClick={() => navigate('/login')} className="px-4 py-2 rounded-lg bg-pink-500/10 text-pink-400">Login</button>
+                <button onClick={() => navigate('/register')} className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 text-white">Register</button>
               </div>
             )}
           </div>
@@ -158,11 +162,11 @@ const NavButton: React.FC<{
     onClick={onClick}
     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
       active
-        ? 'bg-pink-500/20 text-pink-300'
+        ? 'bg-pink-500/30 text-white border border-pink-500/50'
         : 'text-gray-300 hover:bg-pink-500/10 hover:text-pink-400'
     }`}
   >
     {icon}
-    <span className="text-sm">{label}</span>
+    <span className="text-sm font-medium">{label}</span>
   </button>
 );

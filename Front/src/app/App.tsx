@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { Navbar } from './components/Navbar';
@@ -20,42 +20,39 @@ import { VendorProfile } from './components/vendor/VendorProfile';
 import { Profile } from './components/Profile';
 import { Toaster } from 'sonner';
 import { Admin } from './components/Admin';
+import { AdminPanel } from './components/AdminPanel';
 
 const ProtectedRoute: React.FC<{ 
   children: React.ReactNode; 
   vendorOnly?: boolean;
-  adminOnly?: boolean; // Añadimos esta prop opcional
+  adminOnly?: boolean;
 }> = ({
   children,
   vendorOnly = false,
   adminOnly = false,
 }) => {
   const { user } = useAuth();
+  const location = useLocation(); // Necesitas importar useLocation de 'react-router'
 
   // 1. Si no hay usuario, al login
   if (!user) {
     return <Navigate to="/login" />;
   }
 
-  // 2. Si la ruta es SOLO para Admin y el usuario no lo es
+  // 2. LÓGICA ESTRICTA: Si es admin y no está en /admin, lo mandamos allí
+  // Esto evita que el admin navegue por el menú de usuarios o la tienda
+  if (user.role === 'admin' && location.pathname !== '/admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  // 3. Si la ruta es SOLO para Admin y el usuario no lo es (por si acaso intenta entrar por URL)
   if (adminOnly && user.role !== 'admin') {
+    return <Navigate to="/" />;
+  }
+
+  // 4. Lógica para Vendors (Permitimos que el admin también entre aquí si quieres)
+  if (vendorOnly && user.role !== 'vendor' && user.role !== 'admin') {
     return <Navigate to="/dashboard" />;
-  }
-
-  // 3. Prioridad Admin: Si es admin, permitimos que vea cualquier cosa 
-  // (O puedes redirigirlo a su panel si intenta entrar a rutas de usuario)
-  if (user.role === 'admin') {
-    return <>{children}</>;
-  }
-
-  // 4. Lógica para Vendors
-  if (vendorOnly && user.role !== 'vendor') {
-    return <Navigate to="/dashboard" />;
-  }
-
-  // 5. Si un vendor intenta entrar a rutas de cliente
-  if (!vendorOnly && user.role === 'vendor') {
-    return <Navigate to="/vendor/dashboard" />;
   }
 
   return <>{children}</>;
@@ -182,13 +179,13 @@ function AppContent() {
         />
 
         {/* Admin Route */}
-        <Route
-          path="/admin"
+        <Route 
+          path="/admin" 
           element={
-            <ProtectedRoute vendorOnly>
-              <Admin />
+            <ProtectedRoute adminOnly={true}>
+              <AdminPanel />
             </ProtectedRoute>
-          }
+          } 
         />
 
         {/* Catch all */}
