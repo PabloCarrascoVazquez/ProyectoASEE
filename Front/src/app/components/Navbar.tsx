@@ -23,13 +23,13 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-gradient-to-r from-purple-900 via-pink-900 to-purple-900 border-b border-pink-500/30 sticky top-0 z-50 backdrop-blur-sm">
+    <nav className="bg-[#0B0F19] border-b border-[#FF2A5F]/30 sticky top-0 z-50 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
             <button onClick={handleLogoClick} className="flex items-center space-x-2 group">
-              <Music className="w-8 h-8 text-pink-400 group-hover:text-pink-300 transition-colors" />
-              <span className="text-xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+              <Music className="w-8 h-8 text-[#FF2A5F] group-hover:text-[#FF2A5F]/80 transition-colors" />
+              <span className="text-xl font-bold bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
                 SUBSONIC
               </span>
             </button>
@@ -79,11 +79,11 @@ export const Navbar: React.FC = () => {
             {user && user.role === 'user' && (
               <button
                 onClick={() => navigate('/cart')}
-                className="relative p-2 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 transition-colors"
+                className="relative p-2 rounded-lg bg-[#FF2A5F]/10 hover:bg-[#FF2A5F]/20 transition-colors"
               >
-                <ShoppingCart className="w-5 h-5 text-pink-400" />
+                <ShoppingCart className="w-5 h-5 text-[#FF2A5F]" />
                 {getTotalItems() > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-[#FF2A5F] text-[#F8FAFC] text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {getTotalItems()}
                   </span>
                 )}
@@ -94,10 +94,10 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => navigate(user.role === 'vendor' ? '/vendor/profile' : '/profile')}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 transition-colors"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 transition-colors"
                 >
-                  <User className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm text-purple-200">{user.name}</span>
+                  <User className="w-4 h-4 text-[#00F0FF]" />
+                  <span className="text-sm text-[#00F0FF]/80">{user.name}</span>
                 </button>
 
                 <select
@@ -107,7 +107,7 @@ export const Navbar: React.FC = () => {
                     switchRole(newRole);
                     navigate(newRole === 'vendor' ? '/vendor/menu' : '/menu');
                   }}
-                  className="px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="px-3 py-2 rounded-lg bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[#00F0FF]/80 text-sm focus:outline-none focus:ring-2 focus:ring-[#00F0FF]/50"
                 >
                   <option value="user">Usuario</option>
                   <option value="vendor">Proveedor</option>
@@ -129,13 +129,13 @@ export const Navbar: React.FC = () => {
               <div className="flex space-x-2">
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-4 py-2 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-[#FF2A5F]/10 hover:bg-[#FF2A5F]/20 text-[#FF2A5F] transition-colors"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => navigate('/register')}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-colors"
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] hover:from-[#E62555] hover:to-[#00D8E6] text-[#F8FAFC] transition-colors"
                 >
                   Register
                 </button>
@@ -158,8 +158,8 @@ const NavButton: React.FC<{
     onClick={onClick}
     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
       active
-        ? 'bg-pink-500/20 text-pink-300'
-        : 'text-gray-300 hover:bg-pink-500/10 hover:text-pink-400'
+        ? 'bg-[#FF2A5F]/20 text-[#FF2A5F]/80'
+        : 'text-[#94A3B8] hover:bg-[#FF2A5F]/10 hover:text-[#FF2A5F]'
     }`}
   >
     {icon}

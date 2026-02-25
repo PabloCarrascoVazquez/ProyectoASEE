@@ -20,29 +20,29 @@ export const Cart: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-purple-950 to-black">
+    <div className="min-h-screen bg-[#0B0F19]">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
             Carrito de Compras
           </h1>
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-[#94A3B8]">
             {cart.length} producto{cart.length !== 1 ? 's' : ''} en tu carrito
           </p>
         </motion.div>
 
         {cart.length === 0 ? (
           <div className="text-center py-20">
-            <ShoppingCart className="w-24 h-24 mx-auto mb-6 text-gray-600" />
-            <h2 className="text-2xl mb-4 text-white">Tu carrito está vacío</h2>
-            <p className="text-gray-400 mb-8">Añade algunos productos para continuar</p>
+            <ShoppingCart className="w-24 h-24 mx-auto mb-6 text-[#94A3B8]/60" />
+            <h2 className="text-2xl mb-4 text-[#F8FAFC]">Tu carrito está vacío</h2>
+            <p className="text-[#94A3B8] mb-8">Añade algunos productos para continuar</p>
             <button
               onClick={() => navigate('/menu')}
-              className="px-8 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all"
+              className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] hover:from-[#E62555] hover:to-[#00D8E6] text-[#F8FAFC] transition-all"
             >
               Ir al Menú
             </button>
@@ -57,7 +57,7 @@ export const Cart: React.FC = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-6"
+                  className="bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-6"
                 >
                   <div className="flex items-start space-x-4">
                     {item.image && (
@@ -71,8 +71,8 @@ export const Cart: React.FC = () => {
                     )}
 
                     <div className="flex-1">
-                      <h3 className="text-lg text-white mb-1">{item.name}</h3>
-                      <p className="text-sm text-gray-400 mb-3">
+                      <h3 className="text-lg text-[#F8FAFC] mb-1">{item.name}</h3>
+                      <p className="text-sm text-[#94A3B8] mb-3">
                         {item.type === 'ticket' ? 'Entrada' : 'Merchandising'}
                       </p>
 
@@ -80,21 +80,21 @@ export const Cart: React.FC = () => {
                         <div className="flex items-center space-x-3">
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-8 h-8 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 flex items-center justify-center transition-colors"
+                            className="w-8 h-8 rounded-lg bg-[#00F0FF]/20 hover:bg-[#00F0FF]/30 flex items-center justify-center transition-colors"
                           >
-                            <Minus className="w-4 h-4 text-purple-400" />
+                            <Minus className="w-4 h-4 text-[#00F0FF]" />
                           </button>
-                          <span className="text-white w-8 text-center">{item.quantity}</span>
+                          <span className="text-[#F8FAFC] w-8 text-center">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-8 h-8 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 flex items-center justify-center transition-colors"
+                            className="w-8 h-8 rounded-lg bg-[#00F0FF]/20 hover:bg-[#00F0FF]/30 flex items-center justify-center transition-colors"
                           >
-                            <Plus className="w-4 h-4 text-purple-400" />
+                            <Plus className="w-4 h-4 text-[#00F0FF]" />
                           </button>
                         </div>
 
                         <div className="flex items-center space-x-4">
-                          <span className="text-xl text-pink-400">
+                          <span className="text-xl text-[#FF2A5F]">
                             €{(item.price * item.quantity).toFixed(2)}
                           </span>
                           <button
@@ -119,23 +119,23 @@ export const Cart: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="sticky top-24 bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-6"
+                className="sticky top-24 bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-6"
               >
-                <h2 className="text-2xl mb-6 text-white">Resumen</h2>
+                <h2 className="text-2xl mb-6 text-[#F8FAFC]">Resumen</h2>
 
                 <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-between text-gray-300">
+                  <div className="flex items-center justify-between text-[#94A3B8]">
                     <span>Subtotal</span>
                     <span>€{getTotalPrice().toFixed(2)}</span>
                   </div>
-                  <div className="flex items-center justify-between text-gray-300">
+                  <div className="flex items-center justify-between text-[#94A3B8]">
                     <span>Gastos de gestión</span>
                     <span>€{(getTotalPrice() * 0.05).toFixed(2)}</span>
                   </div>
-                  <div className="border-t border-gray-700 pt-4">
-                    <div className="flex items-center justify-between text-white text-xl">
+                  <div className="border-t border-[#0B0F19] pt-4">
+                    <div className="flex items-center justify-between text-[#F8FAFC] text-xl">
                       <span>Total</span>
-                      <span className="text-pink-400">
+                      <span className="text-[#FF2A5F]">
                         €{(getTotalPrice() * 1.05).toFixed(2)}
                       </span>
                     </div>
@@ -144,14 +144,14 @@ export const Cart: React.FC = () => {
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all flex items-center justify-center space-x-2"
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] hover:from-[#E62555] hover:to-[#00D8E6] text-[#F8FAFC] transition-all flex items-center justify-center space-x-2"
                 >
                   <CreditCard className="w-5 h-5" />
                   <span>Proceder al Pago</span>
                 </button>
 
-                <div className="mt-6 p-4 rounded-xl bg-purple-900/30 border border-purple-500/30">
-                  <p className="text-xs text-gray-400 text-center">
+                <div className="mt-6 p-4 rounded-xl bg-[#0B0F19]/50 border border-[#00F0FF]/30">
+                  <p className="text-xs text-[#94A3B8] text-center">
                     Métodos de pago aceptados: Tarjeta de crédito, PayPal, Bizum
                   </p>
                 </div>

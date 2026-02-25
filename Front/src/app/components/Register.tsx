@@ -1,175 +1,73 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Music, User, Mail, MapPin, Github } from 'lucide-react';
+import { User, Mail, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
-import { toast } from 'sonner';
 
-export const Register: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [role, setRole] = useState<'user' | 'vendor'>('user');
-  const { register, loginWithOAuth } = useAuth();
-  const navigate = useNavigate();
+export const Profile: React.FC = () => {
+  const { user } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email || !address) {
-      toast.error('Por favor completa todos los campos');
-      return;
-    }
-    register(name, email, address, role);
-    toast.success('¡Cuenta creada exitosamente!');
-    navigate(role === 'vendor' ? '/vendor/menu' : '/menu');
-  };
-
-  const handleOAuthLogin = (provider: 'google' | 'github') => {
-    loginWithOAuth(provider);
-    toast.success(`¡Cuenta creada con ${provider}!`);
-    navigate('/menu');
-  };
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-purple-950 to-black flex items-center justify-center px-4 py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full"
-      >
-        <div className="text-center mb-8">
-          <Music className="w-16 h-16 mx-auto mb-4 text-pink-400" />
-          <h1 className="text-4xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-            Registro
+    <div className="min-h-screen bg-[#0B0F19]">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12"
+        >
+          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
+            Mi Perfil
           </h1>
-          <p className="text-gray-400">Únete a la familia Subsonic</p>
-        </div>
+          <p className="text-xl text-[#94A3B8]">Información de tu cuenta</p>
+        </motion.div>
 
-        <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-8">
+          <div className="flex items-center space-x-6 mb-8">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF2A5F] to-[#00F0FF] flex items-center justify-center text-[#F8FAFC] text-3xl">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
             <div>
-              <label className="block text-sm text-gray-300 mb-2">Nombre</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Tu nombre completo"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Dirección</label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Tu dirección"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-300 mb-2">Tipo de cuenta</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as 'user' | 'vendor')}
-                className="w-full px-4 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50"
-              >
-                <option value="user">Usuario - Comprar entradas</option>
-                <option value="vendor">Proveedor - Alquilar espacios</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all"
-            >
-              Crear Cuenta
-            </button>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-gradient-to-br from-purple-900/50 to-pink-900/50 text-gray-400">
-                  O regístrate con
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleOAuthLogin('google')}
-                className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 hover:border-pink-500/60 text-white transition-all"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                <span>Google</span>
-              </button>
-
-              <button
-                onClick={() => handleOAuthLogin('github')}
-                className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 hover:border-pink-500/60 text-white transition-all"
-              >
-                <Github className="w-5 h-5" />
-                <span>GitHub</span>
-              </button>
+              <h2 className="text-2xl text-[#F8FAFC] mb-1">{user.name}</h2>
+              <p className="text-[#94A3B8] capitalize">{user.role === 'user' ? 'Usuario' : 'Proveedor'}</p>
             </div>
           </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              ¿Ya tienes cuenta?{' '}
-              <button
-                onClick={() => navigate('/login')}
-                className="text-pink-400 hover:text-pink-300 transition-colors"
-              >
-                Inicia sesión
-              </button>
-            </p>
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-lg bg-[#00F0FF]/20 flex items-center justify-center">
+                <Mail className="w-6 h-6 text-[#00F0FF]" />
+              </div>
+              <div>
+                <p className="text-sm text-[#94A3B8]">Email</p>
+                <p className="text-[#F8FAFC]">{user.email}</p>
+              </div>
+            </div>
+
+            {user.address && (
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 rounded-lg bg-[#FF2A5F]/20 flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-[#FF2A5F]" />
+                </div>
+                <div>
+                  <p className="text-sm text-[#94A3B8]">Dirección</p>
+                  <p className="text-[#F8FAFC]">{user.address}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-lg bg-[#00F0FF]/20 flex items-center justify-center">
+                <User className="w-6 h-6 text-[#00F0FF]" />
+              </div>
+              <div>
+                <p className="text-sm text-[#94A3B8]">ID de Usuario</p>
+                <p className="text-[#F8FAFC] font-mono">{user.id}</p>
+              </div>
+            </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

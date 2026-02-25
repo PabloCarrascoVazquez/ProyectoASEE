@@ -23,47 +23,47 @@ export const SpacesSearch: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-purple-950 to-black">
+    <div className="min-h-screen bg-[#0B0F19]">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
             Buscar Espacios
           </h1>
-          <p className="text-xl text-gray-400">Encuentra el espacio perfecto para tu negocio</p>
+          <p className="text-xl text-[#94A3B8]">Encuentra el espacio perfecto para tu negocio</p>
         </motion.div>
 
         {/* Search */}
         <div className="mb-8">
           <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar espacios..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#1A2235] border border-[#FF2A5F]/30 text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
             />
           </div>
 
           {/* Filters */}
-          <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-6">
+          <div className="bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <Filter className="w-5 h-5 text-pink-400" />
-              <h3 className="text-lg text-white">Filtros</h3>
+              <Filter className="w-5 h-5 text-[#FF2A5F]" />
+              <h3 className="text-lg text-[#F8FAFC]">Filtros</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Type Filter */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">Tipo</label>
+                <label className="block text-sm text-[#94A3B8] mb-2">Tipo</label>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-purple-900/30 border border-pink-500/30 text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+                  className="w-full px-4 py-2 rounded-lg bg-[#0B0F19]/50 border border-[#FF2A5F]/30 text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
                 >
                   {types.map((type) => (
                     <option key={type} value={type}>
@@ -75,11 +75,11 @@ export const SpacesSearch: React.FC = () => {
 
               {/* Size Filter */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">Tamaño</label>
+                <label className="block text-sm text-[#94A3B8] mb-2">Tamaño</label>
                 <select
                   value={sizeFilter}
                   onChange={(e) => setSizeFilter(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-purple-900/30 border border-pink-500/30 text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+                  className="w-full px-4 py-2 rounded-lg bg-[#0B0F19]/50 border border-[#FF2A5F]/30 text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
                 >
                   {sizes.map((size) => (
                     <option key={size} value={size}>
@@ -91,7 +91,7 @@ export const SpacesSearch: React.FC = () => {
 
               {/* Price Filter */}
               <div>
-                <label className="block text-sm text-gray-300 mb-2">
+                <label className="block text-sm text-[#94A3B8] mb-2">
                   Precio máximo: €{maxPrice}
                 </label>
                 <input
@@ -109,7 +109,7 @@ export const SpacesSearch: React.FC = () => {
         </div>
 
         {/* Results */}
-        <div className="mb-6 text-gray-300">
+        <div className="mb-6 text-[#94A3B8]">
           {filteredSpaces.length} espacio{filteredSpaces.length !== 1 ? 's' : ''} encontrado
           {filteredSpaces.length !== 1 ? 's' : ''}
         </div>
@@ -124,20 +124,20 @@ export const SpacesSearch: React.FC = () => {
               onClick={() => navigate(`/vendor/space/${space.id}`)}
               className="group cursor-pointer"
             >
-              <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 hover:border-pink-500/60 rounded-2xl overflow-hidden transition-all hover:scale-105">
+              <div className="bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 rounded-2xl overflow-hidden transition-all hover:scale-105">
                 <div className="relative h-48 overflow-hidden">
                   <img
                     src={space.image}
                     alt={space.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/50 to-transparent" />
                   <div className="absolute top-4 right-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs backdrop-blur-sm ${
                         space.available
-                          ? 'bg-green-500/80 text-white'
-                          : 'bg-red-500/80 text-white'
+                          ? 'bg-green-500/80 text-[#F8FAFC]'
+                          : 'bg-red-500/80 text-[#F8FAFC]'
                       }`}
                     >
                       {space.available ? 'Disponible' : 'Reservado'}
@@ -146,24 +146,24 @@ export const SpacesSearch: React.FC = () => {
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl mb-2 text-white group-hover:text-pink-400 transition-colors">
+                  <h3 className="text-xl mb-2 text-[#F8FAFC] group-hover:text-[#FF2A5F] transition-colors">
                     {space.name}
                   </h3>
 
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-gray-400 text-sm">
+                    <div className="flex items-center text-[#94A3B8] text-sm">
                       <MapPin className="w-4 h-4 mr-2" />
                       <span>{space.location}</span>
                     </div>
-                    <div className="flex items-center text-gray-400 text-sm">
+                    <div className="flex items-center text-[#94A3B8] text-sm">
                       <Ruler className="w-4 h-4 mr-2" />
                       <span>{space.dimensions} - {space.size}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl text-pink-400">€{space.price}</span>
-                    <span className="text-xs text-gray-500 capitalize">{space.type}</span>
+                    <span className="text-2xl text-[#FF2A5F]">€{space.price}</span>
+                    <span className="text-xs text-[#94A3B8]/60 capitalize">{space.type}</span>
                   </div>
                 </div>
               </div>
@@ -173,9 +173,9 @@ export const SpacesSearch: React.FC = () => {
 
         {filteredSpaces.length === 0 && (
           <div className="text-center py-20">
-            <Search className="w-24 h-24 mx-auto mb-6 text-gray-600" />
-            <h2 className="text-2xl mb-4 text-white">No se encontraron espacios</h2>
-            <p className="text-gray-400">Intenta ajustar los filtros</p>
+            <Search className="w-24 h-24 mx-auto mb-6 text-[#94A3B8]/60" />
+            <h2 className="text-2xl mb-4 text-[#F8FAFC]">No se encontraron espacios</h2>
+            <p className="text-[#94A3B8]">Intenta ajustar los filtros</p>
           </div>
         )}
       </div>

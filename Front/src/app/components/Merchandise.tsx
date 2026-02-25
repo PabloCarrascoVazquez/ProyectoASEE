@@ -29,24 +29,24 @@ export const Merchandise: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-purple-950 to-black">
+    <div className="min-h-screen bg-[#0B0F19]">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
             Merchandising Oficial
           </h1>
-          <p className="text-xl text-gray-400">Productos exclusivos de Subsonic Festival</p>
+          <p className="text-xl text-[#94A3B8]">Productos exclusivos de Subsonic Festival</p>
         </motion.div>
 
         {/* Filter */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <Filter className="w-5 h-5 text-gray-400" />
-            <span className="text-gray-300">Filtrar por categoría:</span>
+            <Filter className="w-5 h-5 text-[#94A3B8]" />
+            <span className="text-[#94A3B8]">Filtrar por categoría:</span>
           </div>
           <div className="flex flex-wrap gap-3">
             {categories.map((category) => (
@@ -55,8 +55,8 @@ export const Merchandise: React.FC = () => {
                 onClick={() => setCategoryFilter(category)}
                 className={`px-6 py-2 rounded-xl transition-all ${
                   categoryFilter === category
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white'
-                    : 'bg-purple-900/30 border border-pink-500/30 text-gray-300 hover:border-pink-500/60'
+                    ? 'bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] text-[#F8FAFC]'
+                    : 'bg-[#1A2235] border border-[#FF2A5F]/30 text-[#94A3B8] hover:border-[#FF2A5F]/60'
                 }`}
               >
                 {category === 'all' ? 'Todo' : category.charAt(0).toUpperCase() + category.slice(1)}
@@ -75,31 +75,31 @@ export const Merchandise: React.FC = () => {
               transition={{ delay: index * 0.1 }}
               className="group"
             >
-              <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 hover:border-pink-500/60 rounded-2xl overflow-hidden transition-all hover:scale-105">
-                <div className="relative h-64 overflow-hidden bg-gradient-to-br from-purple-900 to-pink-900">
+              <div className="bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 rounded-2xl overflow-hidden transition-all hover:scale-105">
+                <div className="relative h-64 overflow-hidden bg-[#0B0F19]">
                   <img
                     src={item.image}
                     alt={item.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19]/60 to-transparent" />
                   <div className="absolute top-4 right-4">
-                    <span className="px-3 py-1 rounded-full bg-pink-500/80 text-white text-xs backdrop-blur-sm">
+                    <span className="px-3 py-1 rounded-full bg-[#FF2A5F]/80 text-[#F8FAFC] text-xs backdrop-blur-sm">
                       {item.category}
                     </span>
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl mb-2 text-white group-hover:text-pink-400 transition-colors">
+                  <h3 className="text-xl mb-2 text-[#F8FAFC] group-hover:text-[#FF2A5F] transition-colors">
                     {item.name}
                   </h3>
                   
                   <div className="flex items-center justify-between mt-4">
-                    <span className="text-2xl text-pink-400">€{item.price}</span>
+                    <span className="text-2xl text-[#FF2A5F]">€{item.price}</span>
                     <button
                       onClick={() => handleAddToCart(item)}
-                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all flex items-center space-x-2"
+                      className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] hover:from-[#E62555] hover:to-[#00D8E6] text-[#F8FAFC] transition-all flex items-center space-x-2"
                     >
                       <ShoppingCart className="w-4 h-4" />
                       <span>Añadir</span>
@@ -113,8 +113,8 @@ export const Merchandise: React.FC = () => {
 
         {filteredItems.length === 0 && (
           <div className="text-center py-20">
-            <ShoppingCart className="w-24 h-24 mx-auto mb-6 text-gray-600" />
-            <h2 className="text-2xl mb-4 text-white">No hay productos en esta categoría</h2>
+            <ShoppingCart className="w-24 h-24 mx-auto mb-6 text-[#94A3B8]/60" />
+            <h2 className="text-2xl mb-4 text-[#F8FAFC]">No hay productos en esta categoría</h2>
           </div>
         )}
 
@@ -125,17 +125,17 @@ export const Merchandise: React.FC = () => {
           transition={{ delay: 0.5 }}
           className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6"
         >
-          <div className="p-6 rounded-xl bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-pink-500/20">
-            <h3 className="text-lg text-white mb-2">Envío Gratis</h3>
-            <p className="text-sm text-gray-400">En pedidos superiores a €50</p>
+          <div className="p-6 rounded-xl bg-[#1A2235] border border-[#FF2A5F]/20">
+            <h3 className="text-lg text-[#F8FAFC] mb-2">Envío Gratis</h3>
+            <p className="text-sm text-[#94A3B8]">En pedidos superiores a €50</p>
           </div>
-          <div className="p-6 rounded-xl bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-pink-500/20">
-            <h3 className="text-lg text-white mb-2">Productos Oficiales</h3>
-            <p className="text-sm text-gray-400">100% merchandising autorizado</p>
+          <div className="p-6 rounded-xl bg-[#1A2235] border border-[#FF2A5F]/20">
+            <h3 className="text-lg text-[#F8FAFC] mb-2">Productos Oficiales</h3>
+            <p className="text-sm text-[#94A3B8]">100% merchandising autorizado</p>
           </div>
-          <div className="p-6 rounded-xl bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-pink-500/20">
-            <h3 className="text-lg text-white mb-2">Recogida en el Festival</h3>
-            <p className="text-sm text-gray-400">Disponible para todos los eventos</p>
+          <div className="p-6 rounded-xl bg-[#1A2235] border border-[#FF2A5F]/20">
+            <h3 className="text-lg text-[#F8FAFC] mb-2">Recogida en el Festival</h3>
+            <p className="text-sm text-[#94A3B8]">Disponible para todos los eventos</p>
           </div>
         </motion.div>
       </div>

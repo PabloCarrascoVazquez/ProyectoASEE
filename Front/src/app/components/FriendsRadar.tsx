@@ -9,17 +9,17 @@ export const FriendsRadar: React.FC = () => {
   const friend = mockFriends.find((f) => f.id === selectedFriend);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-purple-950 to-black">
+    <div className="min-h-screen bg-[#0B0F19]">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
             Radar de Amigos
           </h1>
-          <p className="text-xl text-gray-400">Encuentra a tus amigos en el festival</p>
+          <p className="text-xl text-[#94A3B8]">Encuentra a tus amigos en el festival</p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -28,18 +28,18 @@ export const FriendsRadar: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-6"
+              className="bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-6"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl text-white">Mapa del Festival</h2>
-                <div className="flex items-center space-x-2 text-gray-400">
+                <h2 className="text-2xl text-[#F8FAFC]">Mapa del Festival</h2>
+                <div className="flex items-center space-x-2 text-[#94A3B8]">
                   <Navigation className="w-5 h-5" />
                   <span className="text-sm">Actualización en tiempo real</span>
                 </div>
               </div>
 
               {/* Festival Map */}
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gradient-to-br from-purple-950 to-pink-950">
+              <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[#0B0F19]">
                 <img
                   src="https://images.unsplash.com/photo-1516037172336-512c4aa6b16a?w=1200"
                   alt="Festival Map"
@@ -50,22 +50,22 @@ export const FriendsRadar: React.FC = () => {
                 <div className="absolute inset-0">
                   {/* Main Stage */}
                   <div className="absolute top-[20%] left-[50%] transform -translate-x-1/2 text-center">
-                    <div className="w-24 h-16 bg-purple-500/30 border-2 border-purple-400 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-xs text-white">Main Stage</span>
+                    <div className="w-24 h-16 bg-[#00F0FF]/30 border-2 border-[#00F0FF] rounded-lg flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-xs text-[#F8FAFC]">Main Stage</span>
                     </div>
                   </div>
 
                   {/* VIP Area */}
                   <div className="absolute top-[45%] right-[15%] text-center">
-                    <div className="w-20 h-12 bg-pink-500/30 border-2 border-pink-400 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-xs text-white">VIP</span>
+                    <div className="w-20 h-12 bg-[#FF2A5F]/30 border-2 border-[#FF2A5F] rounded-lg flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-xs text-[#F8FAFC]">VIP</span>
                     </div>
                   </div>
 
                   {/* Food Area */}
                   <div className="absolute bottom-[25%] left-[20%] text-center">
-                    <div className="w-20 h-12 bg-blue-500/30 border-2 border-blue-400 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-xs text-white">Food</span>
+                    <div className="w-20 h-12 bg-[#00F0FF]/30 border-2 border-[#00F0FF] rounded-lg flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-xs text-[#F8FAFC]">Food</span>
                     </div>
                   </div>
 
@@ -86,10 +86,10 @@ export const FriendsRadar: React.FC = () => {
                     >
                       <div className="relative">
                         <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center text-white transition-all ${
+                          className={`w-12 h-12 rounded-full flex items-center justify-center text-[#F8FAFC] transition-all ${
                             selectedFriend === friend.id
-                              ? 'bg-gradient-to-br from-pink-500 to-purple-500 ring-4 ring-pink-400/50'
-                              : 'bg-gradient-to-br from-pink-600 to-purple-600'
+                              ? 'bg-gradient-to-br from-[#FF2A5F] to-[#00F0FF] ring-4 ring-[#FF2A5F]/50'
+                              : 'bg-gradient-to-br from-[#E62555] to-[#00D8E6]'
                           }`}
                         >
                           {friend.avatar}
@@ -97,11 +97,11 @@ export const FriendsRadar: React.FC = () => {
                         <motion.div
                           animate={{ scale: [1, 1.5, 1] }}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="absolute inset-0 rounded-full bg-pink-500/30 -z-10"
+                          className="absolute inset-0 rounded-full bg-[#FF2A5F]/30 -z-10"
                         />
                       </div>
                       <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                        <div className="px-3 py-1 rounded-lg bg-black/80 backdrop-blur-sm text-xs text-white">
+                        <div className="px-3 py-1 rounded-lg bg-[#0B0F19]/80 backdrop-blur-sm text-xs text-[#F8FAFC]">
                           {friend.name}
                         </div>
                       </div>
@@ -115,9 +115,9 @@ export const FriendsRadar: React.FC = () => {
                     className="absolute top-[60%] left-[45%] transform -translate-x-1/2 -translate-y-1/2"
                   >
                     <div className="relative">
-                      <div className="w-4 h-4 rounded-full bg-blue-500 ring-4 ring-blue-400/50" />
+                      <div className="w-4 h-4 rounded-full bg-[#00F0FF] ring-4 ring-[#00F0FF]/50" />
                       <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                        <div className="px-2 py-1 rounded-lg bg-blue-500/90 backdrop-blur-sm text-xs text-white">
+                        <div className="px-2 py-1 rounded-lg bg-[#00F0FF]/90 backdrop-blur-sm text-xs text-[#0B0F19]">
                           Tú
                         </div>
                       </div>
@@ -129,12 +129,12 @@ export const FriendsRadar: React.FC = () => {
               {/* Legend */}
               <div className="mt-6 flex flex-wrap gap-4">
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500" />
-                  <span className="text-sm text-gray-400">Tu ubicación</span>
+                  <div className="w-3 h-3 rounded-full bg-[#00F0FF]" />
+                  <span className="text-sm text-[#94A3B8]">Tu ubicación</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-pink-500 to-purple-500" />
-                  <span className="text-sm text-gray-400">Amigos</span>
+                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-[#FF2A5F] to-[#00F0FF]" />
+                  <span className="text-sm text-[#94A3B8]">Amigos</span>
                 </div>
               </div>
             </motion.div>
@@ -142,8 +142,8 @@ export const FriendsRadar: React.FC = () => {
 
           {/* Friends List */}
           <div className="lg:col-span-1">
-            <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-6">
-              <h2 className="text-2xl mb-6 text-white flex items-center">
+            <div className="bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-6">
+              <h2 className="text-2xl mb-6 text-[#F8FAFC] flex items-center">
                 <Users className="w-6 h-6 mr-2" />
                 Amigos ({mockFriends.length})
               </h2>
@@ -155,23 +155,23 @@ export const FriendsRadar: React.FC = () => {
                     onClick={() => setSelectedFriend(friend.id)}
                     className={`w-full p-4 rounded-xl transition-all ${
                       selectedFriend === friend.id
-                        ? 'bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/50'
-                        : 'bg-purple-900/20 hover:bg-purple-900/30 border border-transparent'
+                        ? 'bg-gradient-to-r from-[#FF2A5F]/20 to-[#00F0FF]/20 border border-[#FF2A5F]/50'
+                        : 'bg-[#0B0F19]/50 hover:bg-[#0B0F19] border border-transparent'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF2A5F] to-[#00F0FF] flex items-center justify-center text-[#F8FAFC] flex-shrink-0">
                         {friend.avatar}
                       </div>
                       <div className="flex-1 text-left">
                         <h3
                           className={`${
-                            selectedFriend === friend.id ? 'text-pink-400' : 'text-white'
+                            selectedFriend === friend.id ? 'text-[#FF2A5F]' : 'text-[#F8FAFC]'
                           }`}
                         >
                           {friend.name}
                         </h3>
-                        <div className="flex items-center text-xs text-gray-400 mt-1">
+                        <div className="flex items-center text-xs text-[#94A3B8] mt-1">
                           <MapPin className="w-3 h-3 mr-1" />
                           <span>En el festival</span>
                         </div>
@@ -186,23 +186,23 @@ export const FriendsRadar: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 p-4 rounded-xl bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/30"
+                  className="mt-6 p-4 rounded-xl bg-gradient-to-br from-[#FF2A5F]/10 to-[#00F0FF]/10 border border-[#FF2A5F]/30"
                 >
-                  <h3 className="text-white mb-2">{friend.name}</h3>
-                  <p className="text-sm text-gray-400 mb-3">
+                  <h3 className="text-[#F8FAFC] mb-2">{friend.name}</h3>
+                  <p className="text-sm text-[#94A3B8] mb-3">
                     Ubicación: ({friend.position.x}%, {friend.position.y}%)
                   </p>
-                  <button className="w-full py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all">
+                  <button className="w-full py-2 rounded-lg bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] hover:from-[#E62555] hover:to-[#00D8E6] text-[#F8FAFC] transition-all">
                     Enviar mensaje
                   </button>
                 </motion.div>
               )}
             </div>
 
-            <div className="mt-6 p-6 bg-gradient-to-br from-blue-900/30 to-cyan-900/30 border border-blue-500/30 rounded-2xl">
-              <Navigation className="w-8 h-8 text-blue-400 mb-3" />
-              <h3 className="text-lg text-white mb-2">Navegación en tiempo real</h3>
-              <p className="text-sm text-gray-400">
+            <div className="mt-6 p-6 bg-[#0B0F19] border border-[#00F0FF]/30 rounded-2xl">
+              <Navigation className="w-8 h-8 text-[#00F0FF] mb-3" />
+              <h3 className="text-lg text-[#F8FAFC] mb-2">Navegación en tiempo real</h3>
+              <p className="text-sm text-[#94A3B8]">
                 El radar se actualiza automáticamente cada 30 segundos para mostrarte la ubicación
                 de tus amigos
               </p>

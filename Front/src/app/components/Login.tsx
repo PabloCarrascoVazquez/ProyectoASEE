@@ -29,53 +29,53 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-purple-950 to-black flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full"
       >
         <div className="text-center mb-8">
-          <Music className="w-16 h-16 mx-auto mb-4 text-pink-400" />
-          <h1 className="text-4xl mb-2 bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <Music className="w-16 h-16 mx-auto mb-4 text-[#FF2A5F]" />
+          <h1 className="text-4xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
             Iniciar Sesión
           </h1>
-          <p className="text-gray-400">Accede a tu cuenta de Subsonic</p>
+          <p className="text-[#94A3B8]">Accede a tu cuenta de Subsonic</p>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border border-pink-500/30 rounded-2xl p-8">
+        <div className="bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm text-gray-300 mb-2">Email</label>
+              <label className="block text-sm text-[#94A3B8] mb-2">Email</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#0B0F19]/50 border border-[#FF2A5F]/30 text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-2">Contraseña</label>
+              <label className="block text-sm text-[#94A3B8] mb-2">Contraseña</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#0B0F19]/50 border border-[#FF2A5F]/30 text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white transition-all"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] hover:from-[#E62555] hover:to-[#00D8E6] text-[#F8FAFC] transition-all"
             >
               Iniciar Sesión
             </button>
@@ -84,10 +84,10 @@ export const Login: React.FC = () => {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700" />
+                <div className="w-full border-t border-[#1A2235]" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-gradient-to-br from-purple-900/50 to-pink-900/50 text-gray-400">
+                <span className="px-4 bg-[#1A2235] text-[#94A3B8]">
                   O continúa con
                 </span>
               </div>
@@ -96,7 +96,7 @@ export const Login: React.FC = () => {
             <div className="mt-6 grid grid-cols-2 gap-4">
               <button
                 onClick={() => handleOAuthLogin('google')}
-                className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 hover:border-pink-500/60 text-white transition-all"
+                className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-[#0B0F19]/50 border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 text-[#F8FAFC] transition-all"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -121,7 +121,7 @@ export const Login: React.FC = () => {
 
               <button
                 onClick={() => handleOAuthLogin('github')}
-                className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-purple-900/30 border border-pink-500/30 hover:border-pink-500/60 text-white transition-all"
+                className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-[#0B0F19]/50 border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 text-[#F8FAFC] transition-all"
               >
                 <Github className="w-5 h-5" />
                 <span>GitHub</span>
@@ -130,11 +130,11 @@ export const Login: React.FC = () => {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-400">
+            <p className="text-[#94A3B8]">
               ¿No tienes cuenta?{' '}
               <button
                 onClick={() => navigate('/register')}
-                className="text-pink-400 hover:text-pink-300 transition-colors"
+                className="text-[#FF2A5F] hover:text-[#FF2A5F]/80 transition-colors"
               >
                 Regístrate
               </button>
