@@ -1,15 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { ShoppingCart, Ticket, Music, Store, Users, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
-import { mockEvents } from '../data/mockData';
+import { mockEvents, Event } from '../data/mockData'; // Importamos el tipo Event también
 
 export const Menu: React.FC = () => {
   const { user } = useAuth();
   const { purchasedTickets, getTotalItems } = useCart();
   const navigate = useNavigate();
+
+  // 1. Cargar eventos sincronizados (igual que en Home)
+  const [events, setEvents] = useState<Event[]>(() => {
+    const saved = localStorage.getItem('subsonic_events');
+    return saved ? JSON.parse(saved) : mockEvents;
+  });
+
+  // 2. Sincronizar si hay cambios en otras pestañas
+  useEffect(() => {
+    const syncEvents = () => {
+      const saved = localStorage.getItem('subsonic_events');
+      if (saved) setEvents(JSON.parse(saved));
+    };
+    window.addEventListener('storage', syncEvents);
+    return () => window.removeEventListener('storage', syncEvents);
+  }, []);
 
   const menuCards = [
     {
@@ -65,7 +81,7 @@ export const Menu: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12"
         >
-          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent font-bold">
             ¡Hola, {user?.name}!
           </h1>
           <p className="text-xl text-[#94A3B8]">Bienvenido a tu menú de Subsonic Festival</p>
@@ -82,86 +98,56 @@ export const Menu: React.FC = () => {
               onClick={card.action}
               className="group cursor-pointer"
             >
-              <div className="relative rounded-2xl overflow-hidden bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 transition-all hover:scale-105 p-6">
-                <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${card.color} flex items-center justify-center mb-4 text-[#F8FAFC]`}>
+              <div className="relative rounded-2xl overflow-hidden bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 transition-all hover:scale-105 p-6 h-full">
+                <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${card.color} flex items-center justify-center mb-4 text-[#F8FAFC] shadow-lg`}>
                   {card.icon}
                 </div>
-                <h3 className="text-xl mb-2 text-[#F8FAFC] group-hover:text-[#FF2A5F] transition-colors">
+                <h3 className="text-xl mb-2 text-[#F8FAFC] group-hover:text-[#FF2A5F] transition-colors font-bold">
                   {card.title}
                 </h3>
-                <p className="text-[#94A3B8]">{card.description}</p>
+                <p className="text-[#94A3B8] text-sm">{card.description}</p>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Recent Tickets */}
-        {purchasedTickets.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <h2 className="text-2xl mb-6 text-[#F8FAFC]">Mis Últimas Entradas</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {purchasedTickets.slice(0, 3).map((ticket) => (
-                <div
-                  key={ticket.id}
-                  onClick={() => navigate('/tickets')}
-                  className="cursor-pointer rounded-xl overflow-hidden bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 transition-all"
-                >
-                  {ticket.image && (
-                    <div className="h-32 overflow-hidden">
-                      <img
-                        src={ticket.image}
-                        alt={ticket.eventName}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="text-[#F8FAFC] mb-1">{ticket.eventName}</h3>
-                    <p className="text-sm text-[#94A3B8]">{ticket.ticketType}</p>
-                    <p className="text-sm text-[#FF2A5F] mt-2">€{ticket.price}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Upcoming Events */}
+        {/* Upcoming Events - USANDO EL ESTADO DINÁMICO */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
           className="mt-12"
         >
-          <h2 className="text-2xl mb-6 text-[#F8FAFC]">Próximos Eventos</h2>
+          <h2 className="text-2xl mb-6 text-[#F8FAFC] font-bold">Próximos Eventos</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockEvents.slice(0, 3).map((event) => (
+            {/* Cambiamos mockEvents.slice por events.slice */}
+            {events.slice(0, 3).map((event) => (
               <div
                 key={event.id}
                 onClick={() => navigate(`/event/${event.id}`)}
-                className="cursor-pointer rounded-xl overflow-hidden bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 transition-all hover:scale-105"
+                className="group cursor-pointer rounded-2xl overflow-hidden bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 transition-all hover:shadow-[0_0_20px_rgba(255,42,95,0.15)]"
               >
-                <div className="h-48 overflow-hidden">
+                <div className="h-48 overflow-hidden relative">
                   <img
                     src={event.image}
                     alt={event.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2235] to-transparent opacity-60" />
                 </div>
-                <div className="p-4">
-                  <h3 className="text-[#F8FAFC] mb-2">{event.name}</h3>
-                  <p className="text-sm text-[#94A3B8]">
+                <div className="p-5">
+                  <h3 className="text-[#F8FAFC] mb-2 font-bold group-hover:text-[#FF2A5F] transition-colors">{event.name}</h3>
+                  <div className="flex items-center text-sm text-[#94A3B8] mb-3">
+                    <Calendar className="w-4 h-4 mr-2 text-[#00F0FF]" />
                     {new Date(event.date).toLocaleDateString('es-ES', {
                       day: 'numeric',
                       month: 'long',
                     })}
-                  </p>
-                  <p className="text-sm text-[#FF2A5F] mt-2">
-                    Desde €{Math.min(...event.ticketPrices.map((t) => t.price))}
+                  </div>
+                  <p className="text-sm font-bold text-[#FF2A5F]">
+                    {event.ticketPrices && event.ticketPrices.length > 0 
+                      ? `Desde €${Math.min(...event.ticketPrices.map((t) => t.price))}`
+                      : 'Próximamente'}
                   </p>
                 </div>
               </div>

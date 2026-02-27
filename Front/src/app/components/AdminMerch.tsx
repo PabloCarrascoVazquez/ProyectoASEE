@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MerchandiseItem, mockMerchandise } from '../data/mockData';
 import { ArrowLeft, Trash2, Plus, ShoppingBag, X, ImageIcon } from 'lucide-react';
 
@@ -7,7 +7,15 @@ interface AdminMerchProps {
 }
 
 export const AdminMerch: React.FC<AdminMerchProps> = ({ onBack }) => {
-  const [items, setItems] = useState<MerchandiseItem[]>(mockMerchandise);
+  const [items, setItems] = useState<MerchandiseItem[]>(() => {
+    const saved = localStorage.getItem('subsonic_merch');
+    return saved ? JSON.parse(saved) : mockMerchandise;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('subsonic_merch', JSON.stringify(items));
+  }, [items]);
+
   const [showForm, setShowForm] = useState(false);
 
   // Estados para el formulario

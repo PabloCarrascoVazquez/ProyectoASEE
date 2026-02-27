@@ -1,15 +1,32 @@
-import React, { useState } from 'react';
-import { mockEvents } from '../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { Event, mockEvents } from '../data/mockData';
 import { Search, Calendar, Music } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 
 export const Home: React.FC = () => {
+  // 1. Cargamos eventos desde localStorage o usamos el mock como respaldo
+  const [events, setEvents] = useState<Event[]>(() => {
+    const saved = localStorage.getItem('subsonic_events');
+    return saved ? JSON.parse(saved) : mockEvents;
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const navigate = useNavigate();
 
-  const filteredEvents = mockEvents.filter((event) => {
+  // 2. Escuchar cambios de almacenamiento (por si el admin está en otra pestaña)
+  useEffect(() => {
+    const syncEvents = () => {
+      const saved = localStorage.getItem('subsonic_events');
+      if (saved) setEvents(JSON.parse(saved));
+    };
+    window.addEventListener('storage', syncEvents);
+    return () => window.removeEventListener('storage', syncEvents);
+  }, []);
+
+  // 3. Filtrado dinámico basado en el estado 'events'
+  const filteredEvents = events.filter((event) => {
     const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDate = !dateFilter || event.date === dateFilter;
     return matchesSearch && matchesDate;
@@ -26,7 +43,7 @@ export const Home: React.FC = () => {
       >
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1624929303661-22c5bce0169b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVjdHJvbmljJTIwbXVzaWMlMjBmZXN0aXZhbCUyMHN0YWdlJTIwbGlnaHRzfGVufDF8fHx8MTc3MTQxMzA5M3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+            src="https://images.unsplash.com/photo-1624929303661-22c5bce0169b?w=1200"
             alt="Festival"
             className="w-full h-full object-cover"
           />
@@ -40,19 +57,14 @@ export const Home: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.8 }}
           >
             <Music className="w-20 h-20 mx-auto mb-6 text-[#FF2A5F]" />
-            <h1 className="text-6xl md:text-8xl mb-4 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
+            <h1 className="text-6xl md:text-8xl mb-4 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent font-bold">
               SUBSONIC
             </h1>
             <p className="text-2xl md:text-3xl text-[#94A3B8] mb-8">
               FESTIVAL 2026
             </p>
-            <p className="text-xl text-[#94A3B8] max-w-2xl mx-auto">
-              La experiencia de música electrónica más espectacular del año
-            </p>
           </motion.div>
         </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0B0F19] to-transparent" />
       </motion.div>
 
       {/* Search and Filter Section */}
@@ -75,7 +87,7 @@ export const Home: React.FC = () => {
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#1A2235] border border-[#FF2A5F]/30 text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
+              className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#1A2235] border border-[#FF2A5F]/30 text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50 select-none"
             />
           </div>
         </div>
@@ -91,7 +103,7 @@ export const Home: React.FC = () => {
               onClick={() => navigate(`/event/${event.id}`)}
               className="group cursor-pointer"
             >
-              <div className="relative rounded-2xl overflow-hidden bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 transition-all duration-300 hover:scale-105">
+              <div className="relative rounded-2xl overflow-hidden bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 transition-all duration-300 hover:scale-[1.02]">
                 <div className="relative h-64 overflow-hidden">
                   <img
                     src={event.image}
@@ -102,11 +114,11 @@ export const Home: React.FC = () => {
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl mb-2 text-[#F8FAFC] group-hover:text-[#FF2A5F] transition-colors">
+                  <h3 className="text-xl mb-2 text-[#F8FAFC] font-bold group-hover:text-[#FF2A5F] transition-colors line-clamp-1">
                     {event.name}
                   </h3>
                   <div className="flex items-center text-[#94A3B8] mb-4">
-                    <Calendar className="w-4 h-4 mr-2" />
+                    <Calendar className="w-4 h-4 mr-2 text-[#00F0FF]" />
                     <span className="text-sm">
                       {new Date(event.date).toLocaleDateString('es-ES', {
                         day: 'numeric',
@@ -115,14 +127,16 @@ export const Home: React.FC = () => {
                       })}
                     </span>
                   </div>
-                  <p className="text-[#94A3B8] text-sm line-clamp-2">{event.description}</p>
+                  <p className="text-[#94A3B8] text-sm line-clamp-2 min-h-[40px]">{event.description}</p>
 
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="text-[#FF2A5F]">
-                      Desde €{Math.min(...event.ticketPrices.map((t) => t.price))}
+                    <span className="text-[#FF2A5F] font-bold">
+                      {event.ticketPrices && event.ticketPrices.length > 0 
+                        ? `Desde €${Math.min(...event.ticketPrices.map((t) => t.price))}`
+                        : 'Próximamente'}
                     </span>
-                    <span className="text-sm text-[#94A3B8]">
-                      {event.artists.length} artistas
+                    <span className="text-sm text-[#94A3B8] bg-[#0B0F19] px-2 py-1 rounded-md border border-[#94A3B8]/20">
+                      {event.artists?.length || 0} artistas
                     </span>
                   </div>
                 </div>
@@ -132,9 +146,9 @@ export const Home: React.FC = () => {
         </div>
 
         {filteredEvents.length === 0 && (
-          <div className="text-center py-20">
-            <Music className="w-16 h-16 mx-auto mb-4 text-[#94A3B8]/60" />
-            <p className="text-xl text-[#94A3B8]">No se encontraron eventos</p>
+          <div className="text-center py-20 bg-[#1A2235]/30 rounded-3xl border border-dashed border-[#94A3B8]/20">
+            <Music className="w-16 h-16 mx-auto mb-4 text-[#94A3B8]/30" />
+            <p className="text-xl text-[#94A3B8]">No hay eventos disponibles en esta selección</p>
           </div>
         )}
       </div>
