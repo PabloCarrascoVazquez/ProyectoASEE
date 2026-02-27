@@ -39,7 +39,11 @@ export const Navbar: React.FC = () => {
                 <NavButton
                   icon={<ShieldCheck className="w-4 h-4" />}
                   label="Panel de Gestión"
-                  onClick={() => navigate('/admin')}
+                  // Añadimos un pequeño truco para asegurar que el estado se limpie
+                  onClick={() => {
+                    navigate('/admin');
+                    window.scrollTo(0, 0); // Opcional: sube arriba al cambiar
+                  }}
                   active={isActive('/admin')}
                 />
               </div>
