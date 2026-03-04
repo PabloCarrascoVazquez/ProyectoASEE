@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { Music, ShoppingCart, User, LogOut, Home, Store, Radio, ShieldCheck } from 'lucide-react';
+import { Music, ShoppingCart, User, LogOut, Home, Store, Radio, ShieldCheck, LayoutDashboard } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 
 export const Navbar: React.FC = () => {
@@ -52,12 +52,20 @@ export const Navbar: React.FC = () => {
             {/* SECCIÓN LINKS USUARIO */}
             {user && user.role === 'user' && (
               <div className="hidden md:flex space-x-1">
+                {/* NUEVO BOTÓN DASHBOARD */}
                 <NavButton
+                  icon={<LayoutDashboard className="w-4 h-4" />}
+                  label="Dashboard"
+                  onClick={() => navigate('/dashboard')} // O la ruta que tengas definida
+                  active={isActive('/dashboard')}
+                />
+                
+                {/* <NavButton
                   icon={<Home className="w-4 h-4" />}
                   label="Menu"
                   onClick={() => navigate('/menu')}
                   active={isActive('/menu')}
-                />
+                /> */}
                 <NavButton
                   icon={<Radio className="w-4 h-4" />}
                   label="Music"

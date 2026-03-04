@@ -62,7 +62,13 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-black">
       <Navbar />
-      <Toaster position="top-right" richColors />
+      <Toaster 
+              theme="dark" 
+              position="bottom-right" 
+              richColors 
+              closeButton
+              expand={false}
+      />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />

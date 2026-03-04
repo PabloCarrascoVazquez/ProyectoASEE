@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Event, mockEvents } from '../data/mockData';
-import { ArrowLeft, Trash2, Plus, Calendar, X, ImageIcon, MapPin } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, Calendar, X, ImageIcon, MapPin, Loader2 } from 'lucide-react';
+import { eventService } from '../services/eventService'; 
+import { toast } from 'sonner';
 
 interface AdminEventsProps {
   onBack: () => void;
 }
 
 export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
-  // --- LÓGICA DE DATOS ---
-  // En el futuro, este bloque se sustituirá por una llamada al backend (API GET)
-  const [events, setEvents] = useState<Event[]>(() => {
-    const saved = localStorage.getItem('subsonic_events');
-    return saved ? JSON.parse(saved) : mockEvents;
-  });
-
-  // Sincronización con LocalStorage (simulando persistencia de DB)
-  useEffect(() => {
-    localStorage.setItem('subsonic_events', JSON.stringify(events));
-  }, [events]);
+  // --- ESTADOS DE DATOS ---
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // --- ESTADOS DEL FORMULARIO ---
   const [showForm, setShowForm] = useState(false);
@@ -26,6 +21,21 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
   const [imageUrl, setImageUrl] = useState('');
   const [description, setDescription] = useState('');
   const [spaces, setSpaces] = useState<{ id: string; name: string; type: string }[]>([]);
+
+  // --- CARGA INICIAL (Simulando API GET) ---
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const data = await eventService.getAll();
+        setEvents(data);
+      } catch (error) {
+        toast.error('Error al conectar con el servidor');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadEvents();
+  }, []);
 
   // --- MANEJADORES DE ESPACIOS ---
   const addSpace = () => {
@@ -41,34 +51,49 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
     setSpaces(spaces.filter(s => s.id !== id));
   };
 
-  // --- ACCIONES CRUD (Simuladas) ---
-  const handleSave = (e: React.FormEvent) => {
+  // --- ACCIONES CRUD (Llamando al Servicio) ---
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !date) return;
 
-    // Estructura del objeto según la interfaz Event
+    setIsSaving(true);
+
     const newEvent: Event = {
-      id: `e-${Date.now()}`, // El backend generará este ID después
+      id: `e-${Date.now()}`,
       name,
       date,
       image: imageUrl || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?w=800',
       description,
       artists: [], 
-      services: spaces.map(s => s.name), // Guardamos nombres para coincidir con string[]
+      services: spaces.map(s => s.name),
       ticketPrices: [],
       gallery: [],
       mapImage: ''
     };
 
-    // En el futuro: await api.post('/events', newEvent)
-    setEvents([newEvent, ...events]);
-    resetForm();
+    try {
+      const savedEvent = await eventService.create(newEvent);
+      setEvents([savedEvent, ...events]);
+      toast.success('Evento publicado correctamente');
+      resetForm();
+    } catch (error) {
+      toast.error('Error al guardar el evento');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDeleteEvent = (id: string, title: string) => {
+  const handleDeleteEvent = async (id: string, title: string) => {
     if (window.confirm(`¿Eliminar definitivamente el evento "${title}"?`)) {
-      // En el futuro: await api.delete(`/events/${id}`)
-      setEvents(events.filter(e => e.id !== id));
+      try {
+        const success = await eventService.delete(id);
+        if (success) {
+          setEvents(events.filter(e => e.id !== id));
+          toast.success('Evento eliminado');
+        }
+      } catch (error) {
+        toast.error('No se pudo eliminar el evento');
+      }
     }
   };
 
@@ -80,6 +105,16 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
     setSpaces([]);
     setShowForm(false);
   };
+
+  // --- RENDERIZADO DE CARGA ---
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+        <p className="text-gray-500 font-medium">Cargando gestión de eventos...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white p-8 text-gray-900">
@@ -116,7 +151,6 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
 
           <form onSubmit={handleSave} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Columna Imagen */}
               <div className="flex flex-col space-y-4">
                 <div className="aspect-video bg-white border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center overflow-hidden shadow-inner">
                   {imageUrl ? (
@@ -132,7 +166,6 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
                 />
               </div>
 
-              {/* Columna Datos Principales */}
               <div className="md:col-span-2 space-y-4">
                 <input 
                   type="text" required placeholder="Título del Evento" value={name}
@@ -159,7 +192,6 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
               </div>
             </div>
 
-            {/* SECCIÓN DE ESPACIOS */}
             <div className="border-t border-gray-200 pt-6">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="font-bold text-gray-700 flex items-center">
@@ -199,16 +231,33 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
             </div>
 
             <div className="flex justify-end gap-4">
-              <button type="button" onClick={resetForm} className="px-6 py-2 font-bold text-gray-400 hover:text-gray-600">Cancelar</button>
-              <button type="submit" className="bg-indigo-600 text-white px-10 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">
-                Publicar Evento
+              <button 
+                type="button" 
+                onClick={resetForm} 
+                disabled={isSaving}
+                className="px-6 py-2 font-bold text-gray-400 hover:text-gray-600 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                disabled={isSaving}
+                className="bg-indigo-600 text-white px-10 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition flex items-center"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  'Publicar Evento'
+                )}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* LISTADO DE EVENTOS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {events.map(event => (
           <div key={event.id} className="bg-white border border-gray-200 rounded-3xl overflow-hidden flex shadow-sm hover:shadow-md transition-all group h-32">
