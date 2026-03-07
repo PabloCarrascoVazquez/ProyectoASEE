@@ -1,36 +1,32 @@
 import { Event, mockEvents } from '../data/mockData';
 
-const STORAGE_KEY = 'subsonic_events';
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-// Auxiliar para leer de localStorage o fallback al mock
-const getStoredEvents = (): Event[] => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  return saved ? JSON.parse(saved) : mockEvents;
-};
+// --- BASE DE DATOS EN MEMORIA ---
+// Se inicializa con los datos frescos de mockData.ts en cada carga de página.
+let eventsDB = [...mockEvents];
 
 export const eventService = {
   // GET: Obtener todos los eventos
   getAll: async (): Promise<Event[]> => {
     await delay(500);
-    return getStoredEvents();
+    // Retornamos la lista actual en memoria
+    return eventsDB;
   },
 
-  // POST: Crear un evento
+  // POST: Crear un evento (Persiste solo hasta que se recargue la página)
   create: async (newEvent: Event): Promise<Event> => {
     await delay(800);
-    const events = getStoredEvents();
-    const updatedEvents = [newEvent, ...events];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEvents));
+    // Añadimos al inicio para que aparezca primero en el feed
+    eventsDB = [newEvent, ...eventsDB];
     return newEvent;
   },
 
-  // DELETE: Eliminar un evento
+  // DELETE: Eliminar un evento (Persiste solo hasta que se recargue la página)
   delete: async (id: string): Promise<boolean> => {
     await delay(500);
-    const events = getStoredEvents();
-    const filtered = events.filter(e => e.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    // Filtramos la variable de memoria
+    eventsDB = eventsDB.filter(e => e.id !== id);
     return true;
   }
 };

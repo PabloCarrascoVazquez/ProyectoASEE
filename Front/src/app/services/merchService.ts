@@ -1,35 +1,32 @@
 import { MerchandiseItem, mockMerchandise } from '../data/mockData';
 
-const STORAGE_KEY = 'subsonic_merch';
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-const getStoredMerch = (): MerchandiseItem[] => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  return saved ? JSON.parse(saved) : mockMerchandise;
-};
+// --- BASE DE DATOS EN MEMORIA ---
+// Se inicializa con los datos del mockData.ts cada vez que se carga la página.
+let merchDB = [...mockMerchandise];
 
 export const merchService = {
-  // GET
+  // GET: Obtener todos los productos de merchandising
   getAll: async (): Promise<MerchandiseItem[]> => {
     await delay(600);
-    return getStoredMerch();
+    // Retornamos la lista actual en memoria
+    return merchDB;
   },
 
-  // POST
+  // POST: Crear/Añadir un nuevo producto (solo durante la sesión actual)
   create: async (newItem: MerchandiseItem): Promise<MerchandiseItem> => {
     await delay(800);
-    const items = getStoredMerch();
-    const updated = [newItem, ...items];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    // Añadimos al inicio para que el admin vea el cambio arriba
+    merchDB = [newItem, ...merchDB];
     return newItem;
   },
 
-  // DELETE
+  // DELETE: Eliminar un producto (solo durante la sesión actual)
   delete: async (id: string): Promise<boolean> => {
     await delay(500);
-    const items = getStoredMerch();
-    const filtered = items.filter(item => item.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    // Actualizamos la variable de memoria filtrando el ID
+    merchDB = merchDB.filter(item => item.id !== id);
     return true;
   }
 };

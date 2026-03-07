@@ -1,183 +1,182 @@
-import React, { useState } from 'react';
-import { mockVendorSpaces } from '../../data/mockData';
-import { Search, MapPin, DollarSign, Ruler, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { VendorSpace, Event } from '../../data/mockData';
+import { vendorService } from '../../services/vendorService';
+import { eventService } from '../../services/eventService';
+import { Search, MapPin, Loader2, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 export const SpacesSearch: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [eventFilter, setEventFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [sizeFilter, setSizeFilter] = useState('all');
-  const [maxPrice, setMaxPrice] = useState(10000);
+  
+  const [spaces, setSpaces] = useState<VendorSpace[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const navigate = useNavigate();
 
-  const types = ['all', ...new Set(mockVendorSpaces.map((s) => s.type))];
-  const sizes = ['all', ...new Set(mockVendorSpaces.map((s) => s.size))];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [spacesData, eventsData] = await Promise.all([
+          vendorService.getAll(),
+          eventService.getAll()
+        ]);
+        
+        // Log de depuración: Abre la consola (F12) para ver si los IDs coinciden
+        console.log('Spaces loaded:', spacesData);
+        console.log('Events loaded:', eventsData);
+        
+        setSpaces(spacesData);
+        setEvents(eventsData);
+      } catch (error) {
+        toast.error('Error de sincronización con la base de datos');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
-  const filteredSpaces = mockVendorSpaces.filter((space) => {
+  // FILTRADO ROBUSTO CON NORMALIZACIÓN DE IDs
+  const filteredSpaces = spaces.filter((space) => {
     const matchesSearch = space.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === 'all' || space.type === typeFilter;
-    const matchesSize = sizeFilter === 'all' || space.size === sizeFilter;
-    const matchesPrice = space.price <= maxPrice;
-    return matchesSearch && matchesType && matchesSize && matchesPrice;
+    
+    // Normalizamos a String y quitamos espacios para evitar fallos de "1" vs 1
+    const sEventId = space.eventId ? String(space.eventId).trim() : '';
+    const fEventId = String(eventFilter).trim();
+
+    const matchesEvent = fEventId === 'all' || sEventId === fEventId;
+    
+    const matchesType = typeFilter === 'all' || 
+                        space.type.toLowerCase() === typeFilter.toLowerCase();
+    
+    return matchesSearch && matchesEvent && matchesType;
   });
 
+  if (loading) return (
+    <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center">
+      <Loader2 className="w-12 h-12 text-[#00F0FF] animate-spin mb-4" />
+      <p className="text-[#94A3B8] font-black tracking-widest uppercase italic">Nexus Scanning...</p>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-[#0B0F19]">
-      <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-[#0B0F19] p-8">
+      <div className="max-w-7xl mx-auto py-12">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
         >
-          <h1 className="text-4xl md:text-5xl mb-2 bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] bg-clip-text text-transparent">
-            Buscar Espacios
+          <h1 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-12">
+            DISCOVER <span className="text-[#FF2A5F]">SPACES</span>
           </h1>
-          <p className="text-xl text-[#94A3B8]">Encuentra el espacio perfecto para tu negocio</p>
         </motion.div>
 
-        {/* Search */}
-        <div className="mb-8">
-          <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5" />
+        {/* CONTROLES DE FILTRO */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
+          <div className="lg:col-span-2 relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
               type="text"
-              placeholder="Buscar espacios..."
+              placeholder="Nombre del stand..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#1A2235] border border-[#FF2A5F]/30 text-[#F8FAFC] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
+              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-[#1A2235] border border-white/5 text-white outline-none focus:border-[#FF2A5F]/50 transition-all placeholder:text-gray-600 font-bold"
             />
           </div>
+          
+          <select
+            value={eventFilter}
+            onChange={(e) => setEventFilter(e.target.value)}
+            className="bg-[#1A2235] border border-white/5 text-gray-300 rounded-2xl px-4 py-4 outline-none focus:border-[#00F0FF]/50 cursor-pointer font-bold uppercase text-xs tracking-wider"
+          >
+            <option value="all">TODOS LOS EVENTOS</option>
+            {events.map(e => (
+              <option key={e.id} value={String(e.id)}>
+                {e.name.toUpperCase()}
+              </option>
+            ))}
+          </select>
 
-          {/* Filters */}
-          <div className="bg-[#1A2235] border border-[#FF2A5F]/30 rounded-2xl p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <Filter className="w-5 h-5 text-[#FF2A5F]" />
-              <h3 className="text-lg text-[#F8FAFC]">Filtros</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Type Filter */}
-              <div>
-                <label className="block text-sm text-[#94A3B8] mb-2">Tipo</label>
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-[#0B0F19]/50 border border-[#FF2A5F]/30 text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
-                >
-                  {types.map((type) => (
-                    <option key={type} value={type}>
-                      {type === 'all' ? 'Todos' : type.charAt(0).toUpperCase() + type.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Size Filter */}
-              <div>
-                <label className="block text-sm text-[#94A3B8] mb-2">Tamaño</label>
-                <select
-                  value={sizeFilter}
-                  onChange={(e) => setSizeFilter(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-[#0B0F19]/50 border border-[#FF2A5F]/30 text-[#F8FAFC] focus:outline-none focus:ring-2 focus:ring-[#FF2A5F]/50"
-                >
-                  {sizes.map((size) => (
-                    <option key={size} value={size}>
-                      {size === 'all' ? 'Todos' : size}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Price Filter */}
-              <div>
-                <label className="block text-sm text-[#94A3B8] mb-2">
-                  Precio máximo: €{maxPrice}
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="10000"
-                  step="500"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </div>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="bg-[#1A2235] border border-white/5 text-gray-300 rounded-2xl px-4 py-4 outline-none focus:border-[#FF2A5F]/50 cursor-pointer font-bold uppercase text-xs tracking-wider"
+          >
+            <option value="all">TODAS LAS CATEGORÍAS</option>
+            <option value="food">COMIDA</option>
+            <option value="beverage">BEBIDA</option>
+            <option value="merchandise">MERCHANDISING</option>
+          </select>
         </div>
 
-        {/* Results */}
-        <div className="mb-6 text-[#94A3B8]">
-          {filteredSpaces.length} espacio{filteredSpaces.length !== 1 ? 's' : ''} encontrado
-          {filteredSpaces.length !== 1 ? 's' : ''}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSpaces.map((space, index) => (
-            <motion.div
-              key={space.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              onClick={() => navigate(`/vendor/space/${space.id}`)}
-              className="group cursor-pointer"
-            >
-              <div className="bg-[#1A2235] border border-[#FF2A5F]/30 hover:border-[#FF2A5F]/60 rounded-2xl overflow-hidden transition-all hover:scale-105">
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={space.image}
-                    alt={space.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+        {/* GRID DE RESULTADOS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredSpaces.map((space) => {
+            // Buscamos el evento normalizando IDs para la etiqueta
+            const event = events.find(e => String(e.id) === String(space.eventId));
+            
+            return (
+              <motion.div
+                key={space.id}
+                whileHover={{ y: -10 }}
+                onClick={() => navigate(`/vendor/space/${space.id}`)}
+                className="bg-[#1A2235] rounded-3xl overflow-hidden border border-white/5 cursor-pointer hover:border-[#00F0FF]/40 transition-all group"
+              >
+                <div className="h-48 relative overflow-hidden">
+                  <img 
+                    src={space.image} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    alt={space.name} 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/50 to-transparent" />
-                  <div className="absolute top-4 right-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs backdrop-blur-sm ${
-                        space.available
-                          ? 'bg-green-500/80 text-[#F8FAFC]'
-                          : 'bg-red-500/80 text-[#F8FAFC]'
-                      }`}
-                    >
-                      {space.available ? 'Disponible' : 'Reservado'}
-                    </span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1A2235] via-transparent to-transparent opacity-60" />
+                  
+                  {/* ETIQUETA DE EVENTO ASOCIADO */}
+                  <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-[#00F0FF] uppercase border border-[#00F0FF]/30 shadow-lg">
+                    {event ? event.name : "EVENTO NO VINCULADO"}
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl mb-2 text-[#F8FAFC] group-hover:text-[#FF2A5F] transition-colors">
+                  <h3 className="text-xl font-black text-white uppercase mb-4 leading-tight group-hover:text-[#FF2A5F] transition-colors tracking-tight">
                     {space.name}
                   </h3>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-[#94A3B8] text-sm">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      <span>{space.location}</span>
-                    </div>
-                    <div className="flex items-center text-[#94A3B8] text-sm">
-                      <Ruler className="w-4 h-4 mr-2" />
-                      <span>{space.dimensions} - {space.size}</span>
-                    </div>
+                  
+                  <div className="flex items-center text-xs text-gray-400 font-bold mb-6 italic">
+                    <MapPin className="w-4 h-4 mr-1 text-[#FF2A5F]" /> {space.location}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl text-[#FF2A5F]">€{space.price}</span>
-                    <span className="text-xs text-[#94A3B8]/60 capitalize">{space.type}</span>
+                  <div className="flex justify-between items-center border-t border-white/5 pt-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-gray-500 font-black uppercase">Inversión</span>
+                      <span className="text-2xl font-black text-[#00F0FF]">€{space.price}</span>
+                    </div>
+                    <span className="px-3 py-1 bg-white/5 rounded-lg text-[10px] font-black text-gray-500 uppercase tracking-widest border border-white/5">
+                      {space.size}
+                    </span>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
+          
+          {filteredSpaces.length === 0 && (
+            <div className="col-span-full text-center py-20 bg-[#1A2235]/30 rounded-[3rem] border border-dashed border-white/5">
+               <Filter className="w-16 h-16 text-gray-600 mx-auto mb-4 opacity-20" />
+               <p className="text-gray-500 font-black uppercase tracking-widest text-sm">No se han detectado stands con estos parámetros</p>
+               <button 
+                 onClick={() => {setSearchTerm(''); setEventFilter('all'); setTypeFilter('all');}}
+                 className="mt-4 text-[#FF2A5F] text-xs font-bold hover:underline uppercase"
+               >
+                 Limpiar filtros
+               </button>
+            </div>
+          )}
         </div>
-
-        {filteredSpaces.length === 0 && (
-          <div className="text-center py-20">
-            <Search className="w-24 h-24 mx-auto mb-6 text-[#94A3B8]/60" />
-            <h2 className="text-2xl mb-4 text-[#F8FAFC]">No se encontraron espacios</h2>
-            <p className="text-[#94A3B8]">Intenta ajustar los filtros</p>
-          </div>
-        )}
       </div>
     </div>
   );
