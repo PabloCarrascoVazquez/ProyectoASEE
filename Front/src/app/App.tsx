@@ -21,6 +21,10 @@ import { Profile } from './components/Profile';
 import { Toaster } from 'sonner';
 import { Admin } from './components/Admin';
 import { AdminPanel } from './components/AdminPanel';
+import { AdminVendors } from './components/AdminVendors';
+import { AdminMerch } from './components/AdminMerch';
+import { AdminEvents } from './components/AdminEvents';
+
 
 const ProtectedRoute: React.FC<{ 
   children: React.ReactNode; 
@@ -185,14 +189,7 @@ function AppContent() {
         />
 
         {/* Admin Route */}
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute adminOnly={true}>
-              <AdminPanel />
-            </ProtectedRoute>
-          } 
-        />
+        <Route path="/admin" element={<AdminPanel />} />
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" />} />

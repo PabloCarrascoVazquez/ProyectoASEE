@@ -3,12 +3,12 @@ import { MerchandiseItem } from '../data/mockData';
 import { ArrowLeft, Trash2, Plus, ShoppingBag, X, ImageIcon, Loader2 } from 'lucide-react';
 import { merchService } from '../services/merchService';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router';
 
-interface AdminMerchProps {
-  onBack: () => void;
-}
 
-export const AdminMerch: React.FC<AdminMerchProps> = ({ onBack }) => {
+
+export const AdminMerch: React.FC = () => {
+  const navigate = useNavigate();
   // --- ESTADOS DE DATOS ---
   const [items, setItems] = useState<MerchandiseItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +84,10 @@ export const AdminMerch: React.FC<AdminMerchProps> = ({ onBack }) => {
     setShowForm(false);
   };
 
+  const handleBack = () => {
+    window.dispatchEvent(new Event('reset-admin-view'));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center">
@@ -96,7 +100,7 @@ export const AdminMerch: React.FC<AdminMerchProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-white p-8 text-gray-900">
       <button 
-        onClick={onBack} 
+        onClick={() => navigate('/admin')}
         className="flex items-center text-gray-500 hover:text-indigo-600 mb-6 transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4 mr-2" /> Volver al panel

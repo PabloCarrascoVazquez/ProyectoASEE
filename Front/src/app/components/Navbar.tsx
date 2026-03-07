@@ -39,10 +39,11 @@ export const Navbar: React.FC = () => {
                 <NavButton
                   icon={<ShieldCheck className="w-4 h-4" />}
                   label="Panel de Gestión"
-                  // Añadimos un pequeño truco para asegurar que el estado se limpie
                   onClick={() => {
+                    // Navega directamente al panel de administración
                     navigate('/admin');
-                    window.scrollTo(0, 0); // Opcional: sube arriba al cambiar
+                    // Asegura que la página cargue desde arriba
+                    window.scrollTo(0, 0); 
                   }}
                   active={isActive('/admin')}
                 />
@@ -118,8 +119,16 @@ export const Navbar: React.FC = () => {
             {user && (
               <div className="flex items-center space-x-3">
               <button
-                onClick={() => navigate(user.role === 'vendor' ? '/vendor/profile' : '/profile')}
-                className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-[#00F0FF]/10 hover:bg-[#00F0FF]/20 transition-colors"
+                onClick={() => {
+                  // Si NO es admin, navegamos al perfil. Si es admin, no hace nada.
+                  if (user.role !== 'admin') {
+                    navigate(user.role === 'vendor' ? '/vendor/profile' : '/profile');
+                  }
+                }}
+                // Cambiamos el cursor a 'default' si es admin para que no parezca un botón
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg bg-[#00F0FF]/10 transition-colors ${
+                  user.role === 'admin' ? 'cursor-default' : 'hover:bg-[#00F0FF]/20'
+                }`}
               >
                 <User className="w-4 h-4 text-[#00F0FF]" />
                 <span className="text-sm text-[#00F0FF]/80">

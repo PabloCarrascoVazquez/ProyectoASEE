@@ -3,12 +3,12 @@ import { Event, mockEvents } from '../data/mockData';
 import { ArrowLeft, Trash2, Plus, Calendar, X, ImageIcon, MapPin, Loader2 } from 'lucide-react';
 import { eventService } from '../services/eventService'; 
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router';
 
-interface AdminEventsProps {
-  onBack: () => void;
-}
 
-export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
+
+export const AdminEvents: React.FC = () => { // Ya no hay Props
+  const navigate = useNavigate();
   // --- ESTADOS DE DATOS ---
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,6 +105,7 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
     setSpaces([]);
     setShowForm(false);
   };
+  
 
   // --- RENDERIZADO DE CARGA ---
   if (loading) {
@@ -119,7 +120,7 @@ export const AdminEvents: React.FC<AdminEventsProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-white p-8 text-gray-900">
       <button 
-        onClick={onBack} 
+        onClick={() => navigate('/admin')}
         className="flex items-center text-gray-500 hover:text-indigo-600 mb-6 transition-colors font-medium"
       >
         <ArrowLeft className="w-4 h-4 mr-2" /> Volver al panel
