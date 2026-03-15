@@ -1,0 +1,66 @@
+
+
+------------------------------------------Structure------------------------------------------
+
+subsonic_backend/
+├── app/
+│   ├── __init__.py
+│   │
+│   ├── main.py                    # Punto de entrada. Configura HTTPS, CORS, middlewares y rutas.
+│   │
+│   ├── controllers/               # Capa de Presentación (Rutas HTTP)
+│   │   ├── __init__.py
+│   │   ├── auth_controller.py
+│   │   ├── usuario_controller.py
+│   │   └── evento_controller.py
+│   │
+│   ├── dtos/                      # Capa de Transferencia (Validación y Contratos)
+│   │   ├── __init__.py
+│   │   ├── auth_dto.py
+│   │   ├── usuario_dto.py
+│   │   └── evento_dto.py
+│   │
+│   ├── services/                  # Capa de Servicio (Lógica de Negocio)
+│   │   ├── __init__.py
+│   │   ├── auth_service.py
+│   │   ├── usuario_service.py
+│   │   └── evento_service.py
+│   │
+│   ├── daos/                      # Capa de Acceso a Datos (Consultas SQL)
+│   │   ├── __init__.py
+│   │   ├── interfaces.py          # IUsuarioDAO, IEventoDAO...
+│   │   ├── mysql_daos.py          # Implementaciones concretas con MySQL
+│   │   └── factories.py           # DAOFactory y DatabaseConnectionFactory
+│   │
+│   ├── models/                    # Entidades de Dominio (Reflejo 1:1 de MySQL)
+│   │   ├── __init__.py
+│   │   ├── usuario_model.py
+│   │   ├── evento_model.py
+│   │   └── jwt_blacklist_model.py
+│   │
+│   └── core/                      # Infraestructura y Seguridad Transversal
+│       ├── __init__.py
+│       ├── config.py              # Variables de entorno (DB_HOST, JWT_SECRET)
+│       ├── security.py            # Hashing con Argon2, generación/validación JWT
+│       ├── middlewares.py         # Interceptores (HSTS, validación de token blacklist)
+│       └── exceptions.py          # Manejo centralizado de errores HTTP
+│
+├── .env                           # Credenciales y secretos (nunca se sube al repositorio)
+├── .gitignore                     # Ignora archivos temporales y .env
+└── requirements.txt               # Dependencias (Pydantic, argon2-cffi, mysql-connector, etc.)
+
+
+------------------------------------------Database Schema------------------------------------------
+
+
+Event: (id, name, date, image, description, services, mapImage).
+
+Artist: (id, name, genre, image, spotifyUrl).
+
+TicketPrice: (id, eventId, type, price, description, features).
+
+VendorSpace: (id, eventId, name, type, size, location, price, services, image, dimensions, available).
+
+Merchandise: (id, name, price, image, category).
+
+User/Friend: (id, name, email, password_hash, position_x, position_y, avatar)
