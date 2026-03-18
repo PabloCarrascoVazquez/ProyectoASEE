@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class MerchandiseResponseDTO<:
+class MerchandiseResponseDTO(BaseModel): # <--- ¡Ahora sí!
     id: str
     name: str
     price: float

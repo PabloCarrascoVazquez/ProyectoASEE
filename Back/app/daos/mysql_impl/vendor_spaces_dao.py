@@ -3,7 +3,7 @@ import json
 from app.daos.interfaces import IVendorDAO
 from typing import List
 
-class VendorSpaceDAOMySQL(IVendorDAO):
+class VendorSpaceDAOMySQL:
     def __init__(self, connection):
         self.conn = connection
 

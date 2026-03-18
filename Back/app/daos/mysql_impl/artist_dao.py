@@ -2,7 +2,7 @@ import mysql.connector
 from app.daos.interfaces import IArtistDAO
 from typing import List, Optional
 
-class ArtistDAOMySQL(IArtistDAO):
+class ArtistDAOMySQL:
     def __init__(self, connection):
         self.conn = connection
 

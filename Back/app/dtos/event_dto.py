@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 # 1. DTO para los Artistas
-class ArtistDTO:
+class ArtistDTO(BaseModel): # <--- Añadido
     id: str
     name: str
     genre: str
@@ -11,7 +11,7 @@ class ArtistDTO:
     spotifyUrl: Optional[str] = None
 
 # 2. DTO para las Entradas
-class TicketPriceDTO:
+class TicketPriceDTO(BaseModel): # <--- Añadido
     id: str
     type: str
     price: float
@@ -19,7 +19,7 @@ class TicketPriceDTO:
     features: List[str] = []
 
 # 3. DTO Masivo para el Detalle del Evento (Lo que recibe la Vista 2)
-class EventDetailResponseDTO:
+class EventDetailResponseDTO(BaseModel): # <--- Añadido
     id: str
     name: str
     date: datetime
@@ -29,6 +29,6 @@ class EventDetailResponseDTO:
     gallery: List[str] = []
     mapImage: Optional[str] = None
     
-    # Aquí anidamos los otros DTOs (¡Magia de Pydantic!)
+    # Aquí anidamos los otros DTOs (¡Magia de Pydantic asegurada!)
     artists: List[ArtistDTO] = []
     ticketPrices: List[TicketPriceDTO] = []

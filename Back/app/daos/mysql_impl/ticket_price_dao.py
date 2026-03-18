@@ -3,7 +3,7 @@ import json
 from app.daos.interfaces import ITicketDAO
 from typing import List
 
-class TicketPriceDAOMySQL(ITicketDAO):
+class TicketPriceDAOMySQL:
     def __init__(self, connection):
         self.conn = connection
 
