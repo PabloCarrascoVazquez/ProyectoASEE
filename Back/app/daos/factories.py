@@ -26,7 +26,8 @@ class DatabaseConnectionFactory:
 
         elif engine == "sqlite":
             # Usamos una ruta absoluta para que los tests encuentren la DB siempre
-            db_path = os.path.join(os.path.dirname(__file__), "../../../subsonic.db")
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = os.path.abspath(os.path.join(current_dir, "../../subsonic.db"))
             conn = sqlite3.connect(db_path, check_same_thread=False)
             conn.execute("PRAGMA foreign_keys = ON")
             

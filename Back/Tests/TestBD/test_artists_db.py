@@ -1,5 +1,5 @@
 import uuid
-from app.daos.factories import DAOFactory
+from app.daos.factories import DAOFactory, DatabaseConnectionFactory
 
 print("🎸 INICIANDO BATERÍA DE PRUEBAS: ARTISTAS Y LINE-UP (N:M) 🎸\n")
 
