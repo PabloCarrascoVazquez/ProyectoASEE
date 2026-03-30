@@ -62,23 +62,23 @@ print("\n--- BLOQUE 2: SEGURIDAD Y HACKING ---")
 # TEST 3: Intento de Inyección SQL (SQLi)
 try:
     hacker_id = str(uuid.uuid4())
-    # Un hacker intenta saltarse el login cerrando comillas
-    sql_injection_email = "' OR '1'='1" 
+    # Usamos un email único para que no falle por UNIQUE constraint de ejecuciones previas
+    sql_injection_email = f"hacker_{hacker_id[:8]}@test.com' OR '1'='1" 
     
     user_dao.create({
         "id": hacker_id,
-        "name": "Robert'); DROP TABLE users;--", # El clásico Bobby Tables
+        "name": "Robert'); DROP TABLE users;--", 
         "email": sql_injection_email,
         "password_hash": "hack",
         "avatar": None
     })
     
-    # Si la inyección falló y se guardó literalmente el texto, nuestra app es segura.
     db_hacker = user_dao.get_by_email(sql_injection_email)
+    # Si la consulta parametrizada funcionó, el nombre debe ser el literal de Bobby Tables
     is_safe = db_hacker is not None and db_hacker['name'] == "Robert'); DROP TABLE users;--"
-    assert_test("Protección SQL Injection", is_safe, "Las consultas parametrizadas (?) bloquearon el ataque.", "¡Vulnerabilidad SQLi detectada!")
+    assert_test("Protección SQL Injection", is_safe, "Consultas parametrizadas (?) OK.", "¡Vulnerabilidad SQLi!")
 except Exception as e:
-    assert_test("Protección SQL Injection", False, "", f"Error inesperado durante ataque: {e}")
+    assert_test("Protección SQL Injection", False, "", str(e))
 
 # TEST 4: Caracteres especiales (Emojis, Tildes y Alfabetos raros)
 try:

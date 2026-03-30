@@ -1,21 +1,19 @@
 import sqlite3
 import json
 from app.daos.interfaces import ITicketDAO
-from typing import List
+from typing import List, Optional
 
-class TicketPriceDAOSQLite(ITicketDAO): # <--- Añadida la herencia de la interfaz
+class TicketPriceDAOSQLite(ITicketDAO):
     def __init__(self, connection):
         self.conn = connection
-        self.conn.row_factory = sqlite3.Row # Magia para columnas por nombre
+        self.conn.row_factory = sqlite3.Row
 
     def _parse_json_features(self, row) -> dict:
         if not row: 
             return row
         
-        # 1. Convertimos la fila inmutable a un diccionario mutable de Python
         row_dict = dict(row)
         
-        # 2. Convertimos el string JSON de SQLite a list[]
         if isinstance(row_dict.get('features'), str):
             row_dict['features'] = json.loads(row_dict['features'])
             
@@ -23,7 +21,6 @@ class TicketPriceDAOSQLite(ITicketDAO): # <--- Añadida la herencia de la interf
 
     def create(self, ticket_data: dict) -> str:
         cursor = self.conn.cursor()
-        # Cambiamos %s por ?
         query = """
             INSERT INTO ticket_prices (id, event_id, type, price, description, features) 
             VALUES (?, ?, ?, ?, ?, ?)
@@ -44,12 +41,28 @@ class TicketPriceDAOSQLite(ITicketDAO): # <--- Añadida la herencia de la interf
 
     def get_by_event_id(self, event_id: str) -> List[dict]:
         """Obtiene todos los precios y tipos de entrada para un evento concreto."""
-        cursor = self.conn.cursor() # Sin dictionary=True
-        # Cambiamos %s por ?
+        cursor = self.conn.cursor()
         query = "SELECT * FROM ticket_prices WHERE event_id = ?"
         cursor.execute(query, (event_id,))
         tickets = cursor.fetchall()
         cursor.close()
         
-        # Pasamos cada fila de SQLite por nuestra función que parsea y convierte a dict
         return [self._parse_json_features(ticket) for ticket in tickets]
+        
+    def get_by_id(self, ticket_price_id: str) -> Optional[dict]:
+        cursor = self.conn.cursor()
+        query = "SELECT * FROM ticket_prices WHERE id = ?"
+        cursor.execute(query, (ticket_price_id,))
+        row = cursor.fetchone()
+        cursor.close()
+        
+        if row:
+            item = dict(row)
+            if isinstance(item.get('features'), str):
+                import json
+                try:
+                    item['features'] = json.loads(item['features'])
+                except:
+                    pass
+            return item
+        return None

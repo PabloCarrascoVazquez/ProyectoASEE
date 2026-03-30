@@ -12,6 +12,9 @@ class IUserDAO(ABC):
     @abstractmethod
     def get_by_email(self, email: str) -> Optional[dict]: pass
 
+    @abstractmethod
+    def get_by_id(self, user_id: str) -> Optional[dict]: pass
+
 class IEventDAO(ABC):
     @abstractmethod
     def create(self, event_data: dict) -> str: pass
@@ -39,9 +42,15 @@ class ITicketDAO(ABC):
     @abstractmethod
     def get_by_event_id(self, event_id: str) -> List[dict]: pass
 
+    @abstractmethod
+    def get_by_id(self, ticket_price_id: str) -> Optional[dict]: pass
+
 class IVendorDAO(ABC):
     @abstractmethod
     def get_by_event_id(self, event_id: str) -> List[dict]: pass
+
+    @abstractmethod
+    def create(self, space_data: dict): pass
 
 class IUserTicketDAO(ABC):
     @abstractmethod

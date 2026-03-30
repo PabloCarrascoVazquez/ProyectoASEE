@@ -1,7 +1,7 @@
 import mysql.connector
 import json
 from app.daos.interfaces import ITicketDAO
-from typing import List
+from typing import List, Optional
 
 class TicketPriceDAOMySQL:
     def __init__(self, connection):
@@ -32,13 +32,28 @@ class TicketPriceDAOMySQL:
         finally:
             cursor.close()
 
-    def get_by_event_id(self, event_id: str) -> List[dict]:
-        """Obtiene todos los precios y tipos de entrada para un evento concreto."""
-        cursor = self.conn.cursor(dictionary=True)
-        query = "SELECT * FROM ticket_prices WHERE event_id = %s"
-        cursor.execute(query, (event_id,))
-        tickets = cursor.fetchall()
-        cursor.close()
-        
-        # Convertimos el string JSON 'features' de MySQL a list[] de Python para cada ticket
-        return [self._parse_json_features(ticket) for ticket in tickets]
+    def get_by_id(self, ticket_price_id: str) -> Optional[dict]:
+            cursor = self.conn.cursor(dictionary=True)
+
+            query = "SELECT * FROM ticket_prices WHERE id = %s"
+            
+            try:
+                cursor.execute(query, (ticket_price_id,))
+                item = cursor.fetchone()
+                
+                if item:
+                    if isinstance(item.get('features'), str):
+                        import json
+                        try:
+                            item['features'] = json.loads(item['features'])
+                        except (json.JSONDecodeError, TypeError):
+                            item['features'] = []
+                    return item
+                    
+                return None
+                
+            except mysql.connector.Error as err:
+                print(f"Error en MySQL: {err}")
+                return None
+            finally:
+                cursor.close()

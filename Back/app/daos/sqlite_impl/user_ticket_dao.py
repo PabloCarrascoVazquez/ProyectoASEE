@@ -5,11 +5,10 @@ from typing import List, Optional
 class UserTicketDAOSQLite(IUserTicketDAO):
     def __init__(self, connection):
         self.conn = connection
-        self.conn.row_factory = sqlite3.Row # Para devolver los datos como diccionario
+        self.conn.row_factory = sqlite3.Row
 
     def create(self, ticket_data: dict) -> str:
         cursor = self.conn.cursor()
-        # Cambiamos %s por ?
         query = """
             INSERT INTO user_tickets (id, user_id, ticket_price_id, status) 
             VALUES (?, ?, ?, ?)
@@ -31,8 +30,7 @@ class UserTicketDAOSQLite(IUserTicketDAO):
 
     def get_by_user_id(self, user_id: str) -> List[dict]:
         """Alimenta la Vista 5: Perfil (entradas compradas por el usuario)."""
-        cursor = self.conn.cursor() # Sin dictionary=True
-        # Cambiamos %s por ?
+        cursor = self.conn.cursor()
         query = """
             SELECT ut.id as ticket_instance_id, ut.purchase_date, ut.status,
                    tp.type, tp.price, e.name as event_name, e.date as event_date
@@ -43,7 +41,6 @@ class UserTicketDAOSQLite(IUserTicketDAO):
         """
         cursor.execute(query, (user_id,))
         
-        # Transformamos los resultados a diccionarios estándar
         tickets = [dict(row) for row in cursor.fetchall()]
         cursor.close()
         return tickets
@@ -51,7 +48,6 @@ class UserTicketDAOSQLite(IUserTicketDAO):
     def update_status(self, ticket_instance_id: str, new_status: str) -> bool:
         """Para validar la entrada en la puerta."""
         cursor = self.conn.cursor()
-        # Cambiamos %s por ?
         query = "UPDATE user_tickets SET status = ? WHERE id = ?"
         try:
             cursor.execute(query, (new_status, ticket_instance_id))
@@ -70,3 +66,5 @@ class UserTicketDAOSQLite(IUserTicketDAO):
         row = cursor.fetchone()
         cursor.close()
         return dict(row) if row else None
+    
+    

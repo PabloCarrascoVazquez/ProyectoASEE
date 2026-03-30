@@ -56,3 +56,14 @@ class UserTicketDAOMySQL(IUserTicketDAO):
             raise err
         finally:
             cursor.close()
+
+    def get_by_id(self, user_id: str):
+        cursor = self.conn.cursor()
+        query = "SELECT * FROM users WHERE id = ?"
+        cursor.execute(query, (user_id,))
+        row = cursor.fetchone()
+        cursor.close()
+        
+        if row:
+            return dict(row)
+        return None
