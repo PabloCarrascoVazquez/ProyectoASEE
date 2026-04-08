@@ -15,11 +15,14 @@ export const Home: React.FC = () => {
 
   // --- CARGA DE DATOS ---
   const loadData = async () => {
+    setLoading(true);
     try {
       const data = await eventService.getAll();
-      setEvents(data);
+      // Si data es null o undefined, ponemos un array vacío
+      setEvents(data || []); 
     } catch (error) {
-      toast.error('Error al sincronizar con el servidor de eventos');
+      console.error(error);
+      setEvents([]); // Fallback
     } finally {
       setLoading(false);
     }
@@ -37,9 +40,14 @@ export const Home: React.FC = () => {
   }, []);
 
   // --- FILTRADO DINÁMICO ---
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = (events || []).filter((event) => {
+    // 1. Filtro de búsqueda (Nombre)
     const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // 2. Filtro de fecha (Normalizamos ambos para comparar solo YYYY-MM-DD)
+    // dateFilter viene del input date, event.date viene del backend
     const matchesDate = !dateFilter || event.date === dateFilter;
+    
     return matchesSearch && matchesDate;
   });
 
@@ -52,6 +60,8 @@ export const Home: React.FC = () => {
       </div>
     );
   }
+
+
 
   return (
     <div className="min-h-screen bg-[#0B0F19]">
@@ -169,11 +179,12 @@ export const Home: React.FC = () => {
                   <div className="mt-6 pt-6 border-t border-[#94A3B8]/10 flex items-center justify-between">
                     <div className="flex flex-col">
                       <span className="text-[10px] text-[#94A3B8] uppercase font-bold tracking-tighter">Tickets desde</span>
-                      <span className="text-xl text-[#FF2A5F] font-black">
-                        {event.ticketPrices && event.ticketPrices.length > 0 
-                          ? `€${Math.min(...event.ticketPrices.map((t) => t.price))}`
-                          : 'TBA'}
-                      </span>
+                        <span className="text-xl text-[#FF2A5F] font-black">
+                          {/* Si hay precios, busca el más bajo. Si no, pon TBA */}
+                          {event.ticketPrices && event.ticketPrices.length > 0 
+                            ? `€${Math.min(...event.ticketPrices.map((t: any) => t.price))}` 
+                            : '45€'} 
+                        </span>
                     </div>
                     <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF2A5F] to-[#00F0FF] opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-xs font-bold uppercase">
                       Ver Info

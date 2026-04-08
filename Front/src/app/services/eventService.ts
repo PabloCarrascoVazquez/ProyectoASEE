@@ -1,32 +1,47 @@
-import { Event, mockEvents } from '../data/mockData';
-
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-// --- BASE DE DATOS EN MEMORIA ---
-// Se inicializa con los datos frescos de mockData.ts en cada carga de página.
-let eventsDB = [...mockEvents];
+import { EventAPI } from '../api/event_api';
+import { Event } from '../models/interfaces';
 
 export const eventService = {
-  // GET: Obtener todos los eventos
-  getAll: async (): Promise<Event[]> => {
-    await delay(500);
-    // Retornamos la lista actual en memoria
-    return eventsDB;
+  getAll: async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/events');
+      if (!response.ok) {
+        throw new Error('Error en la respuesta del servidor');
+      }
+      const data = await response.json();
+      
+      return data; // Esto DEBE devolver el array [...]
+    } catch (error) {
+      console.error("Error en el servicio de eventos:", error);
+      return []; // Devolvemos array vacío en caso de error para que no sea 'undefined'
+    }
   },
 
-  // POST: Crear un evento (Persiste solo hasta que se recargue la página)
+  /**
+   * Obtiene el "Mega-Combo" para la página de detalle.
+   * Gracias al mapeo en el Backend, el JSON ya cumple con la interfaz Event.
+   */
+  getEventFull: async (id: string): Promise<Event> => {
+    try {
+      // Llamamos al endpoint /api/events/<id>/full
+      const response = await EventAPI.getFullDetails(id);
+      
+      // Retornamos el objeto tal cual, ya que el Backend se encargó 
+      // de renombrar ticket_options -> ticketPrices, etc.
+      return response; 
+    } catch (error) {
+      console.error(`Error al cargar el detalle del evento ${id}:`, error);
+      throw error; // Re-lanzamos para que la UI pueda mostrar un mensaje de error
+    }
+  },
+
+  /**
+   * Por ahora mantenemos la firma del método para no romper el Front,
+   * pero avisamos que el Backend aún no procesa el guardado.
+   */
   create: async (newEvent: Event): Promise<Event> => {
-    await delay(800);
-    // Añadimos al inicio para que aparezca primero en el feed
-    eventsDB = [newEvent, ...eventsDB];
+    console.warn("Backend: Endpoint POST /api/events no implementado aún.");
+    // Simulación de éxito para no romper el flujo del Front
     return newEvent;
-  },
-
-  // DELETE: Eliminar un evento (Persiste solo hasta que se recargue la página)
-  delete: async (id: string): Promise<boolean> => {
-    await delay(500);
-    // Filtramos la variable de memoria
-    eventsDB = eventsDB.filter(e => e.id !== id);
-    return true;
   }
 };

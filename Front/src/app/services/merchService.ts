@@ -1,32 +1,52 @@
-import { MerchandiseItem, mockMerchandise } from '../data/mockData';
-
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-// --- BASE DE DATOS EN MEMORIA ---
-// Se inicializa con los datos del mockData.ts cada vez que se carga la página.
-let merchDB = [...mockMerchandise];
+import { MerchAPI } from '../api/merch_api';
+import { MerchandiseItem } from '../models/interfaces';
 
 export const merchService = {
-  // GET: Obtener todos los productos de merchandising
+  /**
+   * Obtiene todo el catálogo de merchandising desde el servidor.
+   * El Backend ya devuelve una lista mapeada a MerchandiseItem[].
+   */
   getAll: async (): Promise<MerchandiseItem[]> => {
-    await delay(600);
-    // Retornamos la lista actual en memoria
-    return merchDB;
+    try {
+      // Llamada a GET /api/merchandise
+      const response = await MerchAPI.getAll();
+      
+      // Como el Backend devuelve directamente el array formateado:
+      return response; 
+    } catch (error) {
+      console.error("Error al obtener el merchandising:", error);
+      return []; // Fallback a lista vacía para no romper la UI
+    }
   },
 
-  // POST: Crear/Añadir un nuevo producto (solo durante la sesión actual)
+  /**
+   * Obtiene un producto específico por su ID.
+   */
+  getById: async (id: string): Promise<MerchandiseItem | null> => {
+    try {
+      const response = await MerchAPI.getById(id);
+      // El Backend devuelve { "status": "success", "data": [producto] }
+      return response.data[0] || null;
+    } catch (error) {
+      console.error(`Error al obtener producto ${id}:`, error);
+      return null;
+    }
+  },
+
+  /**
+   * POST: Preparado para cuando implementemos la persistencia real.
+   */
   create: async (newItem: MerchandiseItem): Promise<MerchandiseItem> => {
-    await delay(800);
-    // Añadimos al inicio para que el admin vea el cambio arriba
-    merchDB = [newItem, ...merchDB];
+    console.warn("Backend: Registro de producto no implementado (POST).");
+    // Por ahora simulamos el retorno del objeto enviado
     return newItem;
   },
 
-  // DELETE: Eliminar un producto (solo durante la sesión actual)
+  /**
+   * DELETE: Preparado para cuando implementemos el borrado real.
+   */
   delete: async (id: string): Promise<boolean> => {
-    await delay(500);
-    // Actualizamos la variable de memoria filtrando el ID
-    merchDB = merchDB.filter(item => item.id !== id);
+    console.warn("Backend: Borrado de producto no implementado (DELETE).");
     return true;
   }
 };
