@@ -33,6 +33,16 @@ export const Navbar: React.FC = () => {
               </span>
             </button>
 
+            {/* --- SECCIÓN PÚBLICA (Siempre visible) --- */}
+            <div className="hidden md:flex space-x-1 border-l border-white/10 pl-4">
+              <NavButton
+                icon={<Store className="w-4 h-4" />}
+                label="Merch"
+                onClick={() => navigate('/merchandise')}
+                active={isActive('/merchandise')}
+              />
+            </div>
+
             {/* SECCIÓN LINKS ADMIN */}
             {user && user.role === 'admin' && (
               <div className="hidden md:flex space-x-1">

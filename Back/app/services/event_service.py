@@ -1,4 +1,5 @@
 import uuid
+import json # Importante para parsear las listas de la DB
 from datetime import datetime
 from app.daos.factories import DAOFactory
 
@@ -6,54 +7,45 @@ class EventService:
     def __init__(self):
         self.event_dao = DAOFactory.get_event_dao()
         self.artist_dao = DAOFactory.get_artist_dao()
+        # Cambiamos el nombre aquí para que coincida con tu Factory
+        self.ticket_dao = DAOFactory.get_ticket_price_dao()
 
     def get_upcoming_events(self):
-        """
-        Retorna todos los eventos. 
-        Aquí podríamos filtrar por fecha > hoy en el futuro.
-        """
         events = self.event_dao.get_all()
+        processed_events = []
         
         for event in events:
-            if event['date']:
-                dt = datetime.strptime(event['date'], "%Y-%m-%d %H:%M:%S")
-                event['pretty_date'] = dt.strftime("%d %b %Y")
+            # Convertir de objeto Row a dict para poder modificarlo
+            e = dict(event)
+            event_id = e['id']
+
+            # 1. Obtener artistas y tickets para cada evento
+            e['artists'] = self.artist_dao.get_by_event_id(event_id)
+            e['ticketPrices'] = self.ticket_dao.get_by_event_id(event_id)
+
+            # 2. Formatear fecha
+            if e.get('date'):
+                try:
+                    dt = datetime.strptime(e['date'], "%Y-%m-%d %H:%M:%S")
+                    e['pretty_date'] = dt.strftime("%d %b %Y")
+                except:
+                    e['pretty_date'] = e['date']
+            
+            # 3. Parsear servicios si vienen como string JSON de la DB
+            if isinstance(e.get('services'), str):
+                try: e['services'] = json.loads(e['services'])
+                except: e['services'] = []
+
+            processed_events.append(e)
                 
-        return events
+        return processed_events
 
-    def get_event_details(self, event_id):
-        """
-        Retorna el evento con su Line-up de artistas incluido.
-        ¡El 'Triple Play' de la arquitectura!
-        """
+    def get_event_by_id(self, event_id):
+        # Usamos el método que ya tienes pero asegurando que traiga todo
         event = self.event_dao.get_by_id(event_id)
-        if not event:
-            return None
-
-        #Artistas vinculados a este evento (N:M)
-        event['lineup'] = self.artist_dao.get_by_event_id(event_id)
+        if not event: return None
         
-        return event
-
-    def create_festival_event(self, name, date_str, description, services=None):
-        """
-        Crea un evento validando el formato de fecha.
-        """
-        try:
-            datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            raise ValueError("El formato de fecha debe ser YYYY-MM-DD HH:MM:SS")
-
-        event_data = {
-            "id": str(uuid.uuid4()),
-            "name": name,
-            "date": date_str,
-            "description": description,
-            "image": "default_event.jpg",
-            "services": services if services else [],
-            "gallery": [],
-            "mapImage": None
-        }
-
-        self.event_dao.create(event_data)
-        return event_data
+        e = dict(event)
+        e['artists'] = self.artist_dao.get_by_event_id(event_id)
+        e['ticketPrices'] = self.ticket_dao.get_by_event_id(event_id)
+        return e

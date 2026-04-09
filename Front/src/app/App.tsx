@@ -79,6 +79,7 @@ function AppContent() {
         <Route path="/event/:id" element={<EventDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/merchandise" element={<Merchandise />} />
 
         {/* User Protected Routes */}
         <Route
@@ -110,14 +111,6 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <MusicPlayer />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/merchandise"
-          element={
-            <ProtectedRoute>
-              <Merchandise />
             </ProtectedRoute>
           }
         />
