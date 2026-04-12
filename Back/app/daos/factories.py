@@ -3,6 +3,7 @@ import sqlite3
 import mysql.connector
 from mysql.connector import pooling
 
+
 class DatabaseConnectionFactory:
     _mysql_pool = None
     _sqlite_initialized = False
@@ -132,3 +133,14 @@ class DAOFactory:
         else:
             from app.daos.sqlite_impl.merch_dao import MerchDAOSQLite
             return MerchDAOSQLite(conn)
+        
+    @staticmethod
+    def get_user_merch_dao():
+        engine = os.getenv("DB_ENGINE", "sqlite").lower()
+        conn = DatabaseConnectionFactory.get_connection()
+        if engine == "mysql":
+            from app.daos.mysql_impl.user_merch_dao import UserMerchDAOMySQL
+            return UserMerchDAOMySQL(conn)
+        else:
+            from app.daos.sqlite_impl.user_merch_dao import UserMerchDAOSQLite
+            return UserMerchDAOSQLite(conn)

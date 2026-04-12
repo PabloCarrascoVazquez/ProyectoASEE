@@ -50,9 +50,3 @@ export interface VendorSpace {
   available: boolean;
 }
 
-export interface Friend {
-  id: string;
-  name: string;
-  position: { x: number; y: number };
-  avatar: string;
-}

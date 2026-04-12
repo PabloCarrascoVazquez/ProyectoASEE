@@ -83,12 +83,6 @@ export const Navbar: React.FC = () => {
                   onClick={() => navigate('/music')}
                   active={isActive('/music')}
                 />
-                <NavButton
-                  icon={<Store className="w-4 h-4" />}
-                  label="Merch"
-                  onClick={() => navigate('/merchandise')}
-                  active={isActive('/merchandise')}
-                />
               </div>
             )}
 

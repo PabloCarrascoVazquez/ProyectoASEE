@@ -1,7 +1,11 @@
 from flask import Flask
 from flask_cors import CORS
-from app.routes.event_routes import event_bp
-from app.routes.merch_routes import merch_bp
+from app.routes.NoLogin.event_routes import event_bp
+from app.routes.NoLogin.merch_routes import merch_bp
+from app.routes.User.user_routes import profile_bp
+from app.routes.User.purchase_routes import purchase_bp
+from app.routes.User.auth_routes import auth_bp
+
 
 app = Flask(__name__)
 
@@ -17,6 +21,9 @@ CORS(app, resources={
 # Registro de Blueprints
 app.register_blueprint(event_bp)
 app.register_blueprint(merch_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(profile_bp)
+app.register_blueprint(purchase_bp)
 
 @app.route('/')
 def health_check():

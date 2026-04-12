@@ -2,6 +2,7 @@ import json
 import sqlite3
 import os
 import sys
+import bcrypt # Necesario para generar contraseñas válidas para el login
 
 # Esto permite que Python vea la carpeta 'app' correctamente
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -13,7 +14,19 @@ from app.daos.sqlite_impl.ticket_price_dao import TicketPriceDAOSQLite
 def create_tables(conn):
     cursor = conn.cursor()
     
-    # 1. Eventos
+    # 1. Usuarios (Actualizada para soportar roles)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user',
+            avatar TEXT
+        )
+    """)
+
+    # 2. Eventos
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS events (
             id TEXT PRIMARY KEY,
@@ -27,7 +40,7 @@ def create_tables(conn):
         )
     """)
     
-    # 2. Merchandising
+    # 3. Merchandising (Catálogo)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS merchandise_items (
             id TEXT PRIMARY KEY,
@@ -37,8 +50,25 @@ def create_tables(conn):
             category TEXT
         )
     """)
+
+    # 4. Compras de Merch (Historial para MyMerch)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS merch_purchases (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            product_name TEXT,
+            price_at_purchase REAL,
+            quantity INTEGER,
+            total_price REAL,
+            image TEXT,
+            category TEXT,
+            status TEXT,
+            purchase_date TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
     
-    # 3. Tickets
+    # 5. Precios de Tickets (Configuración)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ticket_prices (
             id TEXT PRIMARY KEY,
@@ -51,7 +81,23 @@ def create_tables(conn):
         )
     """)
 
-    # 4. Artistas (Nueva)
+    # 6. Tickets Comprados (Wallet para MyTickets)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS purchased_tickets (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            event_name TEXT,
+            event_date TEXT,
+            type TEXT,
+            price REAL,
+            qr_code TEXT,
+            image_url TEXT,
+            purchase_date TEXT,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+
+    # 7. Artistas
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS artists (
             id TEXT PRIMARY KEY,
@@ -62,7 +108,7 @@ def create_tables(conn):
         )
     """)
 
-    # 5. Relación Eventos - Artistas (Mucha a Muchos)
+    # 8. Relación Eventos - Artistas
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS event_artists (
             event_id TEXT,
@@ -74,11 +120,10 @@ def create_tables(conn):
     """)
     
     conn.commit()
-    print("✅ Tablas verificadas/creadas (incluyendo Artistas).")
+    print("✅ Esquema de base de datos completo verificado.")
 
 def seed_database():
     db_path = os.path.join(os.path.dirname(__file__), 'subsonic.db')
-    # Borramos la DB anterior para evitar conflictos de IDs duplicados al re-ejecutar
     if os.path.exists(db_path):
         os.remove(db_path)
         
@@ -87,66 +132,59 @@ def seed_database():
     try:
         create_tables(conn)
         cursor = conn.cursor()
-        
-        event_dao = EventDAOSQLite(conn)
-        merch_dao = MerchDAOSQLite(conn)
-        ticket_dao = TicketPriceDAOSQLite(conn)
 
-        print(f"🌱 Poblando base de datos con contenido premium...")
+        print(f"🌱 Sembrando datos para pruebas integrales...")
+
+        # --- USUARIOS DE PRUEBA ---
+        # Password '123456' para todos excepto admin
+        pwd_hash = bcrypt.hashpw("123456".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        admin_hash = bcrypt.hashpw("admin".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        users = [
+            ('u-admin', 'Administrador Global', 'admin@admin.com', admin_hash, 'admin', None),
+            ('u-user', 'Juan Raver', 'user@test.com', pwd_hash, 'user', None),
+            ('u-vendor', 'Food Trucks Inc', 'vendor@test.com', pwd_hash, 'vendor', None)
+        ]
+        cursor.executemany("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)", users)
 
         # --- ARTISTAS ---
         artists = [
-            ('a1', 'Amelie Lens', 'Techno', 'https://images.unsplash.com/photo-1574672280600-4accfa5b6f98?w=400', 'https://spotify.com/amelie'),
-            ('a2', 'Charlotte de Witte', 'Acid Techno', 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?w=400', 'https://spotify.com/charlotte'),
-            ('a3', 'Boris Brejcha', 'High-Tech Minimal', 'https://images.unsplash.com/photo-1598387181032-a3103a2db5b3?w=400', 'https://spotify.com/boris'),
-            ('a4', 'Carl Cox', 'House / Techno', 'https://images.unsplash.com/photo-1514525253361-bee8d48d0b2b?w=400', 'https://spotify.com/carl')
+            ('a1', 'Amelie Lens', 'Techno', 'https://images.unsplash.com/photo-1574672280600-4accfa5b6f98?w=400', 'spotify_url'),
+            ('a2', 'Charlotte de Witte', 'Acid Techno', 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?w=400', 'spotify_url')
         ]
         cursor.executemany("INSERT INTO artists VALUES (?, ?, ?, ?, ?)", artists)
 
         # --- EVENTOS ---
-        event_1 = {
-            'id': '1', 'name': 'Subsonic Festival 2026', 'date': '2026-07-15 12:00:00',
-            'image': 'https://images.unsplash.com/photo-1624929303661-22c5bce0169b?w=1080',
-            'description': '3 días de inmersión total en el desierto con lo mejor del Techno mundial.',
-            'services': json.dumps(['Vip Lounges', 'Camping', 'Shuttle Bus', 'Food Court']),
-            'gallery': json.dumps([]), 'mapImage': 'https://images.unsplash.com/photo-1516037172336-512c4aa6b16a?w=1200'
-        }
-        event_2 = {
-            'id': '2', 'name': 'Techno Warehouse Session', 'date': '2026-09-20 23:00:00',
-            'image': 'https://images.unsplash.com/photo-1571266028243-e4bb33394c9a?w=1080',
-            'description': 'Evento underground en una nave industrial abandonada en las afueras.',
-            'services': json.dumps(['Cloakroom', 'Vegan Options']),
-            'gallery': json.dumps([]), 'mapImage': ''
-        }
-        event_dao.create(event_1)
-        event_dao.create(event_2)
+        event_1 = ('1', 'Subsonic Festival 2026', '2026-07-15 12:00:00', '3 días de Techno.', 
+                   'https://images.unsplash.com/photo-1624929303661-22c5bce0169b?w=1080', 
+                   json.dumps(['VIP', 'Food']), json.dumps([]), 'map_url')
+        cursor.execute("INSERT INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?)", event_1)
 
-        # --- VINCULAR ARTISTAS A EVENTOS ---
-        # Festival 2026 tiene a todos
-        links = [('1', 'a1'), ('1', 'a2'), ('1', 'a3'), ('1', 'a4'), ('2', 'a3')]
-        cursor.executemany("INSERT INTO event_artists VALUES (?, ?)", links)
-
-        # --- TICKETS ---
-        tickets = [
-            ('t1', '1', 'General Pass', 85.0, 'Acceso a los 3 días', json.dumps(['Water stations', 'Main Stage'])),
-            ('t2', '1', 'VIP Experience', 150.0, 'Acceso preferente y zonas relax', json.dumps(['Fast Track', 'VIP Bars', 'Gift Bag'])),
-            ('t3', '2', 'Early Bird', 25.0, 'Entrada reducida por tiempo limitado', json.dumps(['1 Drink included']))
+        # --- COMPRAS DE MERCH (Para probar MyMerch del usuario) ---
+        merch_purchases = [
+            ('p1', 'u-user', 'Subsonic "Acid" T-Shirt', 35.0, 1, 35.0, 
+             'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400', 'Clothing', 'SHIPPED', '2026-04-01 10:00:00'),
+            ('p2', 'u-user', 'LED Bracelet', 12.0, 2, 24.0, 
+             'https://images.unsplash.com/photo-1515516089376-88db1e26e9c0?w=400', 'Accessories', 'PENDING', '2026-04-10 15:30:00')
         ]
-        for t in tickets:
-            cursor.execute("INSERT INTO ticket_prices VALUES (?, ?, ?, ?, ?, ?)", t)
+        cursor.executemany("INSERT INTO merch_purchases VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", merch_purchases)
 
-        # --- MERCHANDISING ---
-        merch = [
+        # --- TICKETS COMPRADOS (Para probar MyTickets del usuario) ---
+        purchased_tickets = [
+            ('pt1', 'u-user', 'Subsonic Festival 2026', '2026-07-15', 'VIP Experience', 150.0, 
+             'QR_SUB_2026_VIP_001', 'https://images.unsplash.com/photo-1624929303661-22c5bce0169b?w=400', '2026-03-15 09:00:00')
+        ]
+        cursor.executemany("INSERT INTO purchased_tickets VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", purchased_tickets)
+
+        # --- CATALOGO MERCH ---
+        merch_items = [
             ('m1', 'Subsonic "Acid" T-Shirt', 35.0, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400', 'Clothing'),
-            ('m2', 'Subsonic Logo Hoodie', 55.0, 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400', 'Clothing'),
-            ('m3', 'LED Bracelet', 12.0, 'https://images.unsplash.com/photo-1515516089376-88db1e26e9c0?w=400', 'Accessories'),
-            ('m4', 'Festival Cap', 25.0, 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400', 'Accessories')
+            ('m3', 'LED Bracelet', 12.0, 'https://images.unsplash.com/photo-1515516089376-88db1e26e9c0?w=400', 'Accessories')
         ]
-        for m in merch:
-            cursor.execute("INSERT INTO merchandise_items (id, name, price, image, category) VALUES (?, ?, ?, ?, ?)", m)
+        cursor.executemany("INSERT INTO merchandise_items VALUES (?, ?, ?, ?, ?)", merch_items)
 
         conn.commit()
-        print("🚀 ¡Todo listo! Base de datos rica en contenido preparada.")
+        print("🚀 Base de datos lista para pruebas de Login, MyMerch y MyTickets.")
 
     except Exception as e:
         print(f"❌ Error: {e}")

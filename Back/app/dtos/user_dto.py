@@ -14,23 +14,6 @@ class UserLoginRequestDTO(BaseModel): # <--- Añadido
     email: EmailStr
     password: str
 
-class UpdateLocationRequestDTO(BaseModel): # <--- Añadido
-    x: float = Field(..., ge=-180.0, le=180.0) 
-    y: float = Field(..., ge=-90.0, le=90.0)   
-
-# --- DTOs de Salida (Lo que el backend envía al frontend) ---
-
-class PositionDTO(BaseModel): # <--- Añadido
-    x: float
-    y: float
-
-class FriendResponseDTO(BaseModel): # <--- Añadido
-    """Corresponde exactamente a tu interfaz 'Friend' en TypeScript"""
-    id: str
-    name: str
-    position: Optional[PositionDTO] = None
-    avatar: Optional[str] = None
-    # NOTA ARQUITECTÓNICA: NUNCA incluimos el password_hash aquí.
 
 class UserTicketResponseDTO(BaseModel): # <--- Añadido
     """Lo que el usuario ve en su Vista 5: Perfil (Entradas compradas)"""
@@ -44,7 +27,15 @@ class UserTicketResponseDTO(BaseModel): # <--- Añadido
     event_date: datetime
     event_image: Optional[str] = None
 
-class UserProfileResponseDTO(FriendResponseDTO): # <--- ¡Hereda de FriendResponseDTO!
-    """El perfil completo del usuario, heredando de Friend y añadiendo sus entradas"""
-    email: str
-    tickets: List[UserTicketResponseDTO] = []
+
+class UserMerchandiseResponseDTO(BaseModel):
+    id: str
+    name: str
+    price: float
+    image: Optional[str] = None
+    category: str
+    # --- Añadidos para el historial de compras ---
+    quantity: Optional[int] = None       # Cuántos compró
+    total_price: Optional[float] = None  # Cantidad * Precio
+    status: Optional[str] = None        # 'PENDING', 'SHIPPED', etc.
+    purchase_date: Optional[str] = None  # Cuándo se compró

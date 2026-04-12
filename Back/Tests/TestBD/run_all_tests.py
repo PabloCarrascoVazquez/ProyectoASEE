@@ -9,7 +9,8 @@ test_files = [
     "test_purchase_integrity.py",
     "test_merch_db.py",
     "test_artists_db.py",
-    "test_vendors_db.py"
+    "test_vendors_db.py",
+    "test_user_merch_db.py"
 ]
 
 def run_tests():

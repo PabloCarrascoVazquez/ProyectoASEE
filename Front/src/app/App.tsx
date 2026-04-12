@@ -7,12 +7,11 @@ import { Home } from './components/Home';
 import { EventDetail } from './components/EventDetail';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
-import { Menu } from './components/Menu';
+import { Menu } from './components/Dashboard';
 import { Cart } from './components/Cart';
 import { MyTickets } from './components/MyTickets';
 import { MusicPlayer } from './components/MusicPlayer';
 import { Merchandise } from './components/Merchandise';
-import { FriendsRadar } from './components/FriendsRadar';
 import { VendorMenu } from './components/vendor/VendorMenu';
 import { SpacesSearch } from './components/vendor/SpacesSearch';
 import { SpaceDetail } from './components/vendor/SpaceDetail';
@@ -24,6 +23,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { AdminVendors } from './components/AdminVendors';
 import { AdminMerch } from './components/AdminMerch';
 import { AdminEvents } from './components/AdminEvents';
+import { MyMerch } from './components/MyMerch';
 
 
 const ProtectedRoute: React.FC<{ 
@@ -106,19 +106,17 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+        <Route 
+          path="/profile/merch" 
+          element={
+            <MyMerch />
+          } 
+        />
         <Route
           path="/music"
           element={
             <ProtectedRoute>
               <MusicPlayer />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/friends-radar"
-          element={
-            <ProtectedRoute>
-              <FriendsRadar />
             </ProtectedRoute>
           }
         />

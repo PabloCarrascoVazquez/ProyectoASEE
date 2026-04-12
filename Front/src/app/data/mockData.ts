@@ -50,12 +50,6 @@ export interface VendorSpace {
   available: boolean;
 }
 
-export interface Friend {
-  id: string;
-  name: string;
-  position: { x: number; y: number };
-  avatar: string;
-}
 
 export const mockEvents: Event[] = [
   {
@@ -183,10 +177,3 @@ export const mockVendorSpaces: VendorSpace[] = [
   },
 ];
 
-export const mockFriends: Friend[] = [
-  { id: 'f1', name: 'Ana García', position: { x: 45, y: 60 }, avatar: 'AG' },
-  { id: 'f2', name: 'Carlos López', position: { x: 70, y: 40 }, avatar: 'CL' },
-  { id: 'f3', name: 'María Rodríguez', position: { x: 30, y: 75 }, avatar: 'MR' },
-  { id: 'f4', name: 'Juan Martínez', position: { x: 55, y: 30 }, avatar: 'JM' },
-  { id: 'f5', name: 'Laura Sánchez', position: { x: 80, y: 65 }, avatar: 'LS' },
-];

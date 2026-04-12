@@ -178,3 +178,84 @@ GET /api/events/<id>/full
 
 
 -------------------------CON TOKENS-------------------------
+
+POST /api/auth/register
+{
+  "status": "success",
+  "message": "Usuario registrado correctamente",
+  "user_id": "u1-uuid-2026"
+}
+
+POST /api/auth/login
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "u1-uuid-2026",
+    "name": "Juan Pérez",
+    "email": "juan@example.com",
+    "role": "user"
+  }
+}
+
+GET /api/user/profile
+{
+  "id": "u1-uuid-2026",
+  "name": "Juan Pérez",
+  "email": "juan@example.com",
+  "role": "user",
+  "stats": {
+    "tickets_count": 2,
+    "merch_purchases_count": 1
+    }
+}
+
+GET /api/user/tickets
+[
+  {
+    "ticket_instance_id": "ut-9988",
+    "event_name": "Subsonic Kickoff",
+    "event_date": "2026-05-20T20:00:00Z",
+    "type": "General Pass",
+    "status": "ACTIVE",
+    "qr_code": "SUBSONIC_QR_E1_UT9988",
+    "purchase_date": "2026-04-10T15:00:00Z"
+  }
+]
+
+GET /api/user/merch
+[
+  {
+    "purchase_id": "mp-5544",
+    "product_name": "Camiseta Subsonic '26",
+    "quantity": 2,
+    "total_price": 59.98,
+    "status": "SHIPPED",
+    "image": "https://cdn.subsonic.com/merch/tshirt.png",
+    "purchase_date": "2026-04-11T09:30:00Z"
+  }
+]
+
+POST /api/purchase/ticket
+{
+  "status": "success",
+  "transaction_id": "tx-tickets-001",
+    "ticket_details": {
+    "id": "ut-9989",
+    "event": "Subsonic Kickoff",
+    "type": "General Pass",
+    "price": 45.00
+  }
+}
+
+POST /api/purchase/merch
+{
+  "status": "success",
+  "transaction_id": "tx-merch-002",
+  "order_summary": {
+    "id": "mp-5545",
+    "product": "Pulsera LED",
+    "quantity": 1,
+    "total": 9.50,
+    "status": "PENDING"
+  }
+}

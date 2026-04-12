@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Event, VendorSpace } from '../data/mockData';
 import { eventService } from '../services/eventService'; 
-import { vendorService } from '../services/vendorService'; // Importamos servicio de vendors
+import { vendorService } from '../services/vendorService'; 
 import { Calendar, MapPin, Users, Music, ChevronLeft, ShoppingCart, Loader2, Store } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -16,7 +16,7 @@ export const EventDetail: React.FC = () => {
   const { addToCart } = useCart();
   
   const [event, setEvent] = useState<Event | null>(null);
-  const [eventSpaces, setEventSpaces] = useState<VendorSpace[]>([]); // Stands de este evento
+  const [eventSpaces, setEventSpaces] = useState<VendorSpace[]>([]); 
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
 
@@ -28,12 +28,13 @@ export const EventDetail: React.FC = () => {
           vendorService.getAll()
         ]);
 
-        const foundEvent = allEvents.find((e) => e.id === id);
+        // Solución al error: Tipamos 'ev' como 'Event'
+        const foundEvent = allEvents.find((ev: Event) => ev.id === id);
         setEvent(foundEvent || null);
 
-        // FILTRADO COHERENTE: Solo stands que pertenecen a este evento
         if (foundEvent) {
-          const filteredSpaces = allSpaces.filter(space => space.eventId === foundEvent.id);
+          // Tipamos 'space' como 'VendorSpace'
+          const filteredSpaces = allSpaces.filter((space: VendorSpace) => space.eventId === foundEvent.id);
           setEventSpaces(filteredSpaces);
         }
       } catch (error) {
@@ -57,7 +58,9 @@ export const EventDetail: React.FC = () => {
       return;
     }
 
-    const ticket = event.ticketPrices.find((t) => t.id === selectedTicket);
+    // Solución al error: Tipamos 't' con la interfaz de tickets de tu objeto Event
+    const ticket = event.ticketPrices.find((t: any) => t.id === selectedTicket);
+    
     if (ticket) {
       addToCart({
         id: `${event.id}-${ticket.id}`,
@@ -82,7 +85,7 @@ export const EventDetail: React.FC = () => {
     );
   }
 
-  if (!event) return null; // Omitido por brevedad, igual que tu original
+  if (!event) return null;
 
   return (
     <div className="min-h-screen bg-[#0B0F19]">
