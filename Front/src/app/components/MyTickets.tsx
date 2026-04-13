@@ -15,6 +15,7 @@ export const MyTickets: React.FC = () => {
     setLoading(true);
     try {
       const data = await userTicketService.getUserWallet();
+      console.log("DATOS MAPEADOS EN EL FRONT:", data);
       setPurchasedTickets(data);
     } catch (error) {
       toast.error('Error al sincronizar tus entradas');

@@ -5,9 +5,11 @@ from app.routes.NoLogin.merch_routes import merch_bp
 from app.routes.User.user_routes import profile_bp
 from app.routes.User.purchase_routes import purchase_bp
 from app.routes.User.auth_routes import auth_bp
+from dotenv import load_dotenv
 
 
 app = Flask(__name__)
+load_dotenv()
 
 # IMPORTANTE: CORS permite que tu Front (puerto 5173 o 3000) hable con el Back (5000)
 CORS(app, resources={

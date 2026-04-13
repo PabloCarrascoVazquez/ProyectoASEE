@@ -7,6 +7,7 @@ class TicketService:
         self.ticket_price_dao = DAOFactory.get_ticket_price_dao()
         self.user_ticket_dao = DAOFactory.get_user_ticket_dao()
         self.user_dao = DAOFactory.get_user_dao()
+        self.event_dao = DAOFactory.get_event_dao()
 
     def get_prices_for_event(self, event_id):
         """
@@ -22,31 +23,52 @@ class TicketService:
                     p['features_list'] = []
         return prices
 
+
     def purchase_ticket(self, user_id, ticket_price_id):
-        """
-        PROCESO DE COMPRA: El corazón del negocio.
-        """
-        user = self.user_dao.get_by_id(user_id)
-        if not user:
-            raise ValueError("Usuario no encontrado para realizar la compra.")
+        # 1. Buscamos el precio
+        price_info = self.ticket_price_dao.get_by_id(ticket_price_id)
+        
+        # DEBUG: Vamos a ver qué devuelve exactamente el DAO
+        print(f"DEBUG: price_info es de tipo {type(price_info)}: {price_info}")
 
-        ticket_type = self.ticket_price_dao.get_by_id(ticket_price_id)
-        if not ticket_type:
-            raise ValueError("El tipo de entrada seleccionado no existe.")
+        if not price_info:
+            return {"error": "Precio no encontrado"}, 404
 
+        # 2. Intentamos sacar el event_id de forma segura
+        # Si price_info es un objeto Row o Dict, esto funcionará:
+        try:
+            e_id = price_info['event_id']
+            p_type = price_info['type']
+            p_price = price_info['price']
+        except (KeyError, TypeError):
+            # Si falla, es que tu DAO devuelve una tupla o el mapeo es distinto
+            print("⚠️ El objeto price_info no tiene las claves esperadas. Revisando DAO...")
+            # Como último recurso, intentamos acceso por índice si es tupla
+            e_id = price_info[1] # Asumiendo que event_id es la segunda columna
+            p_type = price_info[2]
+            p_price = price_info[3]
+
+        # 3. Buscamos el evento
+        event_info = self.event_dao.get_by_id(e_id)
+        if not event_info:
+            return {"error": "Evento no encontrado"}, 404
+
+        # 4. Mapeamos los datos
         purchase_data = {
             "id": str(uuid.uuid4()),
             "user_id": user_id,
             "ticket_price_id": ticket_price_id,
-            "status": "ACTIVE",
+            "event_name": event_info['name'],
+            "event_date": event_info['date'],
+            "type": p_type,
+            "price": p_price,
+            "qr_code": f"SUB-{str(uuid.uuid4())[:8].upper()}",
+            "image_url": event_info['image'],
             "purchase_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        try:
-            self.user_ticket_dao.create(purchase_data)
-            return purchase_data
-        except Exception as e:
-            raise Exception(f"Error al procesar la transacción: {str(e)}")
+        self.user_ticket_dao.create(purchase_data)
+        return purchase_data, 201
 
     def get_user_wallet(self, user_id):
         """

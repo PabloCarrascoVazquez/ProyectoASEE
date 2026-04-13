@@ -49,20 +49,15 @@ class TicketPriceDAOSQLite(ITicketDAO):
         
         return [self._parse_json_features(ticket) for ticket in tickets]
         
-    def get_by_id(self, ticket_price_id: str) -> Optional[dict]:
+    def get_by_id(self, ticket_price_id):
+        # Configuramos SQLite para que devuelva diccionarios
+        self.conn.row_factory = sqlite3.Row 
         cursor = self.conn.cursor()
+        
         query = "SELECT * FROM ticket_prices WHERE id = ?"
         cursor.execute(query, (ticket_price_id,))
         row = cursor.fetchone()
-        cursor.close()
         
         if row:
-            item = dict(row)
-            if isinstance(item.get('features'), str):
-                import json
-                try:
-                    item['features'] = json.loads(item['features'])
-                except:
-                    pass
-            return item
+            return dict(row) # Convertimos el objeto Row a un dict real
         return None

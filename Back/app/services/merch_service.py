@@ -8,6 +8,8 @@ class MerchService:
         self.merch_dao = DAOFactory.get_merch_dao()
         self.user_merch_dao = DAOFactory.get_user_merch_dao()
         self.user_dao = DAOFactory.get_user_dao()
+        self.event_dao = DAOFactory.get_event_dao()
+        self.ticket_price_dao = DAOFactory.get_ticket_price_dao()
 
     def get_full_catalog(self):
         """Retorna todo el catálogo con precio formateado."""

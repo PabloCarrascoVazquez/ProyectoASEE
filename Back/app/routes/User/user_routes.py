@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app.services.auth_service import token_required # Tu decorador
+from app.services.auth_service import token_required 
 from app.services.ticket_service import TicketService
 from app.services.merch_service import MerchService
 
@@ -12,6 +12,8 @@ merch_service = MerchService()
 def get_my_tickets(current_user_id):
     # 'current_user_id' viene inyectado por el decorador desde el token
     tickets = ticket_service.get_user_wallet(current_user_id)
+    print(f"DEBUG: ID de usuario actual: {current_user_id}")
+    print(f"DEBUG: Tickets encontrados: {tickets}")
     return jsonify(tickets), 200
 
 @profile_bp.route('/api/user/merch', methods=['GET'])

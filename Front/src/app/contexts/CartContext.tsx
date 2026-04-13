@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { UserTicketsAPI } from '../api/user_tickets_api';
+import { UserMerchAPI } from '../api/user_merch_api';
 
 export interface CartItem {
   id: string;
@@ -28,7 +30,7 @@ interface CartContextType {
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  checkout: () => void;
+  checkout: () => Promise<boolean>;
   cancelTicket: (ticketId: string) => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -70,20 +72,33 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCart([]);
   };
 
-  const checkout = () => {
-    const ticketItems = cart.filter((item) => item.type === 'ticket');
-    const newTickets: PurchasedTicket[] = ticketItems.map((item) => ({
-      id: `ticket-${Date.now()}-${Math.random()}`,
-      eventId: item.eventId || '1',
-      eventName: item.name,
-      ticketType: item.name,
-      price: item.price,
-      purchaseDate: new Date().toISOString(),
-      qrCode: `SUBSONIC-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-      image: item.image,
-    }));
-    setPurchasedTickets((prev) => [...prev, ...newTickets]);
-    clearCart();
+  const checkout = async () => {
+    try {
+      // 1. Separamos tickets y merchandising
+      const ticketItems = cart.filter((item) => item.type === 'ticket');
+      const merchItems = cart.filter((item) => item.type === 'merchandise');
+
+      // 2. Enviamos las compras de TICKETS al servidor
+      for (const item of ticketItems) {
+        // Repetimos la llamada según la cantidad comprada
+        for (let i = 0; i < item.quantity; i++) {
+          await UserTicketsAPI.buyTicket(item.id); // item.id aquí es el ticket_price_id
+        }
+      }
+
+      // 3. Enviamos las compras de MERCH al servidor
+      for (const item of merchItems) {
+        await UserMerchAPI.buyItem(item.id, item.quantity);
+      }
+
+      // 4. Limpiamos el carrito local
+      clearCart();
+      
+      return true; // Indicamos que salió bien
+    } catch (error) {
+      console.error("Error en el proceso de compra:", error);
+      throw error;
+    }
   };
 
   const cancelTicket = (ticketId: string) => {

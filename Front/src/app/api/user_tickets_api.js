@@ -9,6 +9,15 @@ export const UserTicketsAPI = {
         return await fetchData('/user/tickets');
     },
 
+    buyTicket: async (ticketPriceId) => {
+        return await fetchData('/purchase/ticket', {
+            method: 'POST',
+            body: JSON.stringify({ 
+                ticket_price_id: ticketPriceId 
+            })
+        });
+    },
+
     /**
      * Opcional: Cancelar una entrada si tu backend lo permite
      */

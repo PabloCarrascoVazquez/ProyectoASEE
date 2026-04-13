@@ -63,7 +63,7 @@ export const EventDetail: React.FC = () => {
     
     if (ticket) {
       addToCart({
-        id: `${event.id}-${ticket.id}`,
+        id: ticket.id,
         name: `${event.name} - ${ticket.type}`,
         price: ticket.price,
         quantity: 1,

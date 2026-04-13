@@ -9,6 +9,7 @@ export interface PurchasedTicket {
   qrCode: string;
   purchaseDate: string;
   image?: string;
+  status: string; // Añadido para que coincida con lo que envías
 }
 
 export const userTicketService = {
@@ -16,26 +17,21 @@ export const userTicketService = {
      * Recupera y mapea las entradas del usuario para la UI
      */
     getUserWallet: async (): Promise<PurchasedTicket[]> => {
-        try {
-            const data = await UserTicketsAPI.getMyTickets();
-            
-            if (!data || !Array.isArray(data)) return [];
-
-            // Adaptamos los nombres de los campos de Flask al Frontend
-            return data.map((ticket: any) => ({
-                id: ticket.ticket_instance_id || ticket.id,
-                eventName: ticket.event_name,
-                eventDate: ticket.event_date,
-                ticketType: ticket.type,
-                price: ticket.price,
-                qrCode: ticket.qr_code,
-                purchaseDate: ticket.purchase_date,
-                image: ticket.image_url || ticket.image
-            }));
-        } catch (error) {
-            console.error("Error en userTicketService:", error);
-            return [];
-        }
+        const data = await UserTicketsAPI.getMyTickets();
+        
+        // Mapeamos los nombres de la DB a los nombres de tu interfaz
+        // Usamos (t: any) para evitar problemas de tipos con los datos crudos del backend
+        return data.map((t: any) => ({
+            id: t.ticket_instance_id,      // 'ticket_instance_id' -> 'id'
+            eventName: t.event_name,       // 'event_name' -> 'eventName'
+            eventDate: t.event_date,       // 'event_date' -> 'eventDate'
+            ticketType: t.type,            // 'type' -> 'ticketType'
+            price: t.price,
+            qrCode: t.qr_code || t.ticket_instance_id, // Fallback por si qr_code es null
+            image: t.image_url,            // 'image_url' -> 'image'
+            purchaseDate: t.purchase_date,
+            status: t.status
+        }));
     },
 
     /**
