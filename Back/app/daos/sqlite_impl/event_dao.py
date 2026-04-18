@@ -58,7 +58,19 @@ class EventDAOSQLite(IEventDAO):
         cursor = self.conn.cursor()
         query = "SELECT id, name, date, image FROM events ORDER BY date ASC"
         cursor.execute(query)
-        
+
         events = [dict(row) for row in cursor.fetchall()]
         cursor.close()
         return events
+
+    def delete(self, event_id: str) -> bool:
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("DELETE FROM events WHERE id = ?", (event_id,))
+            self.conn.commit()
+            return cursor.rowcount > 0
+        except sqlite3.Error as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()

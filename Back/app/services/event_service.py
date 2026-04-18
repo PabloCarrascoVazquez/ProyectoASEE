@@ -44,8 +44,30 @@ class EventService:
         # Usamos el método que ya tienes pero asegurando que traiga todo
         event = self.event_dao.get_by_id(event_id)
         if not event: return None
-        
+
         e = dict(event)
         e['artists'] = self.artist_dao.get_by_event_id(event_id)
         e['ticketPrices'] = self.ticket_dao.get_by_event_id(event_id)
         return e
+
+    def create_event(self, data):
+        """Crea un nuevo evento (solo admin)."""
+        if not data.get('name') or not data.get('date'):
+            raise ValueError("El evento requiere al menos 'name' y 'date'.")
+
+        event_data = {
+            "id": data.get('id') or str(uuid.uuid4()),
+            "name": data['name'],
+            "date": data['date'],
+            "description": data.get('description', ''),
+            "image": data.get('image'),
+            "services": data.get('services', []),
+            "gallery": data.get('gallery', []),
+            "mapImage": data.get('mapImage')
+        }
+        self.event_dao.create(event_data)
+        return event_data
+
+    def delete_event(self, event_id):
+        """Elimina un evento (solo admin)."""
+        return self.event_dao.delete(event_id)

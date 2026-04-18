@@ -74,7 +74,7 @@ class MerchService:
 
     def add_product_to_catalog(self, name, price, category, image=None):
         """Lógica administrativa para añadir productos."""
-        if price <= 0:
+        if price is None or float(price) <= 0:
             raise ValueError("El precio debe ser mayor que cero.")
 
         product_data = {
@@ -90,3 +90,11 @@ class MerchService:
             return product_data
         except Exception as e:
             raise Exception(f"Error al añadir producto al catálogo: {str(e)}")
+
+    def get_by_id(self, merch_id):
+        """Devuelve un producto concreto o None si no existe."""
+        return self.merch_dao.get_by_id(merch_id)
+
+    def delete_product(self, merch_id):
+        """Elimina un producto del catálogo (solo admin)."""
+        return self.merch_dao.delete(merch_id)

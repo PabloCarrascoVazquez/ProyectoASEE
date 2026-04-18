@@ -43,7 +43,7 @@ class DatabaseConnectionFactory:
     def _initialize_sqlite(cls, conn):
         cursor = conn.cursor()
         sql_script = """
-        CREATE TABLE IF NOT EXISTS users (id VARCHAR(36) PRIMARY KEY, name VARCHAR(100) NOT NULL, email VARCHAR(100) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, avatar VARCHAR(255));
+        CREATE TABLE IF NOT EXISTS users (id VARCHAR(36) PRIMARY KEY, name VARCHAR(100) NOT NULL, email VARCHAR(100) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL, role VARCHAR(20) NOT NULL DEFAULT 'user', avatar VARCHAR(255));
         CREATE TABLE IF NOT EXISTS events (id VARCHAR(36) PRIMARY KEY, name VARCHAR(100) NOT NULL, date DATETIME NOT NULL, description TEXT NOT NULL, image VARCHAR(255), services TEXT, gallery TEXT, mapImage VARCHAR(255));
         CREATE TABLE IF NOT EXISTS artists (id VARCHAR(36) PRIMARY KEY, name VARCHAR(100) NOT NULL, genre VARCHAR(50) NOT NULL, image VARCHAR(255), spotifyUrl VARCHAR(255));
         CREATE TABLE IF NOT EXISTS event_artists (event_id VARCHAR(36), artist_id VARCHAR(36), PRIMARY KEY (event_id, artist_id), FOREIGN KEY (event_id) REFERENCES events(id), FOREIGN KEY (artist_id) REFERENCES artists(id));

@@ -31,7 +31,7 @@ class VendorSpaceDAOSQLite(IVendorDAO):
             VALUES (?, ?, ?, ?, ?)
         """
         services_json = json.dumps(space_data.get('services', []))
-        
+
         try:
             cursor.execute(query, (
                 space_data['id'],
@@ -41,5 +41,61 @@ class VendorSpaceDAOSQLite(IVendorDAO):
                 services_json
             ))
             self.conn.commit()
+        finally:
+            cursor.close()
+
+    def get_all(self) -> List[dict]:
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM vendor_spaces")
+        rows = cursor.fetchall()
+        cursor.close()
+
+        result = []
+        for row in rows:
+            v = dict(row)
+            if isinstance(v.get('services'), str):
+                try:
+                    v['services'] = json.loads(v['services'])
+                except Exception:
+                    v['services'] = []
+            result.append(v)
+        return result
+
+    def get_by_id(self, space_id: str):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM vendor_spaces WHERE id = ?", (space_id,))
+        row = cursor.fetchone()
+        cursor.close()
+        if not row:
+            return None
+        v = dict(row)
+        if isinstance(v.get('services'), str):
+            try:
+                v['services'] = json.loads(v['services'])
+            except Exception:
+                v['services'] = []
+        return v
+
+    def update_availability(self, space_id: str, is_available: bool) -> bool:
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(
+                "UPDATE vendor_spaces SET available = ? WHERE id = ?",
+                (1 if is_available else 0, space_id)
+            )
+            self.conn.commit()
+            return cursor.rowcount > 0
+        finally:
+            cursor.close()
+
+    def delete(self, space_id: str) -> bool:
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("DELETE FROM vendor_spaces WHERE id = ?", (space_id,))
+            self.conn.commit()
+            return cursor.rowcount > 0
+        except sqlite3.Error as err:
+            self.conn.rollback()
+            raise err
         finally:
             cursor.close()

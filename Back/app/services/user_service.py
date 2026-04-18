@@ -6,7 +6,7 @@ class UserService:
     def __init__(self):
         self.user_dao = DAOFactory.get_user_dao()
 
-    def register_user(self, name, email, password):
+    def register_user(self, name, email, password, role='user'):
         """
         Lógica de negocio para registrar un nuevo usuario.
         """
@@ -22,7 +22,8 @@ class UserService:
             "name": name,
             "email": email,
             "password_hash": hashed_password.decode('utf-8'),
-            "avatar": None # Valor por defecto
+            "role": role if role in ('user', 'vendor', 'admin') else 'user',
+            "avatar": None
         }
 
         try:
@@ -41,6 +42,22 @@ class UserService:
 
         if bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
             del user['password_hash']
+            # Aseguramos que siempre haya un role aunque la columna sea antigua
+            if 'role' not in user or not user['role']:
+                user['role'] = 'user'
             return user
-        
+
         return None
+
+    def get_user_profile(self, user_id):
+        """Devuelve un usuario sin su password_hash."""
+        user = self.user_dao.get_by_id(user_id)
+        if not user:
+            return None
+        user.pop('password_hash', None)
+        return user
+
+    def update_profile(self, user_id, fields):
+        """Actualiza campos del perfil. Ignora password y role por seguridad."""
+        safe = {k: v for k, v in fields.items() if k in ('name', 'email', 'avatar')}
+        return self.user_dao.update(user_id, safe)

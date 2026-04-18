@@ -48,3 +48,37 @@ class VendorService:
         Cambia el estado de un puesto (Útil para administración).
         """
         return self.vendor_dao.update_availability(space_id, is_available)
+
+    def get_all_spaces(self):
+        """Retorna todos los puestos registrados."""
+        return self.vendor_dao.get_all()
+
+    def create_space(self, data):
+        """Crea un hueco a partir de un diccionario (con id opcional)."""
+        if not data.get('event_id'):
+            raise ValueError("El puesto debe estar asociado a un evento (event_id).")
+        if not data.get('name') or len(data['name']) < 3:
+            raise ValueError("El nombre del puesto debe tener al menos 3 caracteres.")
+
+        space_data = {
+            "id": data.get('id') or str(uuid.uuid4()),
+            "event_id": data['event_id'],
+            "name": data['name'],
+            "available": data.get('available', True),
+            "services": data.get('services', [])
+        }
+        self.vendor_dao.create(space_data)
+        return space_data
+
+    def delete_space(self, space_id):
+        return self.vendor_dao.delete(space_id)
+
+    def reserve_space(self, space_id):
+        """Un vendor marca un puesto como ocupado (reservado)."""
+        space = self.vendor_dao.get_by_id(space_id)
+        if not space:
+            raise ValueError("El puesto no existe.")
+        if not space.get('available'):
+            raise ValueError("El puesto ya no está disponible.")
+        self.vendor_dao.update_availability(space_id, False)
+        return self.vendor_dao.get_by_id(space_id)

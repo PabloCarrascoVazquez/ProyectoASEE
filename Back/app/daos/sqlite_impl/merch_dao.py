@@ -44,7 +44,26 @@ class MerchDAOSQLite(IMerchandiseDAO):
         cursor = self.conn.cursor()
         query = "SELECT * FROM merchandise_items WHERE category = ? ORDER BY name ASC"
         cursor.execute(query, (category,))
-        
+
         items = [dict(row) for row in cursor.fetchall()]
         cursor.close()
         return items
+
+    def get_by_id(self, merch_id: str):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM merchandise_items WHERE id = ?", (merch_id,))
+        row = cursor.fetchone()
+        cursor.close()
+        return dict(row) if row else None
+
+    def delete(self, merch_id: str) -> bool:
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("DELETE FROM merchandise_items WHERE id = ?", (merch_id,))
+            self.conn.commit()
+            return cursor.rowcount > 0
+        except sqlite3.Error as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
