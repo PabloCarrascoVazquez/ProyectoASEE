@@ -1,31 +1,24 @@
 import { MerchAPI } from '../api/merch_api';
+import { AdminAPI } from '../api/admin_api';
 import { MerchandiseItem } from '../models/interfaces';
 
 export const merchService = {
   /**
-   * Obtiene todo el catálogo de merchandising desde el servidor.
-   * El Backend ya devuelve una lista mapeada a MerchandiseItem[].
+   * Catálogo público - no necesita token.
    */
   getAll: async (): Promise<MerchandiseItem[]> => {
     try {
-      // Llamada a GET /api/merchandise
       const response = await MerchAPI.getAll();
-      
-      // Como el Backend devuelve directamente el array formateado:
-      return response; 
+      return response;
     } catch (error) {
       console.error("Error al obtener el merchandising:", error);
-      return []; // Fallback a lista vacía para no romper la UI
+      return [];
     }
   },
 
-  /**
-   * Obtiene un producto específico por su ID.
-   */
   getById: async (id: string): Promise<MerchandiseItem | null> => {
     try {
       const response = await MerchAPI.getById(id);
-      // El Backend devuelve { "status": "success", "data": [producto] }
       return response.data[0] || null;
     } catch (error) {
       console.error(`Error al obtener producto ${id}:`, error);
@@ -34,19 +27,24 @@ export const merchService = {
   },
 
   /**
-   * POST: Preparado para cuando implementemos la persistencia real.
+   * Añade un producto al catálogo. Requiere token admin.
    */
   create: async (newItem: MerchandiseItem): Promise<MerchandiseItem> => {
-    console.warn("Backend: Registro de producto no implementado (POST).");
-    // Por ahora simulamos el retorno del objeto enviado
-    return newItem;
+    const payload = {
+      name: newItem.name,
+      price: newItem.price,
+      category: newItem.category,
+      image: newItem.image
+    };
+    const saved = await AdminAPI.createMerch(payload);
+    return { ...newItem, ...saved };
   },
 
   /**
-   * DELETE: Preparado para cuando implementemos el borrado real.
+   * Borra un producto del catálogo. Requiere token admin.
    */
   delete: async (id: string): Promise<boolean> => {
-    console.warn("Backend: Borrado de producto no implementado (DELETE).");
+    await AdminAPI.deleteMerch(id);
     return true;
   }
 };

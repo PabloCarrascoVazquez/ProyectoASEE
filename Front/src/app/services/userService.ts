@@ -6,7 +6,7 @@ export interface UserProfile {
     name: string;
     email: string;
     avatar?: string | null;
-    role: 'user' | 'admin' | 'vendor';
+    role: 'user' | 'admin' | 'vendor' | null;
 }
 
 export interface AuthResponse {
