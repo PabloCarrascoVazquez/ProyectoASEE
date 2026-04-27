@@ -1,61 +1,63 @@
 import { EventAPI } from '../api/event_api';
-import { AdminAPI } from '../api/admin_api';
 import { Event } from '../models/interfaces';
 
 export const eventService = {
   /**
-   * Lista todos los eventos (público, no requiere token).
+   * Lista todos los eventos.
    */
-  getAll: async () => {
+  getAll: async (): Promise<Event[]> => {
     try {
-      const response = await fetch('http://localhost:5000/api/events');
-      if (!response.ok) {
-        throw new Error('Error en la respuesta del servidor');
-      }
-      const data = await response.json();
-      return data;
+      return await EventAPI.getAll();
     } catch (error) {
-      console.error("Error en el servicio de eventos:", error);
+      console.error("Error en el service al listar eventos:", error);
       return [];
     }
   },
 
   /**
-   * Detalle completo de un evento (público).
+   * Detalle completo de un evento.
    */
   getEventFull: async (id: string): Promise<Event> => {
     try {
-      const response = await EventAPI.getFullDetails(id);
-      return response;
+      return await EventAPI.getFullDetails(id);
     } catch (error) {
-      console.error(`Error al cargar el detalle del evento ${id}:`, error);
+      console.error(`Error en el service al obtener detalle del evento ${id}:`, error);
       throw error;
     }
   },
 
   /**
-   * Crea un evento en el backend. Requiere token admin (lo inyecta fetchData).
+   * Crea un evento delegando en la API.
    */
   create: async (newEvent: Event): Promise<Event> => {
-    const payload = {
-      id: newEvent.id,
-      name: newEvent.name,
-      date: newEvent.date,
-      description: newEvent.description,
-      image: newEvent.image,
-      services: newEvent.services || [],
-      gallery: newEvent.gallery || [],
-      mapImage: newEvent.mapImage || ''
-    };
-    const saved = await AdminAPI.createEvent(payload);
-    return { ...newEvent, ...saved };
+    try {
+      // Mantenemos la preparación del objeto si el backend espera un formato concreto
+      const payload = {
+        name: newEvent.name,
+        date: newEvent.date,
+        description: newEvent.description,
+        image: newEvent.image,
+        services: newEvent.services || [],
+        gallery: newEvent.gallery || [],
+        mapImage: newEvent.mapImage || ''
+      };
+      return await EventAPI.create(payload);
+    } catch (error) {
+      console.error("Error en el service al crear evento:", error);
+      throw error;
+    }
   },
 
   /**
-   * Borra un evento. Requiere token admin.
+   * Borra un evento delegando en la API.
    */
   delete: async (id: string): Promise<boolean> => {
-    await AdminAPI.deleteEvent(id);
-    return true;
+    try {
+      await EventAPI.delete(id);
+      return true;
+    } catch (error) {
+      console.error(`Error en el service al borrar evento ${id}:`, error);
+      return false;
+    }
   }
 };

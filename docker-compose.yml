@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: ./Back  # <-- Esto le obliga a usar tu carpeta local "Back"
+    image: pablocarras/subsonic-backend:latest
+    ports:
+      - "5000:5000"
+    restart: always
+
+  frontend:
+    build: ./Front # <-- Lo mismo para el Front
+    image: pablocarras/subsonic-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always

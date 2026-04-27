@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:5000/api";
+export const BASE_URL = "http://localhost:5000/api";
+//const BASE_URL = "http://subsonic-festival.duckdns.org/api";
 
 /**
  * Función base para realizar peticiones fetch inyectando el token de seguridad.
