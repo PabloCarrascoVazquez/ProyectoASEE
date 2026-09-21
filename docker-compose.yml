@@ -1,16 +1,21 @@
+version: '3.8'
 services:
-  backend:
-    build: ./Back  # <-- Esto le obliga a usar tu carpeta local "Back"
-    image: pablocarras/subsonic-backend:latest
+  # SERVICIO DEL BACKEND
+  backend-subsonic:
+    build: ./Back
+    image: pablocarras/subsonic-backend
     ports:
       - "5000:5000"
+    environment:
+      - WEBSITES_PORT=5000
     restart: always
 
-  frontend:
-    build: ./Front # <-- Lo mismo para el Front
-    image: pablocarras/subsonic-frontend:latest
+  # SERVICIO DEL FRONTEND
+  frontend-subsonic:
+    build: ./Front
+    image: pablocarras/subsonic-frontend
     ports:
       - "80:80"
     depends_on:
-      - backend
+      - backend-subsonic
     restart: always

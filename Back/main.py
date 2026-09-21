@@ -22,6 +22,7 @@ CORS(app, resources={
             "http://localhost:5173", 
             "http://localhost",
             "http://subsonic-festival.duckdns.org" 
+            "https://subsonic-festival-cqezhvg0cnewhrgc.swedencentral-01.azurewebsites.net"
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
