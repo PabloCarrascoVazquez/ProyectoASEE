@@ -6,7 +6,16 @@ service = MerchService()
 
 @merch_bp.route('/api/merchandise', methods=['GET'])
 def get_all_merch():
-    """Retorna la lista de productos formateada para MerchandiseItem interface"""
+    """
+    Retorna la lista de productos formateada para MerchandiseItem interface
+    ---
+    tags:
+      - Merchandise
+    summary: Obtiene todo el catálogo de productos
+    responses:
+      200:
+        description: Lista de productos obtenida exitosamente
+    """
     products = service.get_full_catalog()
     
     # Mapeo manual para asegurar compatibilidad con el Front
@@ -24,7 +33,24 @@ def get_all_merch():
 
 @merch_bp.route('/api/merchandise/<id>', methods=['GET'])
 def get_merch_by_id(id):
-    """Retorna un único producto formateado para MerchandiseItem"""
+    """
+    Retorna un único producto formateado para MerchandiseItem
+    ---
+    tags:
+      - Merchandise
+    summary: Obtiene un producto específico por su ID
+    parameters:
+      - name: id
+        in: path
+        type: string
+        required: true
+        description: Identificador único del producto a buscar
+    responses:
+      200:
+        description: Producto encontrado exitosamente
+      404:
+        description: Producto no encontrado
+    """
     p = service.get_by_id(id)
     
     if not p:

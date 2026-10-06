@@ -13,6 +13,24 @@ ticket_service = TicketService()
 
 @event_bp.route('/api/events/<id>/full', methods=['GET'])
 def get_event_full(id):
+    """
+    Obtiene el detalle completo de un evento por ID
+    ---
+    tags:
+      - Events
+    summary: Retorna un evento con sus artistas y precios de tickets asociados
+    parameters:
+      - name: id
+        in: path
+        type: string
+        required: true
+        description: Identificador del evento
+    responses:
+      200:
+        description: Evento completo obtenido exitosamente
+      404:
+        description: Evento no encontrado
+    """
     # Usamos el service para traer el evento YA con sus hijos (artistas y tickets)
     event = event_service.get_event_by_id(id)
     
@@ -54,6 +72,16 @@ def get_event_full(id):
 
 @event_bp.route('/api/events', methods=['GET'])
 def get_all_events():
+    """
+    Obtiene el listado de eventos programados
+    ---
+    tags:
+      - Events
+    summary: Retorna la lista de próximos eventos con artistas y tickets
+    responses:
+      200:
+        description: Lista de eventos obtenida con éxito
+    """
     # Gracias al cambio en el Service, raw_events ya trae artistas y precios
     raw_events = event_service.get_upcoming_events()
     

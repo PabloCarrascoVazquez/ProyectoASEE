@@ -1,5 +1,5 @@
 
-export const BASE_URL = "https://subsonic-festival-back-h2ercpd9gddqfccd.polandcentral-01.azurewebsites.net/api";
+export const BASE_URL = "http://localhost:5000/api";
 
 /**
  * Función base para realizar peticiones fetch inyectando el token de seguridad.

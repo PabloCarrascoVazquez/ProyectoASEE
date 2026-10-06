@@ -3,7 +3,7 @@ services:
   # SERVICIO DEL BACKEND
   backend-subsonic:
     build: ./Back
-    image: pablocarras/subsonic-backend
+    #image: pablocarras/subsonic-backend
     ports:
       - "5000:5000"
     environment:
@@ -13,7 +13,7 @@ services:
   # SERVICIO DEL FRONTEND
   frontend-subsonic:
     build: ./Front
-    image: pablocarras/subsonic-frontend
+    #image: pablocarras/subsonic-frontend
     ports:
       - "80:80"
     depends_on:

@@ -8,21 +8,24 @@ from app.routes.User.auth_routes import auth_bp
 from app.routes.Admin.admin_routes import admin_bp
 from app.routes.Vendor.vendor_routes import vendor_bp
 from dotenv import load_dotenv
+from flasgger import Swagger
 
 
 app = Flask(__name__)
 load_dotenv()
 
+swagger = Swagger(app)
+
 # CORS: permite al Front (Vite en 5173) hablar con el Back (5000).
 # Incluimos PUT y DELETE porque ahora admin y vendor los necesitan.
 CORS(app, resources={
     r"/api/*": {
-        # Añade aquí tu dominio de DuckDNS
         "origins": [
-            "http://localhost:5173", 
             "http://localhost",
-            "http://subsonic-festival.duckdns.org" 
-            "https://subsonic-festival-cqezhvg0cnewhrgc.swedencentral-01.azurewebsites.net"
+            "http://localhost:80",
+            "http://localhost:5173",
+            "http://127.0.0.1",
+            "http://127.0.0.1:5173"
         ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
