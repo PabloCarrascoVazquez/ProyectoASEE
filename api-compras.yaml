@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Servicio de Compras (Checkout)
+  description: Microservicio transaccional para pagos, pasarelas bancarias y carritos de la compra.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8003/api
+paths:
+  /compras/entradas/iniciar:
+    post:
+      tags: [Transacciones]
+      summary: Iniciar compra de entrada (Bloquea el asiento/cupo por 10 min)
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_festival: { type: string }
+                tipo_entrada: { type: string, enum: [day, weekend] }
+      responses:
+        '200':
+          description: Cupo bloqueado, redirigiendo a pago.
+  /compras/merchandising/iniciar:
+    post:
+      tags: [Transacciones]
+      summary: Iniciar compra de producto físico
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_producto: { type: string }
+                cantidad: { type: integer }
+      responses:
+        '200':
+          description: Carrito creado.
+  /compras/{id_transaccion}/pagar:
+    post:
+      tags: [Pagos]
+      summary: Confirmar pago (Llama a Stripe/Redsys y avisa a Pedidos)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_transaccion
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Pago exitoso. Se emite evento Kafka a Pedidos e Inventario.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

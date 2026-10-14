@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Servicio de Pedidos y Acceso (Wallet)
+  description: Microservicio que custodia las entradas compradas, genera tokens QR y valida el acceso en puertas.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8005/api
+paths:
+  /pedidos/mis-entradas:
+    get:
+      tags: [Wallet]
+      summary: Ver mis entradas adquiridas (Billetera)
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Lista de entradas digitales del usuario.
+  /pedidos/mis-entradas/{id_entrada}/qr:
+    get:
+      tags: [Wallet]
+      summary: Obtener el token criptográfico para renderizar el QR
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_entrada
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Token devuelto.
+  /acceso/validar-qr:
+    post:
+      tags: [Puertas / Escáneres]
+      summary: Validar un QR escaneado (Uso exclusivo por staff en la puerta)
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token_qr: { type: string }
+      responses:
+        '200':
+          description: QR Válido. Estado cambiado a "Usado".
+        '403':
+          description: QR Inválido o ya escaneado previamente.
+  /pedidos/{id_entrada}/cancelaciones:
+    post:
+      tags: [Wallet]
+      summary: Solicitar cancelación / devolución de una entrada
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_entrada
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '201':
+          description: Devolución iniciada.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

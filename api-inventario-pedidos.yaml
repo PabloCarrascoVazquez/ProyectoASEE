@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: Servicio de Inventarios y Envíos
+  description: Gestión de stock de merchandising y tracking de paquetería logística.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8004/api
+paths:
+  /inventario/stock:
+    get:
+      tags: [Almacén]
+      summary: Consultar stock disponible de productos
+      responses:
+        '200':
+          description: Stock devuelto.
+  /inventario/{id_producto}:
+    put:
+      tags: [Almacén]
+      summary: Actualizar stock físico (Solo Admin)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_producto
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Stock actualizado.
+  /envios:
+    get:
+      tags: [Logística]
+      summary: Listar envíos pendientes de despachar
+      security: [{bearerAuth: []}]
+      responses:
+        '200':
+          description: Lista de paquetes.
+  /envios/{id_envio}/tracking:
+    put:
+      tags: [Logística]
+      summary: Actualizar estado logístico (Ej. "En reparto")
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_envio
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Estado del envío actualizado.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

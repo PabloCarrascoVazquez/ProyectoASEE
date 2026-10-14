@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Servicio Catálogo (Eventos y Espacios)
+  description: Microservicio de lectura intensiva que agrupa festivales, artistas, escaletas, recintos y parcelas.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8002/api
+paths:
+  /festivales:
+    get:
+      tags: [Catálogo - Eventos]
+      summary: Listar festivales y su escaleta
+      responses:
+        '200':
+          description: Lista de festivales devuelta.
+  /festivales/{id_festival}/espacios:
+    get:
+      tags: [Catálogo - Espacios]
+      summary: Listar parcelas y mapa del recinto de un festival
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Mapa y parcelas devueltas.
+  /espacios/{id}/alquileres:
+    post:
+      tags: [Catálogo - Espacios]
+      summary: Solicitar alquiler de parcela por un proveedor
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '201':
+          description: Solicitud de alquiler registrada.
+  /artistas-favoritos:
+    post:
+      tags: [Catálogo - Artistas]
+      summary: Guardar artista favorito
+      security: [{bearerAuth: []}]
+      responses:
+        '201':
+          description: Artista guardado.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
