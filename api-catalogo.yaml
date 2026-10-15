@@ -12,7 +12,16 @@ paths:
       summary: Listar festivales y su escaleta
       responses:
         '200':
-          description: Lista de festivales devuelta.
+          description: Lista de festivales devuelta con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Festival'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /festivales/{id_festival}/espacios:
     get:
       tags: [Catálogo - Espacios]
@@ -21,10 +30,23 @@ paths:
         - name: id_festival
           in: path
           required: true
-          schema: { type: string }
+          schema: 
+            type: string
+            example: "fest_subsonic_2026"
       responses:
         '200':
-          description: Mapa y parcelas devueltas.
+          description: Mapa y parcelas correspondientes al festival.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Espacio'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /espacios/{id}/alquileres:
     post:
       tags: [Catálogo - Espacios]
@@ -34,21 +56,217 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: string }
+          description: ID del espacio/parcela a alquilar.
+          schema: 
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlquilerRequest'
       responses:
         '201':
-          description: Solicitud de alquiler registrada.
+          description: Solicitud de alquiler registrada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlquilerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflicto - La parcela ya se encuentra alquilada o reservada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /artistas-favoritos:
     post:
       tags: [Catálogo - Artistas]
       summary: Guardar artista favorito
       security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistaFavoritoRequest'
       responses:
         '201':
-          description: Artista guardado.
+          description: Artista guardado en la lista de favoritos del usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistaFavoritoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  schemas:
+    Festival:
+      type: object
+      properties:
+        id_festival:
+          type: string
+          example: "fest_subsonic_2026"
+        nombre:
+          type: string
+          example: "Subsonic Festival 2026"
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2026-07-15"
+        fecha_fin:
+          type: string
+          format: date
+          example: "2026-07-18"
+        ubicacion:
+          type: string
+          example: "Recinto Ferial, Madrid"
+        artistas_destacados:
+          type: array
+          items:
+            type: string
+          example: ["Daft Punk", "Carl Cox", "Peggy Gou"]
+
+    Espacio:
+      type: object
+      properties:
+        id_espacio:
+          type: string
+          format: uuid
+          example: "esp-4920-8439"
+        tipo:
+          type: string
+          enum: [foodtruck, mercadillo, vip_zone]
+          example: "foodtruck"
+        metros_cuadrados:
+          type: integer
+          example: 15
+        precio_alquiler:
+          type: number
+          format: float
+          example: 1200.50
+        estado:
+          type: string
+          enum: [disponible, reservado, alquilado]
+          example: "disponible"
+
+    AlquilerRequest:
+      type: object
+      required:
+        - nombre_negocio
+        - tipo_negocio
+      properties:
+        nombre_negocio:
+          type: string
+          example: "Burger King Foodtruck"
+        tipo_negocio:
+          type: string
+          example: "Restauración"
+        necesita_conexion_electrica:
+          type: boolean
+          example: true
+
+    AlquilerResponse:
+      type: object
+      properties:
+        id_contrato:
+          type: string
+          format: uuid
+          example: "alq-9876-5432"
+        estado:
+          type: string
+          example: "Pendiente de firma"
+        fecha_solicitud:
+          type: string
+          format: date-time
+          example: "2026-10-15T18:15:00Z"
+
+    ArtistaFavoritoRequest:
+      type: object
+      required:
+        - id_festival
+        - nombre_artista
+      properties:
+        id_festival:
+          type: string
+          example: "fest_subsonic_2026"
+        nombre_artista:
+          type: string
+          example: "Peggy Gou"
+
+    ArtistaFavoritoResponse:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: "Artista añadido a favoritos correctamente."
+        nombre_artista:
+          type: string
+          example: "Peggy Gou"
+
+    Error:
+      type: object
+      properties:
+        codigo:
+          type: integer
+          example: 400
+        mensaje:
+          type: string
+          example: "Error en la petición"
+        detalle:
+          type: string
+          example: "Parámetros no válidos."
+
+  responses:
+    BadRequest:
+      description: Petición malformada o faltan parámetros requeridos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Acceso no autorizado (Token JWT inválido o caducado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Permisos insuficientes (ej. no tienes rol de Proveedor).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: El recurso solicitado (festival o espacio) no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

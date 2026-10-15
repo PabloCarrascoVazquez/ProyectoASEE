@@ -14,6 +14,17 @@ paths:
       responses:
         '200':
           description: Lista de entradas digitales del usuario.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entrada'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /pedidos/mis-entradas/{id_entrada}/qr:
     get:
       tags: [Wallet]
@@ -23,10 +34,23 @@ paths:
         - name: id_entrada
           in: path
           required: true
-          schema: { type: string }
+          schema: 
+            type: string
+            format: uuid
       responses:
         '200':
-          description: Token devuelto.
+          description: Token criptográfico devuelto con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenQR'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /acceso/validar-qr:
     post:
       tags: [Puertas / Escáneres]
@@ -37,14 +61,27 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                token_qr: { type: string }
+              $ref: '#/components/schemas/ValidacionQRRequest'
       responses:
         '200':
           description: QR Válido. Estado cambiado a "Usado".
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidacionQRResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: QR Inválido o ya escaneado previamente.
+          description: Acceso denegado. QR Inválido o ya escaneado previamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /pedidos/{id_entrada}/cancelaciones:
     post:
       tags: [Wallet]
@@ -54,13 +91,136 @@ paths:
         - name: id_entrada
           in: path
           required: true
-          schema: { type: string }
+          schema: 
+            type: string
+            format: uuid
       responses:
         '201':
-          description: Devolución iniciada.
+          description: Proceso de devolución iniciado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelacionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  schemas:
+    Entrada:
+      type: object
+      properties:
+        id_entrada:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        id_festival:
+          type: string
+          example: "fest_subsonic_2026"
+        tipo:
+          type: string
+          enum: [General, VIP, Abono]
+          example: "VIP"
+        fecha_compra:
+          type: string
+          format: date-time
+          example: "2026-05-10T14:30:00Z"
+        estado:
+          type: string
+          enum: [Valida, Usada, Cancelada]
+          example: "Valida"
+
+    TokenQR:
+      type: object
+      properties:
+        token_qr:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        fecha_expiracion:
+          type: string
+          format: date-time
+          example: "2026-10-15T19:00:00Z"
+
+    ValidacionQRRequest:
+      type: object
+      required:
+        - token_qr
+      properties:
+        token_qr:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    ValidacionQRResponse:
+      type: object
+      properties:
+        estado_acceso:
+          type: boolean
+          example: true
+        mensaje:
+          type: string
+          example: "Acceso permitido. Entrada actualizada a 'Usada'."
+
+    CancelacionResponse:
+      type: object
+      properties:
+        id_entrada:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        estado_devolucion:
+          type: string
+          example: "En proceso"
+        fecha_solicitud:
+          type: string
+          format: date-time
+          example: "2026-10-15T18:15:00Z"
+
+    Error:
+      type: object
+      properties:
+        codigo:
+          type: integer
+          example: 400
+        mensaje:
+          type: string
+          example: "Error en la petición"
+        detalle:
+          type: string
+          example: "El token proporcionado no es válido."
+
+  responses:
+    BadRequest:
+      description: Petición malformada o faltan parámetros requeridos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Acceso no autorizado (Token JWT inválido o caducado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: El recurso solicitado (entrada) no existe o no pertenece al usuario.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

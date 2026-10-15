@@ -12,7 +12,16 @@ paths:
       summary: Consultar stock disponible de productos
       responses:
         '200':
-          description: Stock devuelto.
+          description: Listado del stock disponible devuelto con éxito.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockProducto'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /inventario/{id_producto}:
     put:
       tags: [Almacén]
@@ -22,10 +31,33 @@ paths:
         - name: id_producto
           in: path
           required: true
-          schema: { type: string }
+          schema: 
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActualizacionStockRequest'
       responses:
         '200':
-          description: Stock actualizado.
+          description: Stock actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockProducto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /envios:
     get:
       tags: [Logística]
@@ -33,7 +65,20 @@ paths:
       security: [{bearerAuth: []}]
       responses:
         '200':
-          description: Lista de paquetes.
+          description: Lista de paquetes y envíos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnvioLogistico'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /envios/{id_envio}/tracking:
     put:
       tags: [Logística]
@@ -43,13 +88,154 @@ paths:
         - name: id_envio
           in: path
           required: true
-          schema: { type: string }
+          schema: 
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActualizacionTrackingRequest'
       responses:
         '200':
           description: Estado del envío actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvioLogistico'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  schemas:
+    StockProducto:
+      type: object
+      properties:
+        id_producto:
+          type: string
+          format: uuid
+          example: "p1234567-e89b-12d3-a456-426614174000"
+        nombre_producto:
+          type: string
+          example: "Camiseta Oficial Subsonic"
+        variante:
+          type: string
+          example: "Talla L - Negra"
+        unidades_disponibles:
+          type: integer
+          example: 150
+        ubicacion_almacen:
+          type: string
+          example: "Pasillo B - Estante 4"
+
+    ActualizacionStockRequest:
+      type: object
+      required:
+        - variacion_unidades
+      properties:
+        variacion_unidades:
+          type: integer
+          description: Cantidad a sumar (positivo) o restar (negativo) al stock actual.
+          example: -5
+
+    EnvioLogistico:
+      type: object
+      properties:
+        id_envio:
+          type: string
+          format: uuid
+          example: "e9876543-e89b-12d3-a456-426614174111"
+        id_pedido:
+          type: string
+          format: uuid
+          example: "ped-10293847"
+        estado_envio:
+          type: string
+          enum: [Pendiente, Preparando, Enviado, En Reparto, Entregado, Incidencia]
+          example: "Enviado"
+        empresa_transporte:
+          type: string
+          example: "Correos Express"
+        tracking_number:
+          type: string
+          example: "PK392817492ES"
+        direccion_entrega:
+          type: string
+          example: "Calle Falsa 123, 28080 Madrid"
+
+    ActualizacionTrackingRequest:
+      type: object
+      required:
+        - estado_envio
+      properties:
+        estado_envio:
+          type: string
+          enum: [Pendiente, Preparando, Enviado, En Reparto, Entregado, Incidencia]
+          example: "En Reparto"
+        tracking_number:
+          type: string
+          description: Se añade si se genera en este momento.
+          example: "PK392817492ES"
+        notas_incidencia:
+          type: string
+          example: "Dirección incompleta, contactando al cliente."
+
+    Error:
+      type: object
+      properties:
+        codigo:
+          type: integer
+          example: 400
+        mensaje:
+          type: string
+          example: "Error en la petición"
+        detalle:
+          type: string
+          example: "La variación de unidades no puede ser nula."
+
+  responses:
+    BadRequest:
+      description: Petición malformada o faltan parámetros requeridos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Acceso no autorizado (Token JWT inválido o caducado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: No tienes permisos suficientes para realizar esta acción (ej. requiere rol Admin).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: El recurso solicitado no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

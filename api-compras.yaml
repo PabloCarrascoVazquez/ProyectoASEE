@@ -16,13 +16,27 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                id_festival: { type: string }
-                tipo_entrada: { type: string, enum: [day, weekend] }
+              $ref: '#/components/schemas/ReservaEntradaRequest'
       responses:
         '200':
-          description: Cupo bloqueado, redirigiendo a pago.
+          description: Cupo bloqueado temporalmente, redirigiendo a pago.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Conflicto - No hay cupo disponible para este tipo de entrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /compras/merchandising/iniciar:
     post:
       tags: [Transacciones]
@@ -33,13 +47,27 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                id_producto: { type: string }
-                cantidad: { type: integer }
+              $ref: '#/components/schemas/ReservaMerchRequest'
       responses:
         '200':
-          description: Carrito creado.
+          description: Carrito creado y stock bloqueado temporalmente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Conflicto - Stock insuficiente para la cantidad solicitada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /compras/{id_transaccion}/pagar:
     post:
       tags: [Pagos]
@@ -49,13 +77,152 @@ paths:
         - name: id_transaccion
           in: path
           required: true
-          schema: { type: string }
+          schema: 
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmacionPagoRequest'
       responses:
         '200':
           description: Pago exitoso. Se emite evento Kafka a Pedidos e Inventario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransaccionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  schemas:
+    ReservaEntradaRequest:
+      type: object
+      required:
+        - id_festival
+        - tipo_entrada
+      properties:
+        id_festival:
+          type: string
+          example: "fest_subsonic_2026"
+        tipo_entrada:
+          type: string
+          enum: [day, weekend, vip]
+          example: "weekend"
+
+    ReservaMerchRequest:
+      type: object
+      required:
+        - id_producto
+        - cantidad
+      properties:
+        id_producto:
+          type: string
+          format: uuid
+          example: "p1234567-e89b-12d3-a456-426614174000"
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 2
+
+    ReservaResponse:
+      type: object
+      properties:
+        id_transaccion:
+          type: string
+          format: uuid
+          example: "tx-84729482-4829-4729"
+        estado:
+          type: string
+          example: "Reservado"
+        expiracion_reserva:
+          type: string
+          format: date-time
+          example: "2026-10-15T18:22:00Z"
+        total_pagar:
+          type: number
+          format: float
+          example: 120.50
+
+    ConfirmacionPagoRequest:
+      type: object
+      required:
+        - metodo_pago
+        - token_pasarela
+      properties:
+        metodo_pago:
+          type: string
+          enum: [tarjeta, paypal, bizum]
+          example: "tarjeta"
+        token_pasarela:
+          type: string
+          description: Token generado por el frontend (ej. Stripe Elements).
+          example: "tok_1N4L8s2eZvKYlo2C0V"
+
+    TransaccionResponse:
+      type: object
+      properties:
+        id_transaccion:
+          type: string
+          format: uuid
+          example: "tx-84729482-4829-4729"
+        estado:
+          type: string
+          example: "Completado"
+        recibo_url:
+          type: string
+          format: uri
+          example: "https://pagos.subsonic.com/recibos/tx-84729482"
+
+    Error:
+      type: object
+      properties:
+        codigo:
+          type: integer
+          example: 400
+        mensaje:
+          type: string
+          example: "Petición incorrecta"
+        detalle:
+          type: string
+          example: "Faltan parámetros requeridos para el pago."
+
+  responses:
+    BadRequest:
+      description: Petición malformada o faltan parámetros requeridos.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Acceso no autorizado (Token JWT inválido o caducado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: El recurso solicitado o la transacción no existe.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Error interno del servidor o pasarela caída.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
