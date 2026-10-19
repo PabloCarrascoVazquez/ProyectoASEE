@@ -1,63 +1,48 @@
 import uuid
 import bcrypt
-from app.daos.factories import DAOFactory
+from app.models.user import User
+from app.dtos.requests import UserRegisterRequest, UserUpdateProfileRequest
+from app.dtos.responses import UserProfileResponse
 
 class UserService:
-    def __init__(self):
-        self.user_dao = DAOFactory.get_user_dao()
+    def __init__(self, user_dao):
+        self.user_dao = user_dao
 
-    def register_user(self, name, email, password, role='user'):
-        """
-        Lógica de negocio para registrar un nuevo usuario.
-        """
-        existing_user = self.user_dao.get_by_email(email)
-        if existing_user:
-            raise ValueError("El correo electrónico ya está registrado.")
+    def register_user(self, request: UserRegisterRequest) -> UserProfileResponse:
+        """Crea un nuevo usuario asegurando que el email no exista."""
+        if self.user_dao.get_by_email(request.email):
+            raise ValueError("EMAIL_ALREADY_EXISTS")
 
+        # Hashear la nueva contraseña
         salt = bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+        password_hash = bcrypt.hashpw(request.password.encode("utf-8"), salt).decode("utf-8")
 
-        user_data = {
-            "id": str(uuid.uuid4()),
-            "name": name,
-            "email": email,
-            "password_hash": hashed_password.decode('utf-8'),
-            "role": role if role in ('user', 'vendor', 'admin') else 'user',
-            "avatar": None
-        }
+        # Crear y guardar modelo
+        new_user = User.from_register_request(request, password_hash, str(uuid.uuid4()))
+        self.user_dao.create(new_user.to_db_dict())
 
-        try:
-            self.user_dao.create(user_data)
-            return user_data["id"]
-        except Exception as e:
-            raise Exception(f"Error crítico al guardar el usuario: {str(e)}")
+        return new_user.to_response_dto()
 
-    def authenticate_user(self, email, password):
-        """
-        Lógica para el Login: Verifica credenciales.
-        """
-        user = self.user_dao.get_by_email(email)
-        if not user:
-            return None
+    def get_profile(self, user_id: str) -> UserProfileResponse:
+        """Recupera el perfil público de un usuario."""
+        user_row = self.user_dao.get_by_id(user_id)
+        if not user_row:
+            raise ValueError("USER_NOT_FOUND")
+            
+        user = User.from_db_row(user_row)
+        return user.to_response_dto()
 
-        if bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-            del user['password_hash']
-            # Aseguramos que siempre haya un role aunque la columna sea antigua
-            if 'role' not in user or not user['role']:
-                user['role'] = 'user'
-            return user
+    def update_profile(self, user_id: str, request: UserUpdateProfileRequest) -> UserProfileResponse:
+        """Aplica la actualización de perfil y guarda en BD."""
+        user_row = self.user_dao.get_by_id(user_id)
+        if not user_row:
+            raise ValueError("USER_NOT_FOUND")
 
-        return None
+        user = User.from_db_row(user_row)
+        user.apply_update_request(request)
 
-    def get_user_profile(self, user_id):
-        """Devuelve un usuario sin su password_hash."""
-        user = self.user_dao.get_by_id(user_id)
-        if not user:
-            return None
-        user.pop('password_hash', None)
-        return user
+        # Preparar diccionario solo con lo que se puede actualizar
+        fields_to_update = {"name": user.name, "avatar": user.avatar}
+        self.user_dao.update(user.id, fields_to_update)
 
-    def update_profile(self, user_id, fields):
-        """Actualiza campos del perfil. Ignora password y role por seguridad."""
-        safe = {k: v for k, v in fields.items() if k in ('name', 'email', 'avatar')}
-        return self.user_dao.update(user_id, safe)
+        return user.to_response_dto()

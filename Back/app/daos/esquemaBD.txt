@@ -1,24 +1,4 @@
--- Creación de la base de datos
-CREATE DATABASE IF NOT EXISTS subsonic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE subsonic_db;
 
--- ==========================================
--- 1. TABLAS PRINCIPALES (Entidades Independientes)
--- ==========================================
-
--- Tabla Users (Fusiona tu interfaz Friend con los datos de Autenticación)
-CREATE TABLE IF NOT EXISTS users (
-    id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,          -- Obligatorio para el login
-    password_hash VARCHAR(255) NOT NULL,         -- Almacenará el hash de Argon2
-    position_x DECIMAL(10,6) NULL,               -- Coordenada X (Longitud)
-    position_y DECIMAL(10,6) NULL,               -- Coordenada Y (Latitud)
-    avatar VARCHAR(255) NULL,                    -- URL de la imagen de perfil
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
--- Tabla Events
 CREATE TABLE IF NOT EXISTS events (
     id VARCHAR(36) PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
@@ -29,7 +9,7 @@ CREATE TABLE IF NOT EXISTS events (
     gallery JSON NULL,        
     mapImage VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+);
 
 -- Tabla Artists
 CREATE TABLE IF NOT EXISTS artists (

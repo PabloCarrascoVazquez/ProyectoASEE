@@ -1,16 +1,13 @@
 import jwt
 import bcrypt
-import os
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import request, jsonify
-from dotenv import load_dotenv
 
 
-load_dotenv()
+from app.core.config import settings
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-me')
-
+SECRET_KEY = settings.SECRET_KEY
 
 def _extract_token_payload():
     """
@@ -28,7 +25,7 @@ def _extract_token_payload():
         return None, ({'message': 'Token inexistente'}, 401)
 
     try:
-        data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        data = jwt.decode(token, SECRET_KEY, algorithms=[settings.ALGORITHM])
         return data, None
     except jwt.ExpiredSignatureError:
         return None, ({'message': 'El token ha expirado'}, 401)
@@ -106,4 +103,4 @@ class AuthService:
             'exp': datetime.utcnow() + timedelta(days=1),
             'iat': datetime.utcnow()
         }
-        return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+        return jwt.encode(payload, SECRET_KEY, algorithm=settings.ALGORITHM)

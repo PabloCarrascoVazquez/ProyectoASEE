@@ -1,0 +1,261 @@
+-------------------------SIN TOKENS-------------------------
+
+GET /api/merchandise
+[
+  {
+    "id": "m1-uuid",
+    "name": "Camiseta Subsonic '26",
+    "category": "Ropa",
+    "price": 29.99,
+    "image": "https://cdn.subsonic.com/merch/tshirt.png",
+    "stock_status": "in_stock"
+  },
+  {
+    "id": "m2-uuid",
+    "name": "Pulsera LED",
+    "category": "Accesorios",
+    "price": 9.50,
+    "image": "https://cdn.subsonic.com/merch/led_band.png",
+    "stock_status": "low_stock"
+  }
+]
+
+GET /api/merchandise{id}
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Camiseta Subsonic '26",
+      "category": "Ropa",
+      "price": 29.99,
+      "stock": 150,
+      "image_url": "https://cdn.subsonic.com/merch/tshirt-26.png",
+      "description": "Algodón orgánico, tallas S a XL."
+    }
+  ]
+}
+
+GET /api/events/{id}
+{
+  "event_info": {
+    "id": "e32f-456b-987c",
+    "name": "Electronic Peak 2026",
+    "date_iso": "2026-08-15T22:00:00Z",
+    "description": "El evento techno más esperado del año.",
+    "services": ["Zona VIP", "Parking", "Carga Móvil"]
+  },
+  "lineup": [
+    {
+      "artist_id": "art-001",
+      "name": "Amelie Lens",
+      "genre": "Techno",
+      "image": "https://cdn.subsonic.com/artists/amelie.jpg"
+    }
+  ],
+  "ticket_options": [
+    {
+      "price_id": "pr-101",
+      "type": "Early Bird",
+      "price": 35.50,
+      "features": ["Acceso rápido", "Vaso incluido"]
+    }
+  ]
+}
+
+
+GET /api/events
+{
+  "count": 2,
+  "events": [
+    {
+      "id": "e1-uuid-2026",
+      "name": "Subsonic Kickoff",
+      "date": "2026-05-20T20:00:00Z",
+      "image": "https://cdn.subsonic.com/events/kickoff_thumb.jpg",
+      "min_price": 25.00,
+      "location_name": "Main Arena"
+    },
+    {
+      "id": "e2-uuid-2026",
+      "name": "Gastronomy Fest",
+      "date": "2026-07-15T12:00:00Z",
+      "image": "https://cdn.subsonic.com/events/gastro_thumb.jpg",
+      "min_price": 15.00,
+      "location_name": "Green Park"
+    }
+  ]
+}
+
+GET /api/events/<id>/artists
+{
+  "event_id": "e1-uuid-2026",
+  "lineup": [
+    {
+      "id": "art-01",
+      "name": "Charlotte de Witte",
+      "genre": "Techno",
+      "image": "https://cdn.subsonic.com/artists/charlotte.jpg",
+      "socials": {
+        "instagram": "@charlottedewittemusic"
+      }
+    },
+    {
+      "id": "art-02",
+      "name": "Carl Cox",
+      "genre": "House",
+      "image": "https://cdn.subsonic.com/artists/carlcox.jpg",
+      "socials": {
+        "instagram": "@carlcoxofficial"
+      }
+    }
+  ]
+}
+
+GET /api/events/<id>/tickets
+{
+  "event_id": "e1-uuid-2026",
+  "ticket_options": [
+    {
+      "price_id": "p1-uuid",
+      "type": "General Pass",
+      "price": 45.00,
+      "features": ["Acceso al recinto", "Vaso reutilizable"]
+    },
+    {
+      "price_id": "p2-uuid",
+      "type": "VIP Experience",
+      "price": 120.00,
+      "features": ["Barra libre", "Acceso Fast-Track", "Zona Frontstage"]
+    }
+  ]
+}
+
+GET /api/events/<id>/full
+{
+  "status": "success",
+  "timestamp": "2026-04-08T13:20:00Z",
+  "data": {
+    "event_info": {
+      "id": "e1-uuid-2026",
+      "name": "Subsonic Kickoff",
+      "date_iso": "2026-05-20T20:00:00Z",
+      "description": "El evento que marca el inicio de la temporada con los mejores DJs locales.",
+      "location": "Avenida del Rock, 45, Madrid",
+      "map_url": "https://cdn.subsonic.com/maps/arena_v1.jpg",
+      "services": ["Parking", "Barra 24h", "Zona VIP"]
+    },
+    "lineup": [
+      {
+        "id": "art-01",
+        "name": "Charlotte de Witte",
+        "genre": "Techno",
+        "image": "https://cdn.subsonic.com/artists/charlotte.jpg"
+      },
+      {
+        "id": "art-02",
+        "name": "Carl Cox",
+        "genre": "House",
+        "image": "https://cdn.subsonic.com/artists/carlcox.jpg"
+      }
+    ],
+    "ticket_options": [
+      {
+        "price_id": "p1-uuid",
+        "type": "General Pass",
+        "price": 45.00,
+        "features": ["Acceso al recinto", "Vaso reutilizable"]
+      },
+      {
+        "price_id": "p2-uuid",
+        "type": "VIP Experience",
+        "price": 120.00,
+        "features": ["Barra libre", "Acceso Fast-Track"]
+      }
+    ]
+  }
+}
+
+
+-------------------------CON TOKENS-------------------------
+
+POST /api/auth/register
+{
+  "status": "success",
+  "message": "Usuario registrado correctamente",
+  "user_id": "u1-uuid-2026"
+}
+
+POST /api/auth/login
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "u1-uuid-2026",
+    "name": "Juan Pérez",
+    "email": "juan@example.com",
+    "role": "user"
+  }
+}
+
+GET /api/user/profile
+{
+  "id": "u1-uuid-2026",
+  "name": "Juan Pérez",
+  "email": "juan@example.com",
+  "role": "user",
+  "stats": {
+    "tickets_count": 2,
+    "merch_purchases_count": 1
+    }
+}
+
+GET /api/user/tickets
+[
+  {
+    "ticket_instance_id": "ut-9988",
+    "event_name": "Subsonic Kickoff",
+    "event_date": "2026-05-20T20:00:00Z",
+    "type": "General Pass",
+    "status": "ACTIVE",
+    "qr_code": "SUBSONIC_QR_E1_UT9988",
+    "purchase_date": "2026-04-10T15:00:00Z"
+  }
+]
+
+GET /api/user/merch
+[
+  {
+    "purchase_id": "mp-5544",
+    "product_name": "Camiseta Subsonic '26",
+    "quantity": 2,
+    "total_price": 59.98,
+    "status": "SHIPPED",
+    "image": "https://cdn.subsonic.com/merch/tshirt.png",
+    "purchase_date": "2026-04-11T09:30:00Z"
+  }
+]
+
+POST /api/purchase/ticket
+{
+  "status": "success",
+  "transaction_id": "tx-tickets-001",
+    "ticket_details": {
+    "id": "ut-9989",
+    "event": "Subsonic Kickoff",
+    "type": "General Pass",
+    "price": 45.00
+  }
+}
+
+POST /api/purchase/merch
+{
+  "status": "success",
+  "transaction_id": "tx-merch-002",
+  "order_summary": {
+    "id": "mp-5545",
+    "product": "Pulsera LED",
+    "quantity": 1,
+    "total": 9.50,
+    "status": "PENDING"
+  }
+}
