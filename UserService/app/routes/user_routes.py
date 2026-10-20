@@ -1,6 +1,5 @@
 from functools import wraps
 import jwt
-
 from flask import Blueprint, request, jsonify
 
 # Factories y Servicios
@@ -11,7 +10,6 @@ from app.core.config import settings
 
 # DTOs
 from app.dtos.requests import UserRegisterRequest, UserLoginRequest, UserUpdateProfileRequest
-
 
 
 user_bp = Blueprint("user_routes", __name__, url_prefix="/api")
@@ -35,7 +33,7 @@ def token_required(f):
         token = auth_header.split(" ")[1]
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-            current_user_id = payload.get("sub")
+            current_user_id = payload.get("sub") or payload.get("user_id")
         except jwt.ExpiredSignatureError:
             return jsonify({"codigo": 401, "mensaje": "Acceso no autorizado", "detalle": "Token expirado."}), 401
         except jwt.InvalidTokenError:
@@ -55,9 +53,9 @@ def token_required(f):
 def register():
     """Registra un nuevo usuario en el sistema."""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         if not data:
-            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío."}), 400
+            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío o inválido."}), 400
 
         req_dto = UserRegisterRequest.from_dict(data)
         
@@ -81,9 +79,9 @@ def register():
 def login():
     """Autentica a un usuario y devuelve un JWT."""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         if not data:
-            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío."}), 400
+            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío o inválido."}), 400
 
         req_dto = UserLoginRequest.from_dict(data)
         
@@ -123,9 +121,9 @@ def get_profile(current_user_id: str):
 def update_profile(current_user_id: str):
     """Actualiza la información del perfil del usuario logueado."""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         if not data:
-            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío."}), 400
+            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío o inválido."}), 400
 
         req_dto = UserUpdateProfileRequest.from_dict(data)
         user_service = UserService(DAOFactory.get_user_dao())

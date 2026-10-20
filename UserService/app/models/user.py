@@ -1,36 +1,62 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, Any
+from app.dtos.requests import UserRegisterRequest, UserUpdateProfileRequest
+from app.dtos.responses import UserProfileResponse, TokenResponse
 
 
 @dataclass
-class UserProfileResponse:
-    """DTO de salida con los datos públicos del usuario (sin contraseña)."""
+class User:
+    """Modelo de dominio de Usuario."""
     id: str
     name: str
     email: str
-    rol: str
+    password_hash: str
+    rol: str = "client"
     avatar: Optional[str] = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    @classmethod
+    def from_register_request(cls, request: UserRegisterRequest, password_hash: str, user_id: str) -> "User":
+        return cls(
+            id=user_id,
+            name=request.name,
+            email=request.email,
+            password_hash=password_hash,
+            rol=request.rol or "client",
+            avatar=request.avatar,
+        )
+
+    @classmethod
+    def from_db_row(cls, row: dict) -> "User":
+        return cls(
+            id=str(row["id"]),
+            name=row["name"],
+            email=row["email"],
+            password_hash=row["password_hash"],
+            rol=row.get("rol", row.get("role", "client")),
+            avatar=row.get("avatar"),
+        )
+
+    def apply_update_request(self, request: UserUpdateProfileRequest) -> None:
+        if request.name is not None:
+            self.name = request.name
+        if request.avatar is not None:
+            self.avatar = request.avatar
+
+    def to_db_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
+            "password_hash": self.password_hash,
             "avatar": self.avatar,
             "rol": self.rol,
         }
 
-
-@dataclass
-class TokenResponse:
-    """DTO de salida devuelto tras un inicio de sesión correcto."""
-    access_token: str
-    user: UserProfileResponse
-    token_type: str = "bearer"
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "access_token": self.access_token,
-            "token_type": self.token_type,
-            "user": self.user.to_dict() if self.user else None,
-        }
+    def to_response_dto(self) -> UserProfileResponse:
+        return UserProfileResponse(
+            id=self.id,
+            name=self.name,
+            email=self.email,
+            avatar=self.avatar,
+            rol=self.rol,
+        )

@@ -10,6 +10,9 @@ class UserService:
 
     def register_user(self, request: UserRegisterRequest) -> UserProfileResponse:
         """Crea un nuevo usuario asegurando que el email no exista."""
+        if not request.name or not request.email or not request.password:
+            raise ValueError("Los campos name, email y password son obligatorios.")
+
         if self.user_dao.get_by_email(request.email):
             raise ValueError("EMAIL_ALREADY_EXISTS")
 
@@ -28,7 +31,7 @@ class UserService:
         user_row = self.user_dao.get_by_id(user_id)
         if not user_row:
             raise ValueError("USER_NOT_FOUND")
-            
+
         user = User.from_db_row(user_row)
         return user.to_response_dto()
 

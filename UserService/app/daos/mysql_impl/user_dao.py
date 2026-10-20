@@ -58,16 +58,25 @@ class UserDAOMySQL(IUserDAO):
         finally:
             cursor.close()
 
-    def update_profile(self, user_id: str, name: str, avatar: Optional[str]) -> bool:
-        """Actualiza la información editable del perfil."""
+    def update(self, user_id: str, fields: dict) -> bool:
+        """Actualiza los campos pasados en el diccionario para un usuario."""
+        if not fields:
+            return False
+
+        allowed = {'name', 'email', 'avatar', 'rol', 'role', 'password_hash'}
+        clean = {k: v for k, v in fields.items() if k in allowed}
+        if not clean:
+            return False
+
+        if 'role' in clean and 'rol' not in clean:
+            clean['rol'] = clean.pop('role')
+
+        set_clause = ", ".join(f"{k} = %s" for k in clean.keys())
+        values = list(clean.values()) + [user_id]
+
         cursor = self.conn.cursor()
-        query = """
-            UPDATE users 
-            SET name = %s, avatar = %s 
-            WHERE id = %s
-        """
         try:
-            cursor.execute(query, (name, avatar, user_id))
+            cursor.execute(f"UPDATE users SET {set_clause} WHERE id = %s", values)
             self.conn.commit()
             return cursor.rowcount > 0
         except mysql.connector.Error as err:
@@ -76,19 +85,13 @@ class UserDAOMySQL(IUserDAO):
         finally:
             cursor.close()
 
+    def update_profile(self, user_id: str, name: str, avatar: Optional[str]) -> bool:
+        """Actualiza la información editable del perfil."""
+        return self.update(user_id, {"name": name, "avatar": avatar})
+
     def update_role(self, user_id: str, rol: str) -> bool:
         """Permite a un admin cambiar el rol (admin, cliente, proveedor)."""
-        cursor = self.conn.cursor()
-        query = "UPDATE users SET rol = %s WHERE id = %s"
-        try:
-            cursor.execute(query, (rol, user_id))
-            self.conn.commit()
-            return cursor.rowcount > 0
-        except mysql.connector.Error as err:
-            self.conn.rollback()
-            raise err
-        finally:
-            cursor.close()
+        return self.update(user_id, {"rol": rol})
 
     def delete(self, user_id: str) -> bool:
         """Eliminación de cuenta."""

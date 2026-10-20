@@ -1,17 +1,18 @@
-from typing import Optional, List
-import mysql.connector
+import sqlite3
+from typing import Optional
 from app.daos.interfaces import IUserDAO
 
 
-class UserDAOMySQL(IUserDAO):
-    def __init__(self, connection):
+class UserDAOSQLite(IUserDAO):
+    def __init__(self, connection: sqlite3.Connection):
         self.conn = connection
+        self.conn.row_factory = sqlite3.Row
 
     def create(self, user_data: dict) -> str:
         cursor = self.conn.cursor()
         query = """
-            INSERT INTO users (id, name, email, password_hash, rol, avatar)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO users (id, name, email, password_hash, avatar, rol)
+            VALUES (?, ?, ?, ?, ?, ?)
         """
         try:
             cursor.execute(query, (
@@ -19,33 +20,36 @@ class UserDAOMySQL(IUserDAO):
                 user_data['name'],
                 user_data['email'],
                 user_data['password_hash'],
-                user_data.get('rol', user_data.get('role', 'cliente')),
-                user_data.get('avatar')
+                user_data.get('avatar'),
+                user_data.get('rol', user_data.get('role', 'client'))
             ))
             self.conn.commit()
             return user_data['id']
-        except mysql.connector.Error as err:
+        except Exception as err:
             self.conn.rollback()
             raise err
         finally:
             cursor.close()
 
     def get_by_email(self, email: str) -> Optional[dict]:
-        """Crítico para el Login: Recupera el usuario por su email."""
-        cursor = self.conn.cursor(dictionary=True)
-        query = "SELECT * FROM users WHERE email = %s"
+        """Recupera el usuario por su email."""
+        cursor = self.conn.cursor()
+        query = "SELECT id, name, email, password_hash, avatar, rol FROM users WHERE email = ?"
         try:
             cursor.execute(query, (email,))
-            return cursor.fetchone()
+            row = cursor.fetchone()
+            return dict(row) if row else None
         finally:
             cursor.close()
 
     def get_by_id(self, user_id: str) -> Optional[dict]:
-        cursor = self.conn.cursor(dictionary=True)
-        query = "SELECT * FROM users WHERE id = %s"
+        """Recupera el usuario por su ID."""
+        cursor = self.conn.cursor()
+        query = "SELECT id, name, email, password_hash, avatar, rol FROM users WHERE id = ?"
         try:
             cursor.execute(query, (user_id,))
-            return cursor.fetchone()
+            row = cursor.fetchone()
+            return dict(row) if row else None
         finally:
             cursor.close()
 
@@ -63,15 +67,29 @@ class UserDAOMySQL(IUserDAO):
         if 'role' in clean and 'rol' not in clean:
             clean['rol'] = clean.pop('role')
 
-        set_clause = ", ".join(f"{k} = %s" for k in clean.keys())
+        set_clause = ", ".join(f"{k} = ?" for k in clean.keys())
         values = list(clean.values()) + [user_id]
 
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"UPDATE users SET {set_clause} WHERE id = %s", values)
+            cursor.execute(f"UPDATE users SET {set_clause} WHERE id = ?", values)
             self.conn.commit()
             return cursor.rowcount > 0
-        except mysql.connector.Error as err:
+        except Exception as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
+    def delete(self, user_id: str) -> bool:
+        """Eliminación de usuario."""
+        cursor = self.conn.cursor()
+        query = "DELETE FROM users WHERE id = ?"
+        try:
+            cursor.execute(query, (user_id,))
+            self.conn.commit()
+            return cursor.rowcount > 0
+        except Exception as err:
             self.conn.rollback()
             raise err
         finally:

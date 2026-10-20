@@ -4,3 +4,5 @@ python-dotenv
 pyjwt
 bcrypt
 mysql-connector-python
+pydantic-settings
+pytest
