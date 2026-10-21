@@ -1,25 +1,26 @@
 openapi: 3.0.3
 info:
   title: Servicio de Compras (Checkout)
-  description: Microservicio transaccional para pagos, pasarelas bancarias y carritos de la compra.
+  description: Microservicio transaccional para pagos, pasarelas bancarias y carritos de la compra unificados.
   version: 1.0.0
 servers:
   - url: http://localhost:8003/api
 paths:
-  /compras/entradas/iniciar:
+  /compras/carrito/iniciar:
     post:
       tags: [Transacciones]
-      summary: Iniciar compra de entrada (Bloquea el asiento/cupo por 10 min)
+      summary: Iniciar compra mixta (Entradas y/o Merchandising)
+      description: Bloquea temporalmente el aforo y el stock físico de forma concurrente. La reserva se mantiene 10 minutos.
       security: [{bearerAuth: []}]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReservaEntradaRequest'
+              $ref: '#/components/schemas/ReservaCarritoCompletoRequest'
       responses:
         '200':
-          description: Cupo bloqueado temporalmente, redirigiendo a pago.
+          description: Todo el stock/aforo bloqueado temporalmente. Transacción creada.
           content:
             application/json:
               schema:
@@ -29,38 +30,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '409':
-          description: Conflicto - No hay cupo disponible para este tipo de entrada.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          $ref: '#/components/responses/InternalError'
-
-  /compras/merchandising/iniciar:
-    post:
-      tags: [Transacciones]
-      summary: Iniciar compra de producto físico
-      security: [{bearerAuth: []}]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReservaMerchRequest'
-      responses:
-        '200':
-          description: Carrito creado y stock bloqueado temporalmente.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReservaResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          description: Conflicto - Stock insuficiente para la cantidad solicitada.
+          description: Conflicto - Stock o aforo insuficiente en alguno de los productos. Se aplican compensaciones.
           content:
             application/json:
               schema:
@@ -71,7 +41,7 @@ paths:
   /compras/{id_transaccion}/pagar:
     post:
       tags: [Pagos]
-      summary: Confirmar pago (Llama a Stripe/Redsys y avisa a Pedidos)
+      summary: Confirmar pago (Valida con pasarela bancaria y emite evento al Bus)
       security: [{bearerAuth: []}]
       parameters:
         - name: id_transaccion
@@ -88,7 +58,7 @@ paths:
               $ref: '#/components/schemas/ConfirmacionPagoRequest'
       responses:
         '200':
-          description: Pago exitoso. Se emite evento Kafka a Pedidos e Inventario.
+          description: Pago exitoso. Se emite evento asíncrono para Pedidos y/o Inventario.
           content:
             application/json:
               schema:
@@ -99,6 +69,12 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflicto - La reserva ha expirado o el pago ya fue procesado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalError'
 
@@ -110,21 +86,22 @@ components:
       bearerFormat: JWT
 
   schemas:
-    ReservaEntradaRequest:
+    ItemEntrada:
       type: object
       required:
-        - id_festival
         - tipo_entrada
+        - cantidad
       properties:
-        id_festival:
-          type: string
-          example: "fest_subsonic_2026"
         tipo_entrada:
           type: string
           enum: [day, weekend, vip]
           example: "weekend"
+        cantidad:
+          type: integer
+          minimum: 1
+          example: 2
 
-    ReservaMerchRequest:
+    ItemMerch:
       type: object
       required:
         - id_producto
@@ -137,7 +114,52 @@ components:
         cantidad:
           type: integer
           minimum: 1
-          example: 2
+          example: 1
+
+    DireccionEnvio:
+      type: object
+      required:
+        - calle
+        - ciudad
+        - codigo_postal
+        - pais
+      properties:
+        calle:
+          type: string
+          example: "Calle Mayor 14, 2ºB"
+        ciudad:
+          type: string
+          example: "Madrid"
+        codigo_postal:
+          type: string
+          example: "28013"
+        pais:
+          type: string
+          example: "España"
+        telefono_contacto:
+          type: string
+          example: "+34600112233"
+
+    ReservaCarritoCompletoRequest:
+      type: object
+      properties:
+        id_festival:
+          type: string
+          description: Obligatorio si el array de 'entradas' contiene elementos.
+          example: "fest_subsonic_2026"
+        entradas:
+          type: array
+          description: Lista de pases para el festival.
+          items:
+            $ref: '#/components/schemas/ItemEntrada'
+        merchandising:
+          type: array
+          description: Lista de productos físicos a comprar.
+          items:
+            $ref: '#/components/schemas/ItemMerch'
+        direccion_envio:
+          description: Obligatoria solo si el array de 'merchandising' no está vacío.
+          $ref: '#/components/schemas/DireccionEnvio'
 
     ReservaResponse:
       type: object
@@ -148,15 +170,18 @@ components:
           example: "tx-84729482-4829-4729"
         estado:
           type: string
-          example: "Reservado"
+          example: "PENDING"
         expiracion_reserva:
           type: string
           format: date-time
           example: "2026-10-15T18:22:00Z"
+        moneda:
+          type: string
+          example: "EUR"
         total_pagar:
           type: number
           format: float
-          example: 120.50
+          example: 250.00
 
     ConfirmacionPagoRequest:
       type: object
@@ -170,7 +195,7 @@ components:
           example: "tarjeta"
         token_pasarela:
           type: string
-          description: Token generado por el frontend (ej. Stripe Elements).
+          description: Token generado por la pasarela en el frontend.
           example: "tok_1N4L8s2eZvKYlo2C0V"
 
     TransaccionResponse:
@@ -182,11 +207,19 @@ components:
           example: "tx-84729482-4829-4729"
         estado:
           type: string
-          example: "Completado"
+          example: "PAID"
+        total_cobrado:
+          type: number
+          format: float
+          example: 250.00
         recibo_url:
           type: string
           format: uri
           example: "https://pagos.subsonic.com/recibos/tx-84729482"
+        fecha_pago:
+          type: string
+          format: date-time
+          example: "2026-10-15T18:15:30Z"
 
     Error:
       type: object
@@ -199,7 +232,7 @@ components:
           example: "Petición incorrecta"
         detalle:
           type: string
-          example: "Faltan parámetros requeridos para el pago."
+          example: "Faltan parámetros requeridos o stock insuficiente."
 
   responses:
     BadRequest:
@@ -209,19 +242,19 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
     Unauthorized:
-      description: Acceso no autorizado (Token JWT inválido o caducado).
+      description: Acceso no autorizado (Token JWT ausente o inválido).
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
     NotFound:
-      description: El recurso solicitado o la transacción no existe.
+      description: La transacción solicitada no existe.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
     InternalError:
-      description: Error interno del servidor o pasarela caída.
+      description: Error interno del servidor o pasarela bancaria no disponible.
       content:
         application/json:
           schema:

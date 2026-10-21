@@ -58,6 +58,66 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /inventario/{id_producto}/bloquear:
+    post:
+      tags: [Almacén - Transaccional]
+      summary: Bloqueo temporal de stock (Llamada interna desde Servicio de Compras)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_producto
+          in: path
+          required: true
+          schema: 
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloqueoStockRequest'
+      responses:
+        '200':
+          description: Stock de merchandising bloqueado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloqueoStockResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Stock agotado o insuficiente para este producto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /inventario/{id_producto}/liberar:
+    post:
+      tags: [Almacén - Transaccional]
+      summary: Liberar stock bloqueado tras expiración de carrito o fallo de pago
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_producto
+          in: path
+          required: true
+          schema: 
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloqueoStockRequest'
+      responses:
+        '200':
+          description: Stock liberado correctamente, vuelve a estar disponible.
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /envios:
     get:
       tags: [Logística]
@@ -139,6 +199,10 @@ components:
         unidades_disponibles:
           type: integer
           example: 150
+        precio:
+          type: number
+          format: float
+          example: 25.50
         ubicacion_almacen:
           type: string
           example: "Pasillo B - Estante 4"
@@ -152,6 +216,32 @@ components:
           type: integer
           description: Cantidad a sumar (positivo) o restar (negativo) al stock actual.
           example: -5
+
+    BloqueoStockRequest:
+      type: object
+      required:
+        - cantidad
+      properties:
+        cantidad:
+          type: integer
+          description: Cantidad de unidades a bloquear/liberar temporalmente.
+          default: 1
+          example: 2
+
+    BloqueoStockResponse:
+      type: object
+      properties:
+        bloqueado:
+          type: boolean
+          example: true
+        id_producto:
+          type: string
+          format: uuid
+          example: "p1234567-e89b-12d3-a456-426614174000"
+        precio_unitario:
+          type: number
+          format: float
+          example: 25.50
 
     EnvioLogistico:
       type: object
@@ -206,7 +296,7 @@ components:
           example: "Error en la petición"
         detalle:
           type: string
-          example: "La variación de unidades no puede ser nula."
+          example: "Stock insuficiente para la cantidad solicitada."
 
   responses:
     BadRequest:

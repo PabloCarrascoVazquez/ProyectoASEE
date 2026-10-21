@@ -47,6 +47,89 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /festivales/{id_festival}/entradas:
+    get:
+      tags: [Catálogo - Entradas]
+      summary: Consultar tarifas y disponibilidad de entradas
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "fest_subsonic_2026"
+      responses:
+        '200':
+          description: Listado de tipos de entrada y stock disponible.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TipoEntrada'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /festivales/{id_festival}/entradas/bloquear:
+    post:
+      tags: [Catálogo - Entradas]
+      summary: Bloqueo temporal de cupo (Llamada interna desde Servicio de Compras)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloqueoCupoRequest'
+      responses:
+        '200':
+          description: Cupo bloqueado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloqueoCupoResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Aforo agotado para este tipo de entrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /festivales/{id_festival}/entradas/liberar:
+    post:
+      tags: [Catálogo - Entradas]
+      summary: Liberar cupo bloqueado tras expiración o fallo de pago
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BloqueoCupoRequest'
+      responses:
+        '200':
+          description: Cupo liberado correctamente.
+        '500':
+          $ref: '#/components/responses/InternalError'
+
   /espacios/{id}/alquileres:
     post:
       tags: [Catálogo - Espacios]
@@ -171,6 +254,50 @@ components:
           type: string
           enum: [disponible, reservado, alquilado]
           example: "disponible"
+
+    TipoEntrada:
+      type: object
+      properties:
+        tipo:
+          type: string
+          enum: [day, weekend, vip]
+          example: "weekend"
+        precio:
+          type: number
+          format: float
+          example: 125.00
+        disponibles:
+          type: integer
+          example: 450
+
+    BloqueoCupoRequest:
+      type: object
+      required:
+        - tipo_entrada
+        - cantidad
+      properties:
+        tipo_entrada:
+          type: string
+          enum: [day, weekend, vip]
+          example: "weekend"
+        cantidad:
+          type: integer
+          default: 1
+          example: 1
+
+    BloqueoCupoResponse:
+      type: object
+      properties:
+        bloqueado:
+          type: boolean
+          example: true
+        tipo_entrada:
+          type: string
+          example: "weekend"
+        precio_unitario:
+          type: number
+          format: float
+          example: 125.00
 
     AlquilerRequest:
       type: object
