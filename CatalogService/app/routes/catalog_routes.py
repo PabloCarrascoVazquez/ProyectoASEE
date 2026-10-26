@@ -1,0 +1,147 @@
+from functools import wraps
+import jwt
+from flask import Blueprint, request, jsonify
+
+# Factories y Servicios
+from app.daos.factories import DAOFactory
+from app.services.catalog_service import CatalogService
+from app.core.config import settings
+
+# DTOs
+from app.dtos.requests import BloqueoCupoRequest, AlquilerRequest, ArtistaFavoritoRequest
+
+catalog_bp = Blueprint("catalog_routes", __name__, url_prefix="/api")
+
+# ==========================================
+# MIDDLEWARE / DECORADOR DE AUTENTICACIÓN
+# ==========================================
+def token_required(f):
+    """Verifica que la petición contenga un token JWT válido en el header Authorization."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({
+                "codigo": 401,
+                "mensaje": "Acceso no autorizado",
+                "detalle": "Falta el token Bearer en la cabecera."
+            }), 401
+
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+            current_user_id = payload.get("sub") or payload.get("user_id")
+        except jwt.ExpiredSignatureError:
+            return jsonify({"codigo": 401, "mensaje": "Acceso no autorizado", "detalle": "Token expirado."}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"codigo": 401, "mensaje": "Acceso no autorizado", "detalle": "Token inválido."}), 401
+
+        # Pasamos el ID del usuario extraído del token a la ruta
+        return f(current_user_id, *args, **kwargs)
+
+    return decorated
+
+# ==========================================
+# ENDPOINTS DE LECTURA PÚBLICA
+# ==========================================
+@catalog_bp.route("/festivales", methods=["GET"])
+def get_festivales():
+    """Listar todos los festivales."""
+    try:
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_list = catalog_service.get_all_festivales()
+        return jsonify([resp.to_dict() for resp in response_list]), 200
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/festivales/<id_festival>/espacios", methods=["GET"])
+def get_espacios(id_festival: str):
+    """Listar parcelas y mapa de un festival."""
+    try:
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_list = catalog_service.get_espacios(id_festival)
+        return jsonify([resp.to_dict() for resp in response_list]), 200
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/festivales/<id_festival>/entradas", methods=["GET"])
+def get_entradas(id_festival: str):
+    """Consultar tarifas y disponibilidad de entradas."""
+    try:
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_list = catalog_service.get_entradas(id_festival)
+        return jsonify([resp.to_dict() for resp in response_list]), 200
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+# ==========================================
+# ENDPOINTS PROTEGIDOS (REQUERIDOS POR JWT)
+# ==========================================
+@catalog_bp.route("/festivales/<id_festival>/entradas/bloquear", methods=["POST"])
+@token_required
+def bloquear_entradas(current_user_id: str, id_festival: str):
+    """Bloqueo temporal de cupo (Llamada desde el Servicio de Compras)."""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío o inválido."}), 400
+
+        req_dto = BloqueoCupoRequest.from_dict(data)
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_dto = catalog_service.bloquear_cupo(id_festival, req_dto)
+        
+        return jsonify(response_dto.to_dict()), 200
+    except ValueError as ve:
+        if str(ve) == "NO_STOCK":
+            return jsonify({"codigo": 409, "mensaje": "Conflicto", "detalle": "Aforo agotado para este tipo de entrada."}), 409
+        return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/festivales/<id_festival>/entradas/liberar", methods=["POST"])
+@token_required
+def liberar_entradas(current_user_id: str, id_festival: str):
+    """Liberar cupo bloqueado tras fallo de pago."""
+    try:
+        data = request.get_json(silent=True)
+        req_dto = BloqueoCupoRequest.from_dict(data)
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        catalog_service.liberar_cupo(id_festival, req_dto)
+        
+        return jsonify({"mensaje": "Cupo liberado correctamente."}), 200
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/espacios/<id_espacio>/alquileres", methods=["POST"])
+@token_required
+def solicitar_alquiler(current_user_id: str, id_espacio: str):
+    """Solicitar alquiler de parcela por un proveedor."""
+    try:
+        data = request.get_json(silent=True)
+        req_dto = AlquilerRequest.from_dict(data)
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_dto = catalog_service.crear_alquiler(id_espacio, req_dto)
+        
+        return jsonify(response_dto.to_dict()), 201
+    except ValueError as ve:
+        if str(ve) == "ESPACIO_NO_DISPONIBLE":
+            return jsonify({"codigo": 409, "mensaje": "Conflicto", "detalle": "La parcela ya se encuentra alquilada o reservada."}), 409
+        if str(ve) == "ESPACIO_NO_ENCONTRADO":
+            return jsonify({"codigo": 404, "mensaje": "No encontrado", "detalle": "El recurso solicitado no existe."}), 404
+        return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/artistas-favoritos", methods=["POST"])
+@token_required
+def guardar_artista_favorito(current_user_id: str):
+    """Guardar artista en la lista de favoritos."""
+    try:
+        data = request.get_json(silent=True)
+        req_dto = ArtistaFavoritoRequest.from_dict(data)
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_dto = catalog_service.guardar_favorito(current_user_id, req_dto)
+        
+        return jsonify(response_dto.to_dict()), 201
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500

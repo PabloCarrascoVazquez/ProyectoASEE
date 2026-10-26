@@ -1,0 +1,15 @@
+# Entornos virtuales
+venv/
+env/
+
+# Variables de entorno (¡nunca subir a GitHub!)
+.env
+
+# Bases de datos locales
+*.db
+catalogo.db
+
+# Archivos temporales de Python y Tests
+__pycache__/
+*.pyc
+.pytest_cache/
