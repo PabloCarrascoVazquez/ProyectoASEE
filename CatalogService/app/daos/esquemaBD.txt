@@ -1,0 +1,46 @@
+Festivales (
+    id_festival VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    ubicacion VARCHAR(255) NOT NULL,
+    artistas_destacados TEXT NULL -- Se guardará como un string en formato JSON, ej: '["Daft Punk", "Peggy Gou"]'
+);
+
+Espacios (
+    id_espacio VARCHAR(36) PRIMARY KEY,
+    id_festival VARCHAR(50) NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    metros_cuadrados INT NOT NULL,
+    precio_alquiler DECIMAL(10, 2) NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'disponible',
+    FOREIGN KEY (id_festival) REFERENCES Festivales(id_festival)
+);
+
+Alquileres (
+    id_contrato VARCHAR(36) PRIMARY KEY,
+    id_espacio VARCHAR(36) NOT NULL,
+    nombre_negocio VARCHAR(100) NOT NULL,
+    tipo_negocio VARCHAR(100) NOT NULL,
+    necesita_conexion_electrica BOOLEAN NOT NULL DEFAULT 0,
+    estado VARCHAR(50) NOT NULL DEFAULT 'Pendiente de firma',
+    fecha_solicitud DATETIME NOT NULL,
+    FOREIGN KEY (id_espacio) REFERENCES Espacios(id_espacio)
+);
+
+Tipos_Entrada (
+    id_festival VARCHAR(50) NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
+    precio DECIMAL(10, 2) NOT NULL,
+    disponibles INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (id_festival, tipo),
+    FOREIGN KEY (id_festival) REFERENCES Festivales(id_festival)
+);
+
+Artistas_Favoritos (
+    user_id VARCHAR(36) NOT NULL,
+    id_festival VARCHAR(50) NOT NULL,
+    nombre_artista VARCHAR(100) NOT NULL,
+    PRIMARY KEY (user_id, id_festival, nombre_artista), -- Evita que un usuario guarde el mismo artista dos veces en el mismo festival
+    FOREIGN KEY (id_festival) REFERENCES Festivales(id_festival)
+);
