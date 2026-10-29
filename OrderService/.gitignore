@@ -1,0 +1,19 @@
+# Binarios
+*.exe
+*.exe~
+*.test
+*.out
+orderservice
+
+# Environments
+.env
+
+# Testing & Coverage
+coverage.out
+coverage.html
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
