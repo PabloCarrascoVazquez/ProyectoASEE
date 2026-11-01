@@ -1,4 +1,0 @@
-root: C:\Users\USUARIO\Desktop\Universidad\Tercero\PI\Proyecto\ProyectoPI\Front\src 
-path: C:\Program Files\nodejs 
-arch: 64 
-proxy: none
