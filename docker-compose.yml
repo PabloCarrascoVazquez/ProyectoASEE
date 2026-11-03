@@ -17,7 +17,6 @@ services:
   catalogservice:
     build: ./CatalogService
     container_name: subsonic-catalogservice
-    # Opcional: si tiene base de datos propia, lo añades en depends_on
 
   purchaseservice:
     build: ./PurchaseService
@@ -46,6 +45,7 @@ services:
     environment:
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - DB_ENGINE=postgres
     depends_on:
       - rabbitmq
+    env_file:
+      - ./OrderService/.env

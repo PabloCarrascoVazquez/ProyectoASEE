@@ -43,7 +43,7 @@ public class CatalogClientService {
             headers.set("Authorization", jwtToken.startsWith("Bearer ") ? jwtToken : "Bearer " + jwtToken);
         }
 
-        BloqueoCupoCatalogRequest body = new (BloqueoCupoCatalogRequesttipoEntrada, cantidad);
+        BloqueoCupoCatalogRequest body = new BloqueoCupoCatalogRequest(tipoEntrada, cantidad);
         HttpEntity<BloqueoCupoCatalogRequest> requestEntity = new HttpEntity<>(body, headers);
 
         try {

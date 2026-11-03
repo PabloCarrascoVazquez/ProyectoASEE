@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+python-dotenv
+flasgger
+pydantic-settings==2.0.3
+PyJWT
+mysql-connector-python
