@@ -1,0 +1,135 @@
+info:
+  name: Actualizar datos de mi perfil (nombre o avatar)
+  type: http
+  seq: 5
+  tags:
+    - Usuarios
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/auth/perfil"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Laura Gómez Modificada",
+        "avatar": "https://bucket.com/avatars/laura_new.png"
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Perfil actualizado correctamente.
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez Modificada",
+            "avatar": "https://bucket.com/avatars/laura_new.png"
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "Laura Gómez",
+            "email": "laura@subsonic.com",
+            "avatar": "https://bucket.com/avatars/laura.png",
+            "rol": "client"
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez Modificada",
+            "avatar": "https://bucket.com/avatars/laura_new.png"
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Credenciales incorrectas, Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez Modificada",
+            "avatar": "https://bucket.com/avatars/laura_new.png"
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez Modificada",
+            "avatar": "https://bucket.com/avatars/laura_new.png"
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }

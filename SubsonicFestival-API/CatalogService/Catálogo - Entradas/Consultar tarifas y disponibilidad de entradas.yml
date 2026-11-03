@@ -1,0 +1,95 @@
+info:
+  name: Consultar tarifas y disponibilidad de entradas
+  type: http
+  seq: 1
+  tags:
+    - Catálogo - Entradas
+
+http:
+  method: GET
+  url: "{{baseUrl}}/festivales/:id_festival/entradas"
+  params:
+    - name: id_festival
+      value: fest_subsonic_2026
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Listado de tipos de entrada y stock disponible.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas"
+      method: GET
+      params:
+        - name: id_festival
+          value: fest_subsonic_2026
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "tipo": "weekend",
+              "precio": 125,
+              "disponibles": 450
+            }
+          ]
+  - name: 404 Response
+    description: El recurso solicitado (festival o espacio) no existe.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas"
+      method: GET
+      params:
+        - name: id_festival
+          value: fest_subsonic_2026
+          type: path
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas"
+      method: GET
+      params:
+        - name: id_festival
+          value: fest_subsonic_2026
+          type: path
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }

@@ -1,0 +1,67 @@
+info:
+  name: Listar festivales y su escaleta
+  type: http
+  seq: 1
+  tags:
+    - Catálogo - Eventos
+
+http:
+  method: GET
+  url: "{{baseUrl}}/festivales"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Lista de festivales devuelta con éxito.
+    request:
+      url: "{{baseUrl}}/festivales"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id_festival": "fest_subsonic_2026",
+              "nombre": "Subsonic Festival 2026",
+              "fecha_inicio": "2026-07-15",
+              "fecha_fin": "2026-07-18",
+              "ubicacion": "Recinto Ferial, Madrid",
+              "artistas_destacados": [
+                "Daft Punk",
+                "Carl Cox",
+                "Peggy Gou"
+              ]
+            }
+          ]
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/festivales"
+      method: GET
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }

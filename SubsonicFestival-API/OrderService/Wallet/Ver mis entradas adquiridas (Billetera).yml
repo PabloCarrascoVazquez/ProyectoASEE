@@ -1,0 +1,83 @@
+info:
+  name: Ver mis entradas adquiridas (Billetera)
+  type: http
+  seq: 1
+  tags:
+    - Wallet
+
+http:
+  method: GET
+  url: "{{baseUrl}}/pedidos/mis-entradas"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Lista de entradas digitales del usuario.
+    request:
+      url: "{{baseUrl}}/pedidos/mis-entradas"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id_entrada": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              "id_festival": "fest_subsonic_2026",
+              "tipo": "VIP",
+              "fecha_compra": "2026-05-10T14:30:00Z",
+              "estado": "Valida"
+            }
+          ]
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/pedidos/mis-entradas"
+      method: GET
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/pedidos/mis-entradas"
+      method: GET
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }

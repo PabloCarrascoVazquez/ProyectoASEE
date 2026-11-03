@@ -1,0 +1,141 @@
+info:
+  name: Solicitar cancelación / devolución de una entrada
+  type: http
+  seq: 3
+  tags:
+    - Wallet
+
+http:
+  method: POST
+  url: "{{baseUrl}}/pedidos/:id_entrada/cancelaciones"
+  params:
+    - name: id_entrada
+      value: ""
+      type: path
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Proceso de devolución iniciado correctamente.
+    request:
+      url: "{{baseUrl}}/pedidos/:id_entrada/cancelaciones"
+      method: POST
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id_entrada": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "estado_devolucion": "En proceso",
+            "fecha_solicitud": "2026-10-15T18:15:00Z"
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/pedidos/:id_entrada/cancelaciones"
+      method: POST
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/pedidos/:id_entrada/cancelaciones"
+      method: POST
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 404 Response
+    description: El recurso solicitado (entrada) no existe o no pertenece al usuario.
+    request:
+      url: "{{baseUrl}}/pedidos/:id_entrada/cancelaciones"
+      method: POST
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/pedidos/:id_entrada/cancelaciones"
+      method: POST
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }

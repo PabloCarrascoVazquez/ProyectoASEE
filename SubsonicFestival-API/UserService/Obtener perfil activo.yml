@@ -1,0 +1,100 @@
+info:
+  name: Obtener perfil activo
+  type: http
+  seq: 4
+  tags:
+    - Usuarios
+
+http:
+  method: GET
+  url: "{{baseUrl}}/auth/perfil"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Perfil devuelto con éxito (sin password_hash).
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "Laura Gómez",
+            "email": "laura@subsonic.com",
+            "avatar": "https://bucket.com/avatars/laura.png",
+            "rol": "client"
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Credenciales incorrectas, Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: GET
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }
+  - name: 404 Response
+    description: El recurso solicitado no existe.
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: GET
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/auth/perfil"
+      method: GET
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }

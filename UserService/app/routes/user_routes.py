@@ -12,7 +12,7 @@ from app.core.config import settings
 from app.dtos.requests import UserRegisterRequest, UserLoginRequest, UserUpdateProfileRequest
 
 
-user_bp = Blueprint("user_routes", __name__, url_prefix="/api")
+user_bp = Blueprint("user_routes", __name__)
 
 # ==========================================
 # MIDDLEWARE / DECORADOR DE AUTENTICACIÓN
@@ -138,3 +138,9 @@ def update_profile(current_user_id: str):
         return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": str(ve)}), 400
     except Exception as e:
         return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+
+
+@user_bp.route("/auth/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "UP", "service": "UserService"}), 200

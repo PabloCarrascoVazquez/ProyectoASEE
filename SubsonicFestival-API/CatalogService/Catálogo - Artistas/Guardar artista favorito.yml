@@ -1,0 +1,132 @@
+info:
+  name: Guardar artista favorito
+  type: http
+  seq: 1
+  tags:
+    - Catálogo - Artistas
+
+http:
+  method: POST
+  url: "{{baseUrl}}/artistas-favoritos"
+  body:
+    type: json
+    data: |-
+      {
+        "id_festival": "fest_subsonic_2026",
+        "nombre_artista": "Peggy Gou"
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Artista guardado en la lista de favoritos del usuario.
+    request:
+      url: "{{baseUrl}}/artistas-favoritos"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "nombre_artista": "Peggy Gou"
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "mensaje": "Artista añadido a favoritos correctamente.",
+            "nombre_artista": "Peggy Gou"
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/artistas-favoritos"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "nombre_artista": "Peggy Gou"
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/artistas-favoritos"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "nombre_artista": "Peggy Gou"
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/artistas-favoritos"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "nombre_artista": "Peggy Gou"
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }

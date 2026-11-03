@@ -1,0 +1,85 @@
+info:
+  name: Liberar cupo bloqueado tras expiración o fallo de pago
+  type: http
+  seq: 3
+  tags:
+    - Catálogo - Entradas
+
+http:
+  method: POST
+  url: "{{baseUrl}}/festivales/:id_festival/entradas/liberar"
+  params:
+    - name: id_festival
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "tipo_entrada": "weekend",
+        "cantidad": 1
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Cupo liberado correctamente.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas/liberar"
+      method: POST
+      params:
+        - name: id_festival
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 1
+          }
+    response:
+      status: 200
+      statusText: OK
+      body:
+        type: text
+        data: ""
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas/liberar"
+      method: POST
+      params:
+        - name: id_festival
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 1
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }

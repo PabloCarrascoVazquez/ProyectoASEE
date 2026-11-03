@@ -1,0 +1,215 @@
+info:
+  name: Confirmar pago (Valida con pasarela bancaria y emite evento al Bus)
+  type: http
+  seq: 1
+  tags:
+    - Pagos
+
+http:
+  method: POST
+  url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+  params:
+    - name: id_transaccion
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "metodo_pago": "tarjeta",
+        "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+      }
+  auth:
+    type: bearer
+    token: "{{jwtToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Pago exitoso. Se emite evento asíncrono para Pedidos y/o Inventario.
+    request:
+      url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+      method: POST
+      params:
+        - name: id_transaccion
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "metodo_pago": "tarjeta",
+            "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id_transaccion": "tx-84729482-4829-4729",
+            "estado": "PAID",
+            "total_cobrado": 250,
+            "recibo_url": "https://pagos.subsonic.com/recibos/tx-84729482",
+            "fecha_pago": "2026-10-15T18:15:30Z"
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+      method: POST
+      params:
+        - name: id_transaccion
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "metodo_pago": "tarjeta",
+            "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT ausente o inválido).
+    request:
+      url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+      method: POST
+      params:
+        - name: id_transaccion
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "metodo_pago": "tarjeta",
+            "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+  - name: 404 Response
+    description: La transacción solicitada no existe.
+    request:
+      url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+      method: POST
+      params:
+        - name: id_transaccion
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "metodo_pago": "tarjeta",
+            "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+          }
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+  - name: 409 Response
+    description: Conflicto - La reserva ha expirado o el pago ya fue procesado.
+    request:
+      url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+      method: POST
+      params:
+        - name: id_transaccion
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "metodo_pago": "tarjeta",
+            "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+  - name: 500 Response
+    description: Error interno del servidor o pasarela bancaria no disponible.
+    request:
+      url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+      method: POST
+      params:
+        - name: id_transaccion
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "metodo_pago": "tarjeta",
+            "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }

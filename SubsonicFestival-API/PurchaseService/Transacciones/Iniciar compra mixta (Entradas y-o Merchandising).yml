@@ -1,0 +1,271 @@
+info:
+  name: Iniciar compra mixta (Entradas y/o Merchandising)
+  type: http
+  seq: 1
+  tags:
+    - Transacciones
+
+http:
+  method: POST
+  url: "{{baseUrl}}/compras/carrito/iniciar"
+  body:
+    type: json
+    data: |-
+      {
+        "id_festival": "fest_subsonic_2026",
+        "entradas": [
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 2
+          }
+        ],
+        "merchandising": [
+          {
+            "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+            "cantidad": 1
+          }
+        ],
+        "direccion_envio": {
+          "calle": "Calle Mayor 14, 2ºB",
+          "ciudad": "Madrid",
+          "codigo_postal": "28013",
+          "pais": "España",
+          "telefono_contacto": "+34600112233"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{jwtToken}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Todo el stock/aforo bloqueado temporalmente. Transacción creada.
+    request:
+      url: "{{baseUrl}}/compras/carrito/iniciar"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "entradas": [
+              {
+                "tipo_entrada": "weekend",
+                "cantidad": 2
+              }
+            ],
+            "merchandising": [
+              {
+                "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+                "cantidad": 1
+              }
+            ],
+            "direccion_envio": {
+              "calle": "Calle Mayor 14, 2ºB",
+              "ciudad": "Madrid",
+              "codigo_postal": "28013",
+              "pais": "España",
+              "telefono_contacto": "+34600112233"
+            }
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id_transaccion": "tx-84729482-4829-4729",
+            "estado": "PENDING",
+            "expiracion_reserva": "2026-10-15T18:22:00Z",
+            "moneda": "EUR",
+            "total_pagar": 250
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/compras/carrito/iniciar"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "entradas": [
+              {
+                "tipo_entrada": "weekend",
+                "cantidad": 2
+              }
+            ],
+            "merchandising": [
+              {
+                "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+                "cantidad": 1
+              }
+            ],
+            "direccion_envio": {
+              "calle": "Calle Mayor 14, 2ºB",
+              "ciudad": "Madrid",
+              "codigo_postal": "28013",
+              "pais": "España",
+              "telefono_contacto": "+34600112233"
+            }
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT ausente o inválido).
+    request:
+      url: "{{baseUrl}}/compras/carrito/iniciar"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "entradas": [
+              {
+                "tipo_entrada": "weekend",
+                "cantidad": 2
+              }
+            ],
+            "merchandising": [
+              {
+                "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+                "cantidad": 1
+              }
+            ],
+            "direccion_envio": {
+              "calle": "Calle Mayor 14, 2ºB",
+              "ciudad": "Madrid",
+              "codigo_postal": "28013",
+              "pais": "España",
+              "telefono_contacto": "+34600112233"
+            }
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+  - name: 409 Response
+    description: Conflicto - Stock o aforo insuficiente en alguno de los productos. Se aplican compensaciones.
+    request:
+      url: "{{baseUrl}}/compras/carrito/iniciar"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "entradas": [
+              {
+                "tipo_entrada": "weekend",
+                "cantidad": 2
+              }
+            ],
+            "merchandising": [
+              {
+                "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+                "cantidad": 1
+              }
+            ],
+            "direccion_envio": {
+              "calle": "Calle Mayor 14, 2ºB",
+              "ciudad": "Madrid",
+              "codigo_postal": "28013",
+              "pais": "España",
+              "telefono_contacto": "+34600112233"
+            }
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+  - name: 500 Response
+    description: Error interno del servidor o pasarela bancaria no disponible.
+    request:
+      url: "{{baseUrl}}/compras/carrito/iniciar"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "id_festival": "fest_subsonic_2026",
+            "entradas": [
+              {
+                "tipo_entrada": "weekend",
+                "cantidad": 2
+              }
+            ],
+            "merchandising": [
+              {
+                "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+                "cantidad": 1
+              }
+            ],
+            "direccion_envio": {
+              "calle": "Calle Mayor 14, 2ºB",
+              "ciudad": "Madrid",
+              "codigo_postal": "28013",
+              "pais": "España",
+              "telefono_contacto": "+34600112233"
+            }
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "Faltan parámetros requeridos o stock insuficiente."
+          }
+
+docs: Bloquea temporalmente el aforo y el stock físico de forma concurrente. La reserva se mantiene 10 minutos.

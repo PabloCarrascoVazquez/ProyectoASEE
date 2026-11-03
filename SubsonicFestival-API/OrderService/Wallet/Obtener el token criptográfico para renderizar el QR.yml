@@ -1,0 +1,117 @@
+info:
+  name: Obtener el token criptográfico para renderizar el QR
+  type: http
+  seq: 2
+  tags:
+    - Wallet
+
+http:
+  method: GET
+  url: "{{baseUrl}}/pedidos/mis-entradas/:id_entrada/qr"
+  params:
+    - name: id_entrada
+      value: ""
+      type: path
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Token criptográfico devuelto con éxito.
+    request:
+      url: "{{baseUrl}}/pedidos/mis-entradas/:id_entrada/qr"
+      method: GET
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "token_qr": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "fecha_expiracion": "2026-10-15T19:00:00Z"
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/pedidos/mis-entradas/:id_entrada/qr"
+      method: GET
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 404 Response
+    description: El recurso solicitado (entrada) no existe o no pertenece al usuario.
+    request:
+      url: "{{baseUrl}}/pedidos/mis-entradas/:id_entrada/qr"
+      method: GET
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/pedidos/mis-entradas/:id_entrada/qr"
+      method: GET
+      params:
+        - name: id_entrada
+          value: ""
+          type: path
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }

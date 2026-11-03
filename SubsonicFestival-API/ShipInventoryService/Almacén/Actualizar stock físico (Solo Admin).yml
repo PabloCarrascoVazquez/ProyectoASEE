@@ -1,0 +1,209 @@
+info:
+  name: Actualizar stock físico (Solo Admin)
+  type: http
+  seq: 2
+  tags:
+    - Almacén
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/inventario/:id_producto"
+  params:
+    - name: id_producto
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "variacion_unidades": -5
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Stock actualizado correctamente.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto"
+      method: PUT
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "variacion_unidades": -5
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+            "nombre_producto": "Camiseta Oficial Subsonic",
+            "variante": "Talla L - Negra",
+            "unidades_disponibles": 150,
+            "precio": 25.5,
+            "ubicacion_almacen": "Pasillo B - Estante 4"
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto"
+      method: PUT
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "variacion_unidades": -5
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto"
+      method: PUT
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "variacion_unidades": -5
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 403 Response
+    description: No tienes permisos suficientes para realizar esta acción (ej. requiere rol Admin).
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto"
+      method: PUT
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "variacion_unidades": -5
+          }
+    response:
+      status: 403
+      statusText: Forbidden
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 404 Response
+    description: El recurso solicitado no existe.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto"
+      method: PUT
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "variacion_unidades": -5
+          }
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto"
+      method: PUT
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "variacion_unidades": -5
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }

@@ -1,0 +1,97 @@
+info:
+  name: Listar parcelas y mapa del recinto de un festival
+  type: http
+  seq: 1
+  tags:
+    - Catálogo - Espacios
+
+http:
+  method: GET
+  url: "{{baseUrl}}/festivales/:id_festival/espacios"
+  params:
+    - name: id_festival
+      value: fest_subsonic_2026
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Mapa y parcelas correspondientes al festival.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/espacios"
+      method: GET
+      params:
+        - name: id_festival
+          value: fest_subsonic_2026
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id_espacio": "esp-4920-8439",
+              "tipo": "foodtruck",
+              "metros_cuadrados": 15,
+              "precio_alquiler": 1200.5,
+              "estado": "disponible"
+            }
+          ]
+  - name: 404 Response
+    description: El recurso solicitado (festival o espacio) no existe.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/espacios"
+      method: GET
+      params:
+        - name: id_festival
+          value: fest_subsonic_2026
+          type: path
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/espacios"
+      method: GET
+      params:
+        - name: id_festival
+          value: fest_subsonic_2026
+          type: path
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }

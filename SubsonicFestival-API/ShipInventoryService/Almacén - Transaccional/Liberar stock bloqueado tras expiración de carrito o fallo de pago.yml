@@ -1,0 +1,82 @@
+info:
+  name: Liberar stock bloqueado tras expiración de carrito o fallo de pago
+  type: http
+  seq: 2
+  tags:
+    - Almacén - Transaccional
+
+http:
+  method: POST
+  url: "{{baseUrl}}/inventario/:id_producto/liberar"
+  params:
+    - name: id_producto
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "cantidad": 2
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Stock liberado correctamente, vuelve a estar disponible.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto/liberar"
+      method: POST
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "cantidad": 2
+          }
+    response:
+      status: 200
+      statusText: OK
+      body:
+        type: text
+        data: ""
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto/liberar"
+      method: POST
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "cantidad": 2
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }

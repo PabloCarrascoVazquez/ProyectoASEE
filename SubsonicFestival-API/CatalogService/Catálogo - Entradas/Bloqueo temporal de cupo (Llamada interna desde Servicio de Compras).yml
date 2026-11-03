@@ -1,0 +1,153 @@
+info:
+  name: Bloqueo temporal de cupo (Llamada interna desde Servicio de Compras)
+  type: http
+  seq: 2
+  tags:
+    - Catálogo - Entradas
+
+http:
+  method: POST
+  url: "{{baseUrl}}/festivales/:id_festival/entradas/bloquear"
+  params:
+    - name: id_festival
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "tipo_entrada": "weekend",
+        "cantidad": 1
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Cupo bloqueado con éxito.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas/bloquear"
+      method: POST
+      params:
+        - name: id_festival
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 1
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "bloqueado": true,
+            "tipo_entrada": "weekend",
+            "precio_unitario": 125
+          }
+  - name: 404 Response
+    description: El recurso solicitado (festival o espacio) no existe.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas/bloquear"
+      method: POST
+      params:
+        - name: id_festival
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 1
+          }
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 409 Response
+    description: Aforo agotado para este tipo de entrada.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas/bloquear"
+      method: POST
+      params:
+        - name: id_festival
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 1
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/festivales/:id_festival/entradas/bloquear"
+      method: POST
+      params:
+        - name: id_festival
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 1
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }

@@ -1,0 +1,103 @@
+info:
+  name: Listar envíos pendientes de despachar
+  type: http
+  seq: 1
+  tags:
+    - Logística
+
+http:
+  method: GET
+  url: "{{baseUrl}}/envios"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Lista de paquetes y envíos.
+    request:
+      url: "{{baseUrl}}/envios"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id_envio": "e9876543-e89b-12d3-a456-426614174111",
+              "id_pedido": "ped-10293847",
+              "estado_envio": "Enviado",
+              "empresa_transporte": "Correos Express",
+              "tracking_number": "PK392817492ES",
+              "direccion_entrega": "Calle Falsa 123, 28080 Madrid"
+            }
+          ]
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/envios"
+      method: GET
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 403 Response
+    description: No tienes permisos suficientes para realizar esta acción (ej. requiere rol Admin).
+    request:
+      url: "{{baseUrl}}/envios"
+      method: GET
+    response:
+      status: 403
+      statusText: Forbidden
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/envios"
+      method: GET
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }

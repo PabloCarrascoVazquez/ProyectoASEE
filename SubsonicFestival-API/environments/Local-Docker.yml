@@ -1,0 +1,6 @@
+name: Local-Docker
+variables:
+  - name: baseUrl
+    value: http://localhost:8000
+  - name: jwtToken
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYWZiMjJkNS02OWM4LTRkNWUtOTNhZC00OTJhNWY2YmQyZDAiLCJ1c2VyX2lkIjoiMGFmYjIyZDUtNjljOC00ZDVlLTkzYWQtNDkyYTVmNmJkMmQwIiwicm9sZSI6ImNsaWVudCIsImV4cCI6MTc5MzczOTc4NiwiaWF0IjoxNzkzNzM2MTg2fQ.yaZNPnDukku3Mgel_YpZ6Bu91CDiNVgG6PolbokSeAY

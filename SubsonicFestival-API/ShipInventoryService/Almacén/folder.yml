@@ -1,0 +1,6 @@
+info:
+  name: Almacén
+  type: folder
+
+request:
+  auth: inherit

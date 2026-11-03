@@ -1,0 +1,152 @@
+info:
+  name: Validar un QR escaneado (Uso exclusivo por staff en la puerta)
+  type: http
+  seq: 1
+  tags:
+    - Puertas / Escáneres
+
+http:
+  method: POST
+  url: "{{baseUrl}}/acceso/validar-qr"
+  body:
+    type: json
+    data: |-
+      {
+        "token_qr": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: QR Válido. Estado cambiado a "Usado".
+    request:
+      url: "{{baseUrl}}/acceso/validar-qr"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "token_qr": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "estado_acceso": true,
+            "mensaje": "Acceso permitido. Entrada actualizada a 'Usada'."
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/acceso/validar-qr"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "token_qr": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/acceso/validar-qr"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "token_qr": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 403 Response
+    description: Acceso denegado. QR Inválido o ya escaneado previamente.
+    request:
+      url: "{{baseUrl}}/acceso/validar-qr"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "token_qr": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+    response:
+      status: 403
+      statusText: Forbidden
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/acceso/validar-qr"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "token_qr": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "El token proporcionado no es válido."
+          }

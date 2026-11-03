@@ -1,0 +1,63 @@
+info:
+  name: Consultar stock disponible de productos
+  type: http
+  seq: 1
+  tags:
+    - Almacén
+
+http:
+  method: GET
+  url: "{{baseUrl}}/inventario/stock"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Listado del stock disponible devuelto con éxito.
+    request:
+      url: "{{baseUrl}}/inventario/stock"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+              "nombre_producto": "Camiseta Oficial Subsonic",
+              "variante": "Talla L - Negra",
+              "unidades_disponibles": 150,
+              "precio": 25.5,
+              "ubicacion_almacen": "Pasillo B - Estante 4"
+            }
+          ]
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/inventario/stock"
+      method: GET
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }

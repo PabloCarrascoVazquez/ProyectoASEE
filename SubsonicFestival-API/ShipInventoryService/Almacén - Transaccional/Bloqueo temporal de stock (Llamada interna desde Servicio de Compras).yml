@@ -1,0 +1,148 @@
+info:
+  name: Bloqueo temporal de stock (Llamada interna desde Servicio de Compras)
+  type: http
+  seq: 1
+  tags:
+    - Almacén - Transaccional
+
+http:
+  method: POST
+  url: "{{baseUrl}}/inventario/:id_producto/bloquear"
+  params:
+    - name: id_producto
+      value: ""
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "cantidad": 2
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 200 Response
+    description: Stock de merchandising bloqueado con éxito.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto/bloquear"
+      method: POST
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "cantidad": 2
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "bloqueado": true,
+            "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+            "precio_unitario": 25.5
+          }
+  - name: 404 Response
+    description: El recurso solicitado no existe.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto/bloquear"
+      method: POST
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "cantidad": 2
+          }
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 409 Response
+    description: Stock agotado o insuficiente para este producto.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto/bloquear"
+      method: POST
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "cantidad": 2
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/inventario/:id_producto/bloquear"
+      method: POST
+      params:
+        - name: id_producto
+          value: ""
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "cantidad": 2
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Stock insuficiente para la cantidad solicitada."
+          }

@@ -1,0 +1,148 @@
+info:
+  name: Registro de un nuevo usuario
+  type: http
+  seq: 2
+  tags:
+    - Usuarios
+
+http:
+  method: POST
+  url: "{{baseUrl}}/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Laura Gómez",
+        "email": "laura@subsonic.com",
+        "password": "MiContrasenaSegura123!",
+        "avatar": "https://bucket.com/avatars/laura.png",
+        "rol": "client"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Registro correcto en BD. Devuelve el perfil sin contraseña.
+    request:
+      url: "{{baseUrl}}/auth/register"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez",
+            "email": "laura@subsonic.com",
+            "password": "MiContrasenaSegura123!",
+            "avatar": "https://bucket.com/avatars/laura.png",
+            "rol": "client"
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "name": "Laura Gómez",
+            "email": "laura@subsonic.com",
+            "avatar": "https://bucket.com/avatars/laura.png",
+            "rol": "client"
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/auth/register"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez",
+            "email": "laura@subsonic.com",
+            "password": "MiContrasenaSegura123!",
+            "avatar": "https://bucket.com/avatars/laura.png",
+            "rol": "client"
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }
+  - name: 409 Response
+    description: Conflicto - El email del usuario ya está registrado.
+    request:
+      url: "{{baseUrl}}/auth/register"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez",
+            "email": "laura@subsonic.com",
+            "password": "MiContrasenaSegura123!",
+            "avatar": "https://bucket.com/avatars/laura.png",
+            "rol": "client"
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/auth/register"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "name": "Laura Gómez",
+            "email": "laura@subsonic.com",
+            "password": "MiContrasenaSegura123!",
+            "avatar": "https://bucket.com/avatars/laura.png",
+            "rol": "client"
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Petición incorrecta",
+            "detalle": "El formato del campo 'email' es inválido."
+          }

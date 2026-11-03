@@ -1,0 +1,259 @@
+info:
+  name: Solicitar alquiler de parcela por un proveedor
+  type: http
+  seq: 2
+  tags:
+    - Catálogo - Espacios
+
+http:
+  method: POST
+  url: "{{baseUrl}}/espacios/:id/alquileres"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: ID del espacio/parcela a alquilar.
+  body:
+    type: json
+    data: |-
+      {
+        "nombre_negocio": "Burger King Foodtruck",
+        "tipo_negocio": "Restauración",
+        "necesita_conexion_electrica": true
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+examples:
+  - name: 201 Response
+    description: Solicitud de alquiler registrada correctamente.
+    request:
+      url: "{{baseUrl}}/espacios/:id/alquileres"
+      method: POST
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: ID del espacio/parcela a alquilar.
+      body:
+        type: json
+        data: |-
+          {
+            "nombre_negocio": "Burger King Foodtruck",
+            "tipo_negocio": "Restauración",
+            "necesita_conexion_electrica": true
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "id_contrato": "alq-9876-5432",
+            "estado": "Pendiente de firma",
+            "fecha_solicitud": "2026-10-15T18:15:00Z"
+          }
+  - name: 400 Response
+    description: Petición malformada o faltan parámetros requeridos.
+    request:
+      url: "{{baseUrl}}/espacios/:id/alquileres"
+      method: POST
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: ID del espacio/parcela a alquilar.
+      body:
+        type: json
+        data: |-
+          {
+            "nombre_negocio": "Burger King Foodtruck",
+            "tipo_negocio": "Restauración",
+            "necesita_conexion_electrica": true
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 401 Response
+    description: Acceso no autorizado (Token JWT inválido o caducado).
+    request:
+      url: "{{baseUrl}}/espacios/:id/alquileres"
+      method: POST
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: ID del espacio/parcela a alquilar.
+      body:
+        type: json
+        data: |-
+          {
+            "nombre_negocio": "Burger King Foodtruck",
+            "tipo_negocio": "Restauración",
+            "necesita_conexion_electrica": true
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 403 Response
+    description: Permisos insuficientes (ej. no tienes rol de Proveedor).
+    request:
+      url: "{{baseUrl}}/espacios/:id/alquileres"
+      method: POST
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: ID del espacio/parcela a alquilar.
+      body:
+        type: json
+        data: |-
+          {
+            "nombre_negocio": "Burger King Foodtruck",
+            "tipo_negocio": "Restauración",
+            "necesita_conexion_electrica": true
+          }
+    response:
+      status: 403
+      statusText: Forbidden
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 404 Response
+    description: El recurso solicitado (festival o espacio) no existe.
+    request:
+      url: "{{baseUrl}}/espacios/:id/alquileres"
+      method: POST
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: ID del espacio/parcela a alquilar.
+      body:
+        type: json
+        data: |-
+          {
+            "nombre_negocio": "Burger King Foodtruck",
+            "tipo_negocio": "Restauración",
+            "necesita_conexion_electrica": true
+          }
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 409 Response
+    description: Conflicto - La parcela ya se encuentra alquilada o reservada.
+    request:
+      url: "{{baseUrl}}/espacios/:id/alquileres"
+      method: POST
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: ID del espacio/parcela a alquilar.
+      body:
+        type: json
+        data: |-
+          {
+            "nombre_negocio": "Burger King Foodtruck",
+            "tipo_negocio": "Restauración",
+            "necesita_conexion_electrica": true
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
+  - name: 500 Response
+    description: Error interno del servidor.
+    request:
+      url: "{{baseUrl}}/espacios/:id/alquileres"
+      method: POST
+      params:
+        - name: id
+          value: ""
+          type: path
+          description: ID del espacio/parcela a alquilar.
+      body:
+        type: json
+        data: |-
+          {
+            "nombre_negocio": "Burger King Foodtruck",
+            "tipo_negocio": "Restauración",
+            "necesita_conexion_electrica": true
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "codigo": 400,
+            "mensaje": "Error en la petición",
+            "detalle": "Parámetros no válidos."
+          }
