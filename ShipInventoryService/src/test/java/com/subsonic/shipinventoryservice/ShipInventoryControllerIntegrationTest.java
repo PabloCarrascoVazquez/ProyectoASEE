@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Tests de integración de los controladores REST.
- * Verifica seguridad (JWT), roles Admin, y respuestas correctas del YAML.
+ * Verifica seguridad (JWT), roles Admin, y respuestas correctas del YAML OpenAPI.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,9 +57,9 @@ class ShipInventoryControllerIntegrationTest {
 
         mockMvc.perform(get("/api/inventario/stock"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].idProducto").value("prod-001"))
-                .andExpect(jsonPath("$[0].nombreProducto").value("Camiseta Subsonic"))
-                .andExpect(jsonPath("$[0].unidadesDisponibles").value(150));
+                .andExpect(jsonPath("$[0].id_producto").value("prod-001"))
+                .andExpect(jsonPath("$[0].nombre_producto").value("Camiseta Subsonic"))
+                .andExpect(jsonPath("$[0].unidades_disponibles").value(150));
     }
 
     @Test
@@ -114,8 +114,8 @@ class ShipInventoryControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.idProducto").value("prod-001"))
-                .andExpect(jsonPath("$.unidadesDisponibles").value(170));
+                .andExpect(jsonPath("$.id_producto").value("prod-001"))
+                .andExpect(jsonPath("$.unidades_disponibles").value(170));
     }
 
     // ================================================================== //
@@ -146,8 +146,8 @@ class ShipInventoryControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.bloqueado").value(true))
-                .andExpect(jsonPath("$.idProducto").value("prod-001"))
-                .andExpect(jsonPath("$.precioUnitario").value(25.50));
+                .andExpect(jsonPath("$.id_producto").value("prod-001"))
+                .andExpect(jsonPath("$.precio_unitario").value(25.50));
     }
 
     // ================================================================== //
@@ -197,8 +197,8 @@ class ShipInventoryControllerIntegrationTest {
         mockMvc.perform(get("/api/envios")
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].idEnvio").value("env-001"))
-                .andExpect(jsonPath("$[0].estadoEnvio").value("Pendiente"));
+                .andExpect(jsonPath("$[0].id_envio").value("env-001"))
+                .andExpect(jsonPath("$[0].estado_envio").value("Pendiente"));
     }
 
     // ================================================================== //
@@ -229,9 +229,9 @@ class ShipInventoryControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.idEnvio").value("env-001"))
-                .andExpect(jsonPath("$.estadoEnvio").value("Enviado"))
-                .andExpect(jsonPath("$.trackingNumber").value("TRK-XYZ-001"));
+                .andExpect(jsonPath("$.id_envio").value("env-001"))
+                .andExpect(jsonPath("$.estado_envio").value("Enviado"))
+                .andExpect(jsonPath("$.tracking_number").value("TRK-XYZ-001"));
     }
 
     @Test

@@ -23,6 +23,17 @@ services:
     container_name: subsonic-purchaseservice
     environment:
       - RABBITMQ_HOST=rabbitmq
+      - INVENTORY_SERVICE_URL=http://shipinventoryservice:8004/api
+    depends_on:
+      - rabbitmq
+      - shipinventoryservice
+
+  shipinventoryservice:
+    build: ./ShipInventoryService
+    container_name: subsonic-shipinventoryservice
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
     depends_on:
       - rabbitmq
 
@@ -38,6 +49,7 @@ services:
       - catalogservice
       - purchaseservice
       - orderservice
+      - shipinventoryservice
 
   orderservice:
     build: ./OrderService

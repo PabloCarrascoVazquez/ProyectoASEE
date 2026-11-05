@@ -1,0 +1,54 @@
+-- =============================================================================
+-- ESQUEMA DE BASE DE DATOS: SERVICIO DE INVENTARIO Y ENVÍOS (ShipInventoryService)
+-- Base de datos independiente (Patrón Database-per-Service)
+-- Soporta SQLite y MySQL
+-- =============================================================================
+
+-- MySQL:
+-- CREATE DATABASE IF NOT EXISTS shipinventory_db;
+-- USE shipinventory_db;
+
+-- -----------------------------------------------------------------------------
+-- 1. Tabla: stock_productos
+-- Almacena el stock físico y bloqueos temporales de productos de merchandising
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS stock_productos (
+    id_producto VARCHAR(36) PRIMARY KEY,
+    nombre_producto VARCHAR(200) NOT NULL,
+    variante VARCHAR(100),
+    unidades_disponibles INT NOT NULL DEFAULT 0,
+    unidades_bloqueadas INT NOT NULL DEFAULT 0,
+    precio DECIMAL(10, 2) NOT NULL,
+    ubicacion_almacen VARCHAR(200),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_nombre (nombre_producto)
+);
+
+-- -----------------------------------------------------------------------------
+-- 2. Tabla: envios
+-- Gestiona los paquetes logísticos y números de tracking
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS envios (
+    id_envio VARCHAR(36) PRIMARY KEY,
+    id_pedido VARCHAR(36) NOT NULL,
+    estado_envio VARCHAR(30) NOT NULL DEFAULT 'Pendiente',
+    empresa_transporte VARCHAR(100),
+    tracking_number VARCHAR(100),
+    direccion_entrega VARCHAR(500),
+    notas_incidencia TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_pedido (id_pedido),
+    INDEX idx_estado (estado_envio)
+);
+
+-- -----------------------------------------------------------------------------
+-- DATOS SEMILLA (SEED DATA)
+-- -----------------------------------------------------------------------------
+INSERT INTO stock_productos (id_producto, nombre_producto, variante, unidades_disponibles, unidades_bloqueadas, precio, ubicacion_almacen)
+VALUES
+    ('prod-001', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4'),
+    ('prod-002', 'Gorra Subsonic 2026', 'Talla única', 80, 0, 18.00, 'Pasillo A - Estante 1'),
+    ('prod-003', 'Tote Bag Subsonic', 'Azul', 200, 0, 12.00, 'Pasillo C - Estante 2'),
+    ('p1234567-e89b-12d3-a456-426614174000', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4');

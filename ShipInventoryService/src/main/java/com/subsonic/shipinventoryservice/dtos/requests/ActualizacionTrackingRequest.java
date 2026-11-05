@@ -1,5 +1,6 @@
 package com.subsonic.shipinventoryservice.dtos.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -8,9 +9,13 @@ import jakarta.validation.constraints.NotBlank;
 public class ActualizacionTrackingRequest {
 
     @NotBlank(message = "El campo 'estado_envio' es obligatorio.")
+    @JsonProperty("estado_envio")
     private String estadoEnvio;
 
+    @JsonProperty("tracking_number")
     private String trackingNumber;
+
+    @JsonProperty("notas_incidencia")
     private String notasIncidencia;
 
     public ActualizacionTrackingRequest() {}

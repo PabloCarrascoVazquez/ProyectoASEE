@@ -1,12 +1,19 @@
 package com.subsonic.shipinventoryservice.dtos.responses;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Respuesta de error estándar (schema Error del YAML).
  */
 public class ErrorResponse {
 
+    @JsonProperty("codigo")
     private int codigo;
+
+    @JsonProperty("mensaje")
     private String mensaje;
+
+    @JsonProperty("detalle")
     private String detalle;
 
     public ErrorResponse() {}

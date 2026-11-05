@@ -155,7 +155,25 @@ public class DatabaseConfig {
                         VALUES
                             ('prod-001', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4'),
                             ('prod-002', 'Gorra Subsonic 2026', 'Talla única', 80, 0, 18.00, 'Pasillo A - Estante 1'),
-                            ('prod-003', 'Tote Bag Subsonic', 'Azul', 200, 0, 12.00, 'Pasillo C - Estante 2');
+                            ('prod-003', 'Tote Bag Subsonic', 'Azul', 200, 0, 12.00, 'Pasillo C - Estante 2'),
+                            ('p1234567-e89b-12d3-a456-426614174000', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4');
+                    """);
+                }
+
+                // Datos de ejemplo para envios (solo si la tabla está vacía)
+                Integer countEnvios = null;
+                try {
+                    countEnvios = conn.createStatement().executeQuery(
+                        "SELECT COUNT(*) FROM envios").getInt(1);
+                } catch (Exception ignored) {}
+
+                if (countEnvios != null && countEnvios == 0) {
+                    stmt.execute("""
+                        INSERT OR IGNORE INTO envios
+                            (id_envio, id_pedido, estado_envio, empresa_transporte, tracking_number, direccion_entrega)
+                        VALUES
+                            ('env-001', 'ped-10293847', 'Pendiente', 'Correos Express', NULL, 'Calle Mayor 123, 28080 Madrid'),
+                            ('e9876543-e89b-12d3-a456-426614174111', 'ped-10293847', 'Pendiente', 'Correos Express', NULL, 'Calle Falsa 123, 28080 Madrid');
                     """);
                 }
             }

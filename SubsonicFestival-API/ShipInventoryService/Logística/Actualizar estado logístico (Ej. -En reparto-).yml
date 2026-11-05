@@ -10,7 +10,7 @@ http:
   url: "{{baseUrl}}/envios/:id_envio/tracking"
   params:
     - name: id_envio
-      value: ""
+      value: "env-001"
       type: path
   body:
     type: json
@@ -39,7 +39,7 @@ examples:
       method: PUT
       params:
         - name: id_envio
-          value: ""
+          value: "env-001"
           type: path
       body:
         type: json
@@ -73,7 +73,7 @@ examples:
       method: PUT
       params:
         - name: id_envio
-          value: ""
+          value: "env-001"
           type: path
       body:
         type: json
@@ -104,7 +104,7 @@ examples:
       method: PUT
       params:
         - name: id_envio
-          value: ""
+          value: "env-001"
           type: path
       body:
         type: json
@@ -135,7 +135,7 @@ examples:
       method: PUT
       params:
         - name: id_envio
-          value: ""
+          value: "env-001"
           type: path
       body:
         type: json
@@ -166,7 +166,7 @@ examples:
       method: PUT
       params:
         - name: id_envio
-          value: ""
+          value: "env-001"
           type: path
       body:
         type: json
@@ -197,7 +197,7 @@ examples:
       method: PUT
       params:
         - name: id_envio
-          value: ""
+          value: "env-001"
           type: path
       body:
         type: json

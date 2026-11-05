@@ -1,5 +1,6 @@
 package com.subsonic.shipinventoryservice.dtos.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,6 +11,7 @@ public class BloqueoStockRequest {
 
     @NotNull(message = "El campo 'cantidad' es obligatorio.")
     @Min(value = 1, message = "La cantidad debe ser al menos 1.")
+    @JsonProperty("cantidad")
     private Integer cantidad;
 
     public BloqueoStockRequest() {}

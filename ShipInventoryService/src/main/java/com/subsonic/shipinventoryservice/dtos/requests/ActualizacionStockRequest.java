@@ -1,5 +1,6 @@
 package com.subsonic.shipinventoryservice.dtos.requests;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 public class ActualizacionStockRequest {
 
     @NotNull(message = "El campo 'variacion_unidades' es obligatorio.")
+    @JsonProperty("variacion_unidades")
     private Integer variacionUnidades;
 
     public ActualizacionStockRequest() {}

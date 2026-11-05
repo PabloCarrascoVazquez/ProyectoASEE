@@ -10,7 +10,7 @@ http:
   url: "{{baseUrl}}/inventario/:id_producto/bloquear"
   params:
     - name: id_producto
-      value: ""
+      value: "prod-001"
       type: path
   body:
     type: json
@@ -37,7 +37,7 @@ examples:
       method: POST
       params:
         - name: id_producto
-          value: ""
+          value: "prod-001"
           type: path
       body:
         type: json
@@ -66,7 +66,7 @@ examples:
       method: POST
       params:
         - name: id_producto
-          value: ""
+          value: "prod-001"
           type: path
       body:
         type: json
@@ -95,7 +95,7 @@ examples:
       method: POST
       params:
         - name: id_producto
-          value: ""
+          value: "prod-001"
           type: path
       body:
         type: json
@@ -124,7 +124,7 @@ examples:
       method: POST
       params:
         - name: id_producto
-          value: ""
+          value: "prod-001"
           type: path
       body:
         type: json

@@ -1,5 +1,7 @@
 package com.subsonic.shipinventoryservice.dtos.responses;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
 /**
@@ -7,11 +9,22 @@ import java.math.BigDecimal;
  */
 public class StockProductoResponse {
 
+    @JsonProperty("id_producto")
     private String idProducto;
+
+    @JsonProperty("nombre_producto")
     private String nombreProducto;
+
+    @JsonProperty("variante")
     private String variante;
+
+    @JsonProperty("unidades_disponibles")
     private int unidadesDisponibles;
+
+    @JsonProperty("precio")
     private BigDecimal precio;
+
+    @JsonProperty("ubicacion_almacen")
     private String ubicacionAlmacen;
 
     public StockProductoResponse() {}
