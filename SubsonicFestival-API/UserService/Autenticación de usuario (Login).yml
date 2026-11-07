@@ -17,6 +17,15 @@ http:
       }
   auth: inherit
 
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (response && response.access_token) {
+          bru.setEnvVar("jwtToken", response.access_token);
+        }
+
 settings:
   encodeUrl: true
   timeout: 0

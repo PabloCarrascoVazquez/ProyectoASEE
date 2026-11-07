@@ -10,7 +10,7 @@ http:
   url: "{{baseUrl}}/auth/perfil"
   auth:
     type: bearer
-    token: "{{token}}"
+    token: "{{jwtToken}}"
 
 settings:
   encodeUrl: true
