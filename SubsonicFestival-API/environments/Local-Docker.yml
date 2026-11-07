@@ -3,8 +3,12 @@ variables:
   - name: baseUrl
     value: http://localhost:8000
   - name: jwtToken
+<<<<<<< Updated upstream
     value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwYWZiMjJkNS02OWM4LTRkNWUtOTNhZC00OTJhNWY2YmQyZDAiLCJ1c2VyX2lkIjoiMGFmYjIyZDUtNjljOC00ZDVlLTkzYWQtNDkyYTVmNmJkMmQwIiwicm9sZSI6ImNsaWVudCIsInJvbCI6ImNsaWVudCIsImV4cCI6MTg5MzczOTc4NiwiaWF0IjoxNzkzNzM2MTg2fQ.xZ0yYbn65JJ-UFNjJ10pVKFytIhyob76ZQHH5mtMtTc
   - name: adminToken
     value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbi1zdWJzb25pYy0wMDEiLCJ1c2VyX2lkIjoiYWRtaW4tc3Vic29uaWMtMDAxIiwicm9sZSI6ImFkbWluIiwicm9sIjoiYWRtaW4iLCJleHAiOjE4OTM3Mzk3ODYsImlhdCI6MTc5MzczNjE4Nn0.vj_U9NNa_vx8Oe__lCP21i21YCvUucBXMAHb36y7P-c
   - name: token
     value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbi1zdWJzb25pYy0wMDEiLCJ1c2VyX2lkIjoiYWRtaW4tc3Vic29uaWMtMDAxIiwicm9sZSI6ImFkbWluIiwicm9sIjoiYWRtaW4iLCJleHAiOjE4OTM3Mzk3ODYsImlhdCI6MTc5MzczNjE4Nn0.vj_U9NNa_vx8Oe__lCP21i21YCvUucBXMAHb36y7P-c
+=======
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3YTAyMmFkOS1hOTFmLTRhYzItOGY5OS1mZmJhMzI0M2UyMzgiLCJ1c2VyX2lkIjoiN2EwMjJhZDktYTkxZi00YWMyLThmOTktZmZiYTMyNDNlMjM4Iiwicm9sZSI6ImNsaWVudCIsImV4cCI6MTc5MzkwMDk3MCwiaWF0IjoxNzkzODk3MzcwfQ.A3uwwLxWEssJYxucjB3LJLQC_79Vrf4Yt_f8C3sTwI0
+>>>>>>> Stashed changes
