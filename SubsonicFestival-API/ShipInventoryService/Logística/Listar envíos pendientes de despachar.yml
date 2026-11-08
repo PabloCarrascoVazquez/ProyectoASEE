@@ -10,7 +10,7 @@ http:
   url: "{{baseUrl}}/envios"
   auth:
     type: bearer
-    token: "{{token}}"
+    token: "{{jwtToken}}"
 
 settings:
   encodeUrl: true

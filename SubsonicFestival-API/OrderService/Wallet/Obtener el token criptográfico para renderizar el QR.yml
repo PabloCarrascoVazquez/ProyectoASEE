@@ -14,7 +14,7 @@ http:
       type: path
   auth:
     type: bearer
-    token: "{{token}}"
+    token: "{{jwtToken}}"
 
 settings:
   encodeUrl: true
