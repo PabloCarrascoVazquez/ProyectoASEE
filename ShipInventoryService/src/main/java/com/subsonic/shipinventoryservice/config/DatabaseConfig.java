@@ -14,6 +14,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 
 @Configuration
@@ -140,47 +141,58 @@ public class DatabaseConfig {
                         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
                 """);
-
-                // Datos de ejemplo para stock (solo si la tabla está vacía)
-                Integer count = null;
-                try {
-                    count = conn.createStatement().executeQuery(
-                        "SELECT COUNT(*) FROM stock_productos").getInt(1);
-                } catch (Exception ignored) {}
-
-                if (count != null && count == 0) {
-                    stmt.execute("""
-                        INSERT OR IGNORE INTO stock_productos
-                            (id_producto, nombre_producto, variante, unidades_disponibles, unidades_bloqueadas, precio, ubicacion_almacen)
-                        VALUES
-                            ('prod-001', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4'),
-                            ('prod-002', 'Gorra Subsonic 2026', 'Talla única', 80, 0, 18.00, 'Pasillo A - Estante 1'),
-                            ('prod-003', 'Tote Bag Subsonic', 'Azul', 200, 0, 12.00, 'Pasillo C - Estante 2'),
-                            ('p1234567-e89b-12d3-a456-426614174000', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4');
-                    """);
-                }
-
-                // Datos de ejemplo para envios (solo si la tabla está vacía)
-                Integer countEnvios = null;
-                try {
-                    countEnvios = conn.createStatement().executeQuery(
-                        "SELECT COUNT(*) FROM envios").getInt(1);
-                } catch (Exception ignored) {}
-
-                if (countEnvios != null && countEnvios == 0) {
-                    stmt.execute("""
-                        INSERT OR IGNORE INTO envios
-                            (id_envio, id_pedido, estado_envio, empresa_transporte, tracking_number, direccion_entrega)
-                        VALUES
-                            ('env-001', 'ped-10293847', 'Pendiente', 'Correos Express', NULL, 'Calle Mayor 123, 28080 Madrid'),
-                            ('e9876543-e89b-12d3-a456-426614174111', 'ped-10293847', 'Pendiente', 'Correos Express', NULL, 'Calle Falsa 123, 28080 Madrid');
-                    """);
-                }
             }
 
-            log.info("Esquema de base de datos verificado e inicializado correctamente.");
+            // Poblado de datos iniciales / semilla (se ejecuta si las tablas están vacías)
+            seedSampleDataIfEmpty(stmt);
+
+            log.info("Esquema y datos semilla de base de datos verificados e inicializados correctamente.");
         } catch (Exception e) {
             log.error("Error al inicializar las tablas de la base de datos: {}", e.getMessage(), e);
+        }
+    }
+
+    private void seedSampleDataIfEmpty(Statement stmt) {
+        try {
+            Integer countStock = null;
+            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM stock_productos")) {
+                if (rs.next()) {
+                    countStock = rs.getInt(1);
+                }
+            } catch (Exception ignored) {}
+
+            if (countStock != null && countStock == 0) {
+                stmt.execute("""
+                    INSERT INTO stock_productos
+                        (id_producto, nombre_producto, variante, unidades_disponibles, unidades_bloqueadas, precio, ubicacion_almacen)
+                    VALUES
+                        ('prod-001', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4'),
+                        ('prod-002', 'Gorra Subsonic 2026', 'Talla única', 80, 0, 18.00, 'Pasillo A - Estante 1'),
+                        ('prod-003', 'Tote Bag Subsonic', 'Azul', 200, 0, 12.00, 'Pasillo C - Estante 2'),
+                        ('p1234567-e89b-12d3-a456-426614174000', 'Camiseta Oficial Subsonic', 'Talla L - Negra', 150, 0, 25.50, 'Pasillo B - Estante 4');
+                """);
+                log.info("Datos semilla de stock insertados correctamente.");
+            }
+
+            Integer countEnvios = null;
+            try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM envios")) {
+                if (rs.next()) {
+                    countEnvios = rs.getInt(1);
+                }
+            } catch (Exception ignored) {}
+
+            if (countEnvios != null && countEnvios == 0) {
+                stmt.execute("""
+                    INSERT INTO envios
+                        (id_envio, id_pedido, estado_envio, empresa_transporte, tracking_number, direccion_entrega)
+                    VALUES
+                        ('env-001', 'ped-10293847', 'Pendiente', 'Correos Express', NULL, 'Calle Mayor 123, 28080 Madrid'),
+                        ('e9876543-e89b-12d3-a456-426614174111', 'ped-10293847', 'Pendiente', 'Correos Express', NULL, 'Calle Falsa 123, 28080 Madrid');
+                """);
+                log.info("Datos semilla de envíos insertados correctamente.");
+            }
+        } catch (Exception e) {
+            log.warn("Aviso al intentar insertar datos semilla: {}", e.getMessage());
         }
     }
 
