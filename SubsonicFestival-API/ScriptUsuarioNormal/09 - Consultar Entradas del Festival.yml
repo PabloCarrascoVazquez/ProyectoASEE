@@ -1,0 +1,33 @@
+info:
+  name: 09 - Consultar Entradas del Festival
+  type: http
+  seq: 9
+  tags:
+    - ScriptUsuarioNormal
+    - Catálogo
+
+http:
+  method: GET
+  url: "{{baseUrl}}/festivales/:id_festival/entradas"
+  params:
+    - name: id_festival
+      value: "{{idFestival}}"
+      type: path
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Tarifas y cupos devueltos correctamente", function() {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody()).to.be.an('array');
+          expect(res.getBody().length).to.be.greaterThan(0);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

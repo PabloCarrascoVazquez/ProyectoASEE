@@ -1,0 +1,35 @@
+info:
+  name: 14 - Ver Mis Entradas en Billetera
+  type: http
+  seq: 14
+  tags:
+    - ScriptUsuarioNormal
+    - Wallet
+
+http:
+  method: GET
+  url: "{{baseUrl}}/pedidos/mis-entradas"
+  auth:
+    type: bearer
+    token: "{{jwtToken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (response && Array.isArray(response) && response.length > 0) {
+          bru.setEnvVar("idEntrada", response[0].id_entrada || response[0].id);
+        }
+    - type: tests
+      code: |-
+        test("Entradas obtenidas correctamente", function() {
+          expect([200, 404]).to.include(res.getStatus());
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

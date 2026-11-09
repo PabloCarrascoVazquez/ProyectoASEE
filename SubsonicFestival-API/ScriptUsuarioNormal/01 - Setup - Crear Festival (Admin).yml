@@ -1,0 +1,52 @@
+info:
+  name: 01 - Setup - Crear Festival (Admin)
+  type: http
+  seq: 1
+  tags:
+    - Setup
+    - ScriptUsuarioNormal
+
+http:
+  method: POST
+  url: "{{baseUrl}}/festivales"
+  body:
+    type: json
+    data: |-
+      {
+        "id_festival": "fest_subsonic_2026",
+        "nombre": "Subsonic Festival 2026",
+        "fecha_inicio": "2026-07-15",
+        "fecha_fin": "2026-07-18",
+        "ubicacion": "Recinto Ferial, Madrid",
+        "artistas_destacados": [
+          "Daft Punk",
+          "Carl Cox",
+          "Peggy Gou"
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (response && (response.id_festival || response.id)) {
+          bru.setEnvVar("idFestival", response.id_festival || response.id);
+        } else {
+          bru.setEnvVar("idFestival", "fest_subsonic_2026");
+        }
+    - type: tests
+      code: |-
+        test("Festival creado correctamente o ya existente", function() {
+          expect([200, 201]).to.include(res.getStatus());
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

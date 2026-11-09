@@ -29,17 +29,23 @@ class CatalogDAOMySQL(ICatalogDAO):
         finally:
             cursor.close()
 
-    def create_festival(self, festival_data: dict) -> int:
+    def create_festival(self, festival_data: dict) -> str:
         """Inserta un nuevo festival en la base de datos MySQL."""
         cursor = self.conn.cursor()
+        id_festival = festival_data.get('id_festival')
+        if not id_festival:
+            import uuid
+            id_festival = f"fest_{uuid.uuid4().hex[:8]}"
+            festival_data['id_festival'] = id_festival
+
         query = """
-            INSERT INTO festivales (nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO festivales (id_festival, nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
         try:
             artistas_json = json.dumps(festival_data.get('artistas_destacados', []))
-            
             cursor.execute(query, (
+                id_festival,
                 festival_data.get('nombre'),
                 festival_data.get('fecha_inicio'),
                 festival_data.get('fecha_fin'),
@@ -47,7 +53,7 @@ class CatalogDAOMySQL(ICatalogDAO):
                 artistas_json
             ))
             self.conn.commit()
-            return cursor.lastrowid
+            return id_festival
         except mysql.connector.Error as err:
             self.conn.rollback()
             raise err

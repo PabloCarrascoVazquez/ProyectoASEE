@@ -1,0 +1,29 @@
+info:
+  name: 08 - Listar Festivales Disponibles
+  type: http
+  seq: 8
+  tags:
+    - ScriptUsuarioNormal
+    - Catálogo
+
+http:
+  method: GET
+  url: "{{baseUrl}}/festivales"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Lista de festivales no vacía", function() {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody()).to.be.an('array');
+          expect(res.getBody().length).to.be.greaterThan(0);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

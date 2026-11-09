@@ -33,6 +33,7 @@ class CatalogService:
         nuevo_id = self.catalog_dao.create_festival(data)
         
         # Devolvemos un diccionario que luego Flask convierte a JSON
+        data["id_festival"] = str(nuevo_id)
         data["id"] = str(nuevo_id)
         return data
 

@@ -1,0 +1,41 @@
+info:
+  name: 03 - Setup - Añadir Entradas VIP (Admin)
+  type: http
+  seq: 3
+  tags:
+    - Setup
+    - ScriptUsuarioNormal
+
+http:
+  method: POST
+  url: "{{baseUrl}}/festivales/:id_festival/entradas"
+  params:
+    - name: id_festival
+      value: "{{idFestival}}"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "tipo": "vip",
+        "precio": 250,
+        "disponibles": 100
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Entradas VIP añadidas correctamente", function() {
+          expect([200, 201]).to.include(res.getStatus());
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

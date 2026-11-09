@@ -1,0 +1,41 @@
+info:
+  name: 04 - Setup - Añadir Espacio al Festival (Admin)
+  type: http
+  seq: 4
+  tags:
+    - Setup
+    - ScriptUsuarioNormal
+
+http:
+  method: POST
+  url: "{{baseUrl}}/festivales/:id_festival/espacios"
+  params:
+    - name: id_festival
+      value: "{{idFestival}}"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "tipo": "foodtruck",
+        "metros_cuadrados": 15,
+        "precio_alquiler": 1200.5
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Espacio creado correctamente", function() {
+          expect([200, 201]).to.include(res.getStatus());
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -1,0 +1,28 @@
+info:
+  name: 11 - Consultar Stock Disponible de Merchandising
+  type: http
+  seq: 11
+  tags:
+    - ScriptUsuarioNormal
+    - Inventario
+
+http:
+  method: GET
+  url: "{{baseUrl}}/inventario/stock"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Stock de productos devuelto con éxito", function() {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody()).to.be.an('array');
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

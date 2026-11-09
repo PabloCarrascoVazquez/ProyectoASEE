@@ -1,0 +1,40 @@
+info:
+  name: 13 - Confirmar Pago de la Compra
+  type: http
+  seq: 13
+  tags:
+    - ScriptUsuarioNormal
+    - Compras
+
+http:
+  method: POST
+  url: "{{baseUrl}}/compras/:id_transaccion/pagar"
+  params:
+    - name: id_transaccion
+      value: "{{idTransaccion}}"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "metodo_pago": "tarjeta",
+        "token_pasarela": "tok_1N4L8s2eZvKYlo2C0V"
+      }
+  auth:
+    type: bearer
+    token: "{{jwtToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Pago confirmado correctamente", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

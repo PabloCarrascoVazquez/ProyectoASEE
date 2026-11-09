@@ -1,0 +1,30 @@
+info:
+  name: 07 - Consultar Mi Perfil Activo
+  type: http
+  seq: 7
+  tags:
+    - ScriptUsuarioNormal
+    - Usuario
+
+http:
+  method: GET
+  url: "{{baseUrl}}/auth/me"
+  auth:
+    type: bearer
+    token: "{{jwtToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Perfil devuelto correctamente", function() {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().email).to.equal("normal.user@subsonic.com");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

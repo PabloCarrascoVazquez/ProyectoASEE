@@ -1,0 +1,36 @@
+info:
+  name: 10 - Guardar Artista Favorito
+  type: http
+  seq: 10
+  tags:
+    - ScriptUsuarioNormal
+    - Catálogo
+
+http:
+  method: POST
+  url: "{{baseUrl}}/artistas-favoritos"
+  body:
+    type: json
+    data: |-
+      {
+        "id_festival": "{{idFestival}}",
+        "nombre_artista": "Peggy Gou"
+      }
+  auth:
+    type: bearer
+    token: "{{jwtToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Artista favorito guardado", function() {
+          expect([200, 201]).to.include(res.getStatus());
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

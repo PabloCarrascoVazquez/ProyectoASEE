@@ -1,0 +1,41 @@
+info:
+  name: 02 - Setup - Añadir Entradas al Festival (Admin)
+  type: http
+  seq: 2
+  tags:
+    - Setup
+    - ScriptUsuarioNormal
+
+http:
+  method: POST
+  url: "{{baseUrl}}/festivales/:id_festival/entradas"
+  params:
+    - name: id_festival
+      value: "{{idFestival}}"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "tipo": "weekend",
+        "precio": 125,
+        "disponibles": 450
+      }
+  auth:
+    type: bearer
+    token: "{{adminToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Entradas añadidas correctamente", function() {
+          expect([200, 201]).to.include(res.getStatus());
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -1,0 +1,61 @@
+info:
+  name: 12 - Iniciar Compra Mixta (Entradas y Merchandising)
+  type: http
+  seq: 12
+  tags:
+    - ScriptUsuarioNormal
+    - Compras
+
+http:
+  method: POST
+  url: "{{baseUrl}}/compras/carrito/iniciar"
+  body:
+    type: json
+    data: |-
+      {
+        "id_festival": "{{idFestival}}",
+        "entradas": [
+          {
+            "tipo_entrada": "weekend",
+            "cantidad": 2
+          }
+        ],
+        "merchandising": [
+          {
+            "id_producto": "p1234567-e89b-12d3-a456-426614174000",
+            "cantidad": 1
+          }
+        ],
+        "direccion_envio": {
+          "calle": "Calle Mayor 14, 2ºB",
+          "ciudad": "Madrid",
+          "codigo_postal": "28013",
+          "pais": "España",
+          "telefono_contacto": "+34600112233"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{jwtToken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (response && response.id_transaccion) {
+          bru.setEnvVar("idTransaccion", response.id_transaccion);
+        }
+    - type: tests
+      code: |-
+        test("Transacción creada correctamente", function() {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().id_transaccion).to.be.a('string');
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -1,0 +1,37 @@
+info:
+  name: 05 - Registro de Usuario Normal
+  type: http
+  seq: 5
+  tags:
+    - ScriptUsuarioNormal
+    - Usuario
+
+http:
+  method: POST
+  url: "{{baseUrl}}/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Usuario Normal Subsonic",
+        "email": "normal.user@subsonic.com",
+        "password": "PasswordSegura123!",
+        "avatar": "https://bucket.com/avatars/user.png",
+        "rol": "client"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Usuario registrado correctamente o ya existente", function() {
+          expect([201, 409]).to.include(res.getStatus());
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

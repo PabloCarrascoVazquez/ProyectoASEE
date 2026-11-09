@@ -32,17 +32,22 @@ class CatalogDAOSQLite(ICatalogDAO):
         finally:
             cursor.close()
 
-    def create_festival(self, festival_data: dict) -> int:
+    def create_festival(self, festival_data: dict) -> str:
         cursor = self.conn.cursor()
+        id_festival = festival_data.get('id_festival')
+        if not id_festival:
+            import uuid
+            id_festival = f"fest_{uuid.uuid4().hex[:8]}"
+            festival_data['id_festival'] = id_festival
+
         query = """
-            INSERT INTO festivales (nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO festivales (id_festival, nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
+            VALUES (?, ?, ?, ?, ?, ?)
         """
         try:
-            # Convertimos la lista de artistas a string JSON para guardarlo en la columna
             artistas_json = json.dumps(festival_data.get('artistas_destacados', []))
-            
             cursor.execute(query, (
+                id_festival,
                 festival_data.get('nombre'),
                 festival_data.get('fecha_inicio'),
                 festival_data.get('fecha_fin'),
@@ -50,8 +55,7 @@ class CatalogDAOSQLite(ICatalogDAO):
                 artistas_json
             ))
             self.conn.commit()
-            # Devolvemos el ID autogenerado por SQLite
-            return cursor.lastrowid
+            return id_festival
         except Exception as err:
             self.conn.rollback()
             raise err

@@ -59,9 +59,13 @@ class DatabaseConnectionFactory:
 
     @classmethod
     def _initialize_sqlite(cls, conn):
-        """Inicializa exclusivamente la tabla del microservicio de usuarios."""
+        """Inicializa la tabla de usuarios y siembra el usuario Admin por defecto."""
+        import bcrypt
+        
         cursor = conn.cursor()
-        sql_script = """
+        
+        # 1. Crear tabla si no existe
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id VARCHAR(36) PRIMARY KEY,
             name VARCHAR(100) NOT NULL,
@@ -70,9 +74,28 @@ class DatabaseConnectionFactory:
             avatar VARCHAR(255),
             rol VARCHAR(20) NOT NULL DEFAULT 'client'
         );
-        """
-        cursor.executescript(sql_script)
-        conn.commit()
+        """)
+
+        # 2. Verificar si el admin ya existe en la BD
+        cursor.execute("SELECT id FROM users WHERE email = ?", ("admin@subsonic.com",))
+        if not cursor.fetchone():
+            # Generación dinámica del hash exacto usando bcrypt de Python
+            admin_password = "admin123"
+            hashed_pw = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            
+            cursor.execute("""
+                INSERT INTO users (id, name, email, password_hash, avatar, rol)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                "00000000-0000-0000-0000-000000000001",
+                "Administrador Subsonic",
+                "admin@subsonic.com",
+                hashed_pw,
+                "https://bucket.com/avatars/admin.png",
+                "admin"
+            ))
+            conn.commit()
+
         cursor.close()
 
 

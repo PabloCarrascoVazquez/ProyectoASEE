@@ -12,7 +12,7 @@ class ICatalogDAO(ABC):
         pass
 
     @abstractmethod
-    def create_festival(self, festival_data: dict) -> int:
+    def create_festival(self, festival_data: dict) -> str:
         """Inserta un nuevo festival en la base de datos y devuelve su ID."""
         pass
 

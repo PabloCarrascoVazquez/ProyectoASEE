@@ -1,0 +1,41 @@
+info:
+  name: 06 - Login de Usuario Normal
+  type: http
+  seq: 6
+  tags:
+    - ScriptUsuarioNormal
+    - Usuario
+
+http:
+  method: POST
+  url: "{{baseUrl}}/auth/login"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "normal.user@subsonic.com",
+        "password": "PasswordSegura123!"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (response && response.access_token) {
+          bru.setEnvVar("jwtToken", response.access_token);
+        }
+    - type: tests
+      code: |-
+        test("Login exitoso y token JWT obtenido", function() {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().access_token).to.be.a('string');
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

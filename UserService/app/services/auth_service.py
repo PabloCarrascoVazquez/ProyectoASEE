@@ -122,12 +122,16 @@ class AuthService:
         if not password_hash or not self.check_password(request.password, password_hash):
             raise ValueError("Credenciales incorrectas")
 
+        user_role = user_row.get("rol") or user_row.get("role") or "client"
+
         user_profile = UserProfileResponse(
             id=str(user_row["id"]),
             name=user_row["name"],
             email=user_row["email"],
-            rol=user_row.get("rol", user_row.get("role", "client")),
+            rol=user_role,
             avatar=user_row.get("avatar"),
         )
-        token = self.generate_token(user_profile.id, user_profile.rol)
+        
+        # El token se genera con la clave 'role' leída por @role_required
+        token = self.generate_token(user_profile.id, user_role)
         return TokenResponse(access_token=token, user=user_profile, token_type="bearer")
