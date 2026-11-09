@@ -77,6 +77,12 @@ def admin_required(f):
 # ==========================================
 # ENDPOINTS DE LECTURA PÚBLICA
 # ==========================================
+
+@catalog_bp.route("/health", methods=["GET"])
+def health_check():
+    """Comprueba la salud del microservicio."""
+    return jsonify({"status": "UP", "service": "CatalogService"}), 200
+
 @catalog_bp.route("/festivales", methods=["GET"])
 def get_festivales():
     """Listar todos los festivales."""
@@ -215,5 +221,52 @@ def crear_artista(current_user_id: str):
         return jsonify(response_dto.to_dict() if hasattr(response_dto, "to_dict") else response_dto), 201
     except ValueError as ve:
         return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/festivales/<id_festival>/entradas", methods=["POST"])
+@admin_required
+def crear_entradas(current_user_id: str, id_festival: str):
+    """Añadir tipos de entradas a un festival (Solo Admin)."""
+    try:
+        data = request.get_json(silent=True)
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        catalog_service.crear_entradas(id_festival, data)
+        return jsonify({"mensaje": "Entradas creadas correctamente."}), 201
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/festivales/<id_festival>/espacios", methods=["POST"])
+@admin_required
+def crear_espacio(current_user_id: str, id_festival: str):
+    """Añadir una parcela/espacio a un festival (Solo Admin)."""
+    try:
+        data = request.get_json(silent=True)
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        catalog_service.crear_espacio(id_festival, data)
+        return jsonify({"mensaje": "Espacio creado correctamente."}), 201
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/festivales/<id_festival>", methods=["PUT"])
+@admin_required
+def actualizar_festival(current_user_id: str, id_festival: str):
+    """Modificar un festival existente (Solo Admin)."""
+    try:
+        data = request.get_json(silent=True)
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        catalog_service.actualizar_festival(id_festival, data)
+        return jsonify({"mensaje": "Festival actualizado correctamente."}), 200
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/festivales/<id_festival>", methods=["DELETE"])
+@admin_required
+def borrar_festival(current_user_id: str, id_festival: str):
+    """Eliminar un festival (Solo Admin)."""
+    try:
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        catalog_service.borrar_festival(id_festival)
+        return jsonify({"mensaje": "Festival eliminado correctamente."}), 200
     except Exception as e:
         return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500

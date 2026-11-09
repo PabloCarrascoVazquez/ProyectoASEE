@@ -16,12 +16,24 @@ class ICatalogDAO(ABC):
         """Inserta un nuevo festival en la base de datos y devuelve su ID."""
         pass
 
+    @abstractmethod
+    def update_festival(self, id_festival: str, festival_data: dict) -> bool:
+        pass
+
+    @abstractmethod
+    def delete_festival(self, id_festival: str) -> bool:
+        pass
+
     # ==========================================
     # ESPACIOS Y ALQUILERES
     # ==========================================
     @abstractmethod
     def get_espacios_by_festival(self, id_festival: str) -> List[dict]:
         """Recupera las parcelas/espacios de un festival concreto."""
+        pass
+
+    @abstractmethod
+    def create_espacio(self, id_festival: str, espacio_data: dict) -> bool:
         pass
 
     @abstractmethod
@@ -35,6 +47,10 @@ class ICatalogDAO(ABC):
     @abstractmethod
     def get_entradas_by_festival(self, id_festival: str) -> List[dict]:
         """Recupera los tipos de entrada y stock disponible para un festival."""
+        pass
+
+    @abstractmethod
+    def create_entradas(self, id_festival: str, entradas_data: dict) -> bool:
         pass
 
     @abstractmethod

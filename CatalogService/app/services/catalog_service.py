@@ -45,6 +45,24 @@ class CatalogService:
         data["id"] = str(nuevo_id)
         return data
 
+    def crear_entradas(self, id_festival: str, data: dict) -> None:
+        if not data.get("tipo") or not data.get("precio") or not data.get("disponibles"):
+            raise ValueError("Faltan datos obligatorios para crear la entrada.")
+        self.catalog_dao.create_entradas(id_festival, data)
+
+    def crear_espacio(self, id_festival: str, data: dict) -> None:
+        if not data.get("tipo") or not data.get("precio_alquiler"):
+            raise ValueError("Faltan datos obligatorios para el espacio.")
+        self.catalog_dao.create_espacio(id_festival, data)
+
+    def actualizar_festival(self, id_festival: str, data: dict) -> None:
+        if "nombre" not in data or not data["nombre"].strip():
+            raise ValueError("El nombre del festival no puede estar vacío.")
+        self.catalog_dao.update_festival(id_festival, data)
+
+    def borrar_festival(self, id_festival: str) -> None:
+        self.catalog_dao.delete_festival(id_festival)
+
     # ==========================================
     # ESPACIOS Y ALQUILERES
     # ==========================================

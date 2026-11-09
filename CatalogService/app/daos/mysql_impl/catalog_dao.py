@@ -54,6 +54,34 @@ class CatalogDAOMySQL(ICatalogDAO):
         finally:
             cursor.close()
 
+    def update_festival(self, id_festival: str, festival_data: dict) -> bool:
+        cursor = self.conn.cursor()
+        query = "UPDATE festivales SET nombre=%s, fecha_inicio=%s, fecha_fin=%s, ubicacion=%s WHERE id_festival=%s"
+        try:
+            cursor.execute(query, (
+                festival_data.get('nombre'), festival_data.get('fecha_inicio'), 
+                festival_data.get('fecha_fin'), festival_data.get('ubicacion'), id_festival
+            ))
+            self.conn.commit()
+            return cursor.rowcount > 0
+        except mysql.connector.Error as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
+    def delete_festival(self, id_festival: str) -> bool:
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("DELETE FROM festivales WHERE id_festival=%s", (id_festival,))
+            self.conn.commit()
+            return cursor.rowcount > 0
+        except mysql.connector.Error as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
     # ==========================================
     # ESPACIOS Y ALQUILERES
     # ==========================================
@@ -68,6 +96,22 @@ class CatalogDAOMySQL(ICatalogDAO):
         try:
             cursor.execute(query, (id_festival,))
             return cursor.fetchall()
+        finally:
+            cursor.close()
+
+    def create_espacio(self, id_festival: str, espacio_data: dict) -> bool:
+        cursor = self.conn.cursor()
+        query = "INSERT INTO espacios (id_festival, tipo, metros_cuadrados, precio_alquiler, estado) VALUES (%s, %s, %s, %s, 'disponible')"
+        try:
+            cursor.execute(query, (
+                id_festival, espacio_data.get('tipo'), 
+                espacio_data.get('metros_cuadrados', 0), espacio_data.get('precio_alquiler')
+            ))
+            self.conn.commit()
+            return True
+        except mysql.connector.Error as err:
+            self.conn.rollback()
+            raise err
         finally:
             cursor.close()
 
@@ -114,6 +158,22 @@ class CatalogDAOMySQL(ICatalogDAO):
         try:
             cursor.execute(query, (id_festival,))
             return cursor.fetchall()
+        finally:
+            cursor.close()
+
+    def create_entradas(self, id_festival: str, entradas_data: dict) -> bool:
+        cursor = self.conn.cursor()
+        query = "INSERT INTO tipos_entrada (id_festival, tipo, precio, disponibles) VALUES (%s, %s, %s, %s)"
+        try:
+            cursor.execute(query, (
+                id_festival, entradas_data.get('tipo'), 
+                entradas_data.get('precio'), entradas_data.get('disponibles')
+            ))
+            self.conn.commit()
+            return True
+        except mysql.connector.Error as err:
+            self.conn.rollback()
+            raise err
         finally:
             cursor.close()
 

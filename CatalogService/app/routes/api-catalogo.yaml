@@ -21,6 +21,31 @@ paths:
                   $ref: '#/components/schemas/Festival'
         '500':
           $ref: '#/components/responses/InternalError'
+    post:
+      tags: [Administración - Eventos]
+      summary: Crear un nuevo festival (Solo Administradores)
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FestivalCreateRequest'
+      responses:
+        '201':
+          description: Festival creado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Festival'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
   /festivales/{id_festival}/espacios:
     get:
@@ -198,6 +223,33 @@ paths:
         '500':
           $ref: '#/components/responses/InternalError'
 
+  /artistas:
+    post:
+      tags: [Administración - Artistas]
+      summary: Añadir un nuevo artista al catálogo general (Solo Administradores)
+      security: [{bearerAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistaCreateRequest'
+      responses:
+        '201':
+          description: Artista creado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artista'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -231,6 +283,63 @@ components:
           items:
             type: string
           example: ["Daft Punk", "Carl Cox", "Peggy Gou"]
+
+      FestivalCreateRequest:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          example: "Subsonic Summer Fest"
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2026-07-15"
+        fecha_fin:
+          type: string
+          format: date
+          example: "2026-07-18"
+        ubicacion:
+          type: string
+          example: "Recinto Ferial, Madrid"
+        artistas_destacados:
+          type: array
+          items:
+            type: string
+          example: ["Rosalia", "C. Tangana"]
+
+    Artista:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+        nombre:
+          type: string
+          example: "Peggy Gou"
+        genero:
+          type: string
+          example: "House / Techno"
+        popularidad:
+          type: integer
+          example: 95
+
+    ArtistaCreateRequest:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          example: "Peggy Gou"
+        genero:
+          type: string
+          example: "House / Techno"
+        popularidad:
+          type: integer
+          default: 0
+          example: 95
 
     Espacio:
       type: object
