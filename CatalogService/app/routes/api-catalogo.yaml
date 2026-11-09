@@ -6,6 +6,66 @@ info:
 servers:
   - url: http://localhost:8002/api
 paths:
+  /health:
+    get:
+      tags: [Sistema]
+      summary: Comprobar el estado de salud del microservicio
+      responses:
+        '200':
+          description: El servicio está operativo.
+          content:
+            application/json:
+              example:
+                status: "UP"
+                service: "CatalogService"
+
+  /festivales/{id_festival}:
+    put:
+      tags: [Administración - Eventos]
+      summary: Modificar un festival existente (Solo Administradores)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FestivalCreateRequest'
+      responses:
+        '200':
+          description: Festival actualizado correctamente.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags: [Administración - Eventos]
+      summary: Eliminar un festival (Solo Administradores)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Festival eliminado correctamente.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /festivales:
     get:
       tags: [Catálogo - Eventos]
@@ -71,6 +131,33 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalError'
+    post:
+      tags: [Administración - Espacios]
+      summary: Añadir una parcela/espacio a un festival (Solo Administradores)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EspacioCreateRequest'
+      responses:
+        '201':
+          description: Espacio creado correctamente.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
   /festivales/{id_festival}/entradas:
     get:
@@ -94,6 +181,33 @@ paths:
                   $ref: '#/components/schemas/TipoEntrada'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      tags: [Administración - Entradas]
+      summary: Añadir tipos de entradas a un festival (Solo Administradores)
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: id_festival
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoEntradaCreateRequest'
+      responses:
+        '201':
+          description: Entradas creadas correctamente.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/InternalError'
 
@@ -284,7 +398,7 @@ components:
             type: string
           example: ["Daft Punk", "Carl Cox", "Peggy Gou"]
 
-      FestivalCreateRequest:
+    FestivalCreateRequest:
       type: object
       required:
         - nombre
@@ -474,6 +588,44 @@ components:
         detalle:
           type: string
           example: "Parámetros no válidos."
+
+    EspacioCreateRequest:
+      type: object
+      required:
+        - tipo
+        - precio_alquiler
+      properties:
+        tipo:
+          type: string
+          enum: [foodtruck, mercadillo, vip_zone]
+          example: "foodtruck"
+        metros_cuadrados:
+          type: integer
+          default: 0
+          example: 15
+        precio_alquiler:
+          type: number
+          format: float
+          example: 1200.50
+
+    TipoEntradaCreateRequest:
+      type: object
+      required:
+        - tipo
+        - precio
+        - disponibles
+      properties:
+        tipo:
+          type: string
+          enum: [day, weekend, vip]
+          example: "weekend"
+        precio:
+          type: number
+          format: float
+          example: 125.00
+        disponibles:
+          type: integer
+          example: 450
 
   responses:
     BadRequest:
