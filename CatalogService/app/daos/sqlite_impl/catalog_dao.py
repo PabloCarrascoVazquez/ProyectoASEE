@@ -32,6 +32,32 @@ class CatalogDAOSQLite(ICatalogDAO):
         finally:
             cursor.close()
 
+    def create_festival(self, festival_data: dict) -> int:
+        cursor = self.conn.cursor()
+        query = """
+            INSERT INTO festivales (nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
+            VALUES (?, ?, ?, ?, ?)
+        """
+        try:
+            # Convertimos la lista de artistas a string JSON para guardarlo en la columna
+            artistas_json = json.dumps(festival_data.get('artistas_destacados', []))
+            
+            cursor.execute(query, (
+                festival_data.get('nombre'),
+                festival_data.get('fecha_inicio'),
+                festival_data.get('fecha_fin'),
+                festival_data.get('ubicacion'),
+                artistas_json
+            ))
+            self.conn.commit()
+            # Devolvemos el ID autogenerado por SQLite
+            return cursor.lastrowid
+        except Exception as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
     # ==========================================
     # ESPACIOS Y ALQUILERES
     # ==========================================
@@ -140,6 +166,29 @@ class CatalogDAOSQLite(ICatalogDAO):
             cursor.execute(query, (user_id, id_festival, nombre_artista))
             self.conn.commit()
             return True
+        except Exception as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
+    # ==========================================
+    # ARTISTAS
+    # ==========================================
+    def create_artista(self, artista_data: dict) -> int:
+        cursor = self.conn.cursor()
+        query = """
+            INSERT INTO artistas (nombre, genero, popularidad) 
+            VALUES (?, ?, ?)
+        """
+        try:
+            cursor.execute(query, (
+                artista_data.get('nombre'),
+                artista_data.get('genero'),
+                artista_data.get('popularidad', 0)
+            ))
+            self.conn.commit()
+            return cursor.lastrowid
         except Exception as err:
             self.conn.rollback()
             raise err

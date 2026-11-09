@@ -23,6 +23,28 @@ class CatalogService:
         rows = self.catalog_dao.get_all_festivales()
         return [Festival.from_db_row(row).to_response_dto() for row in rows]
 
+    def crear_festival(self, data: dict) -> dict:
+        """Crea un nuevo festival (delegando al DAO)."""
+        # Validaciones de negocio básicas
+        if "nombre" not in data or not data["nombre"].strip():
+            raise ValueError("El nombre del festival es obligatorio.")
+        
+        # Inserción a través del DAO
+        nuevo_id = self.catalog_dao.create_festival(data)
+        
+        # Devolvemos un diccionario que luego Flask convierte a JSON
+        data["id"] = str(nuevo_id)
+        return data
+
+    def crear_artista(self, data: dict) -> dict:
+        """Crea un nuevo artista en el catálogo general."""
+        if "nombre" not in data or not data["nombre"].strip():
+            raise ValueError("El nombre del artista es obligatorio.")
+        
+        nuevo_id = self.catalog_dao.create_artista(data)
+        data["id"] = str(nuevo_id)
+        return data
+
     # ==========================================
     # ESPACIOS Y ALQUILERES
     # ==========================================

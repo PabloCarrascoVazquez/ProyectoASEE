@@ -29,6 +29,31 @@ class CatalogDAOMySQL(ICatalogDAO):
         finally:
             cursor.close()
 
+    def create_festival(self, festival_data: dict) -> int:
+        """Inserta un nuevo festival en la base de datos MySQL."""
+        cursor = self.conn.cursor()
+        query = """
+            INSERT INTO festivales (nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        try:
+            artistas_json = json.dumps(festival_data.get('artistas_destacados', []))
+            
+            cursor.execute(query, (
+                festival_data.get('nombre'),
+                festival_data.get('fecha_inicio'),
+                festival_data.get('fecha_fin'),
+                festival_data.get('ubicacion'),
+                artistas_json
+            ))
+            self.conn.commit()
+            return cursor.lastrowid
+        except mysql.connector.Error as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
     # ==========================================
     # ESPACIOS Y ALQUILERES
     # ==========================================
@@ -144,6 +169,30 @@ class CatalogDAOMySQL(ICatalogDAO):
             cursor.execute(query, (user_id, id_festival, nombre_artista))
             self.conn.commit()
             return True
+        except mysql.connector.Error as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
+    # ==========================================
+    # ARTISTAS
+    # ==========================================
+    def create_artista(self, artista_data: dict) -> int:
+        """Registra un nuevo artista en el catálogo general MySQL."""
+        cursor = self.conn.cursor()
+        query = """
+            INSERT INTO artistas (nombre, genero, popularidad) 
+            VALUES (%s, %s, %s)
+        """
+        try:
+            cursor.execute(query, (
+                artista_data.get('nombre'),
+                artista_data.get('genero'),
+                artista_data.get('popularidad', 0)
+            ))
+            self.conn.commit()
+            return cursor.lastrowid
         except mysql.connector.Error as err:
             self.conn.rollback()
             raise err

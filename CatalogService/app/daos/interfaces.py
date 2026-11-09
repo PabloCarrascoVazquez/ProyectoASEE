@@ -11,6 +11,11 @@ class ICatalogDAO(ABC):
         """Recupera la lista de todos los festivales disponibles."""
         pass
 
+    @abstractmethod
+    def create_festival(self, festival_data: dict) -> int:
+        """Inserta un nuevo festival en la base de datos y devuelve su ID."""
+        pass
+
     # ==========================================
     # ESPACIOS Y ALQUILERES
     # ==========================================
@@ -48,4 +53,12 @@ class ICatalogDAO(ABC):
     @abstractmethod
     def add_artista_favorito(self, user_id: str, id_festival: str, nombre_artista: str) -> bool:
         """Añade un artista a la lista de favoritos de un usuario."""
+        pass
+
+    # ==========================================
+    # ARTISTAS
+    # ==========================================
+    @abstractmethod
+    def create_artista(self, artista_data: dict) -> int:
+        """Registra un nuevo artista en el catálogo general y devuelve su ID."""
         pass

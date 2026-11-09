@@ -41,6 +41,39 @@ def token_required(f):
 
     return decorated
 
+def admin_required(f):
+    """Verifica que el token JWT sea válido y que el usuario tenga rol de administrador."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({
+                "codigo": 401,
+                "mensaje": "Acceso no autorizado",
+                "detalle": "Falta el token Bearer en la cabecera."
+            }), 401
+
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+            current_user_id = payload.get("sub") or payload.get("user_id")
+            rol = payload.get("rol") or payload.get("role")
+            
+            if rol != "admin":
+                return jsonify({
+                    "codigo": 403,
+                    "mensaje": "Acceso prohibido",
+                    "detalle": "Se requieren permisos de administrador."
+                }), 403
+        except jwt.ExpiredSignatureError:
+            return jsonify({"codigo": 401, "mensaje": "Acceso no autorizado", "detalle": "Token expirado."}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"codigo": 401, "mensaje": "Acceso no autorizado", "detalle": "Token inválido."}), 401
+
+        return f(current_user_id, *args, **kwargs)
+
+    return decorated
+
 # ==========================================
 # ENDPOINTS DE LECTURA PÚBLICA
 # ==========================================
@@ -143,5 +176,44 @@ def guardar_artista_favorito(current_user_id: str):
         response_dto = catalog_service.guardar_favorito(current_user_id, req_dto)
         
         return jsonify(response_dto.to_dict()), 201
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+# ==========================================
+# ENDPOINTS DE ADMINISTRACIÓN (SOLO ADMIN)
+# ==========================================
+@catalog_bp.route("/festivales", methods=["POST"])
+@admin_required
+def crear_festival(current_user_id: str):
+    """Crear un nuevo festival (Solo Administradores)."""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío o inválido."}), 400
+
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_dto = catalog_service.crear_festival(data)
+        
+        return jsonify(response_dto.to_dict() if hasattr(response_dto, "to_dict") else response_dto), 201
+    except ValueError as ve:
+        return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
+@catalog_bp.route("/artistas", methods=["POST"])
+@admin_required
+def crear_artista(current_user_id: str):
+    """Añadir un nuevo artista al catálogo (Solo Administradores)."""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": "JSON vacío o inválido."}), 400
+
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        response_dto = catalog_service.crear_artista(data)
+        
+        return jsonify(response_dto.to_dict() if hasattr(response_dto, "to_dict") else response_dto), 201
+    except ValueError as ve:
+        return jsonify({"codigo": 400, "mensaje": "Petición incorrecta", "detalle": str(ve)}), 400
     except Exception as e:
         return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
