@@ -14,7 +14,7 @@ RUN go build -o orderservice main.go
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/orderservice .
-COPY .env . 
+COPY .env.example .env
 
 EXPOSE 8005
 CMD ["./orderservice"]
