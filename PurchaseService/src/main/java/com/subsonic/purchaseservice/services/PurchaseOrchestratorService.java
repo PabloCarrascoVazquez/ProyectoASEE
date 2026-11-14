@@ -18,6 +18,7 @@ import com.subsonic.purchaseservice.dtos.responses.TransaccionResponse;
 import com.subsonic.purchaseservice.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,14 +44,17 @@ public class PurchaseOrchestratorService {
     private final PaymentGatewayAdapter paymentGatewayAdapter;
     private final Executor purchaseTaskExecutor;
     private final ObjectMapper objectMapper;
+    private final OutboxPublisherWorker outboxPublisherWorker;
 
+    @Autowired
     public PurchaseOrchestratorService(PurchaseDao purchaseDao,
                                        OutboxDao outboxDao,
                                        CatalogClientService catalogClientService,
                                        InventoryClientService inventoryClientService,
                                        PaymentGatewayAdapter paymentGatewayAdapter,
                                        @Qualifier("purchaseTaskExecutor") Executor purchaseTaskExecutor,
-                                       ObjectMapper objectMapper) {
+                                       ObjectMapper objectMapper,
+                                       OutboxPublisherWorker outboxPublisherWorker) {
         this.purchaseDao = purchaseDao;
         this.outboxDao = outboxDao;
         this.catalogClientService = catalogClientService;
@@ -58,6 +62,18 @@ public class PurchaseOrchestratorService {
         this.paymentGatewayAdapter = paymentGatewayAdapter;
         this.purchaseTaskExecutor = purchaseTaskExecutor;
         this.objectMapper = objectMapper;
+        this.outboxPublisherWorker = outboxPublisherWorker;
+    }
+
+    public PurchaseOrchestratorService(PurchaseDao purchaseDao,
+                                       OutboxDao outboxDao,
+                                       CatalogClientService catalogClientService,
+                                       InventoryClientService inventoryClientService,
+                                       PaymentGatewayAdapter paymentGatewayAdapter,
+                                       Executor purchaseTaskExecutor,
+                                       ObjectMapper objectMapper) {
+        this(purchaseDao, outboxDao, catalogClientService, inventoryClientService,
+                paymentGatewayAdapter, purchaseTaskExecutor, objectMapper, null);
     }
 
     /**
@@ -287,6 +303,15 @@ public class PurchaseOrchestratorService {
         outboxDao.save(outboxEvent);
 
         log.info("Pago confirmado para transacción {}. Evento outbox registrado con ID {}", transactionId, outboxEvent.getId());
+
+        // Intentar publicar inmediatamente en RabbitMQ sin esperar al siguiente ciclo del scheduler
+        if (outboxPublisherWorker != null) {
+            try {
+                outboxPublisherWorker.processOutboxEvents();
+            } catch (Exception e) {
+                log.warn("El despacho inmediato de outbox falló (se reintentará en background): {}", e.getMessage());
+            }
+        }
 
         LocalDateTime paidAt = LocalDateTime.now();
         return new TransaccionResponse(

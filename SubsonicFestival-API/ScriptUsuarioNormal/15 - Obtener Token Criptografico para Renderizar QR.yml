@@ -21,8 +21,9 @@ runtime:
   scripts:
     - type: tests
       code: |-
-        test("Token QR dinámico obtenido o recurso pendiente", function() {
-          expect([200, 400, 404]).to.include(res.getStatus());
+        test("Token QR dinámico obtenido correctamente", function() {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().token_qr).to.be.a('string');
         });
 
 settings:

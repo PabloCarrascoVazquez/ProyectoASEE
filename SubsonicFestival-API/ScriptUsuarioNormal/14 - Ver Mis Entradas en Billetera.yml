@@ -15,6 +15,9 @@ http:
 
 runtime:
   scripts:
+    - type: before-request
+      code: |-
+        await new Promise(resolve => setTimeout(resolve, 600));
     - type: after-response
       code: |-
         const response = res.getBody();
@@ -24,7 +27,9 @@ runtime:
     - type: tests
       code: |-
         test("Entradas obtenidas correctamente", function() {
-          expect([200, 404]).to.include(res.getStatus());
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody()).to.be.an('array');
+          expect(res.getBody().length).to.be.greaterThan(0);
         });
 
 settings:

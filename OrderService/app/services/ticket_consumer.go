@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -156,8 +157,17 @@ func (c *TicketConsumer) connectAndConsume(ctx context.Context) error {
 
 // ProcesarMensaje parsea el evento y genera las entradas digitales con garantía de idempotencia.
 func (c *TicketConsumer) procesarMensaje(body []byte) error {
+	trimmed := bytes.TrimSpace(body)
+	// Si el emisor (ej. Spring Jackson2JsonMessageConverter) envía el JSON serializado como un string JSON con comillas, lo desempaquetamos primero
+	if len(trimmed) > 0 && trimmed[0] == '"' {
+		var unwrapped string
+		if err := json.Unmarshal(trimmed, &unwrapped); err == nil {
+			trimmed = []byte(unwrapped)
+		}
+	}
+
 	var payload dtos.PurchaseEventPayload
-	if err := json.Unmarshal(body, &payload); err != nil {
+	if err := json.Unmarshal(trimmed, &payload); err != nil {
 		return fmt.Errorf("json inválido en evento outbox: %w", err)
 	}
 
