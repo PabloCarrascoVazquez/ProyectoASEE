@@ -99,6 +99,7 @@ def login():
 
 
 @user_bp.route("/auth/perfil", methods=["GET"])
+@user_bp.route("/auth/me", methods=["GET"])
 @token_required
 def get_profile(current_user_id: str):
     """Devuelve los datos del perfil del usuario logueado."""

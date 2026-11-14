@@ -8,7 +8,7 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/auth/me"
+  url: "{{baseUrl}}/auth/perfil"
   auth:
     type: bearer
     token: "{{jwtToken}}"
