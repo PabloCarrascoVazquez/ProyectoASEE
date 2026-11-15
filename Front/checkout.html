@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsonic - Finalizar Compra (Checkout)</title>
+    <!-- Archivo CSS vacío por ahora para decorar más adelante -->
+    <link rel="stylesheet" href="./css/custom.css">
+</head>
+<body class="app-body checkout-body">
+
+    <!-- Barra de navegación principal -->
+    <header class="main-header">
+        <div class="header-logo">
+            <a href="./index.html" class="brand-link">Subsonic</a>
+        </div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="./index.html" class="nav-link">Seguir Explorando</a></li>
+                <li class="nav-item"><a href="./wallet.html" class="nav-link">Mis Entradas</a></li>
+                <li class="nav-item"><a href="./checkout.html" class="nav-link active">Carrito</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-container checkout-container">
+        <h1 class="page-title">Finalizar Compra</h1>
+
+        <!-- ========================================================= -->
+        <!-- PASO 1: RESUMEN DEL CARRITO Y DIRECCIÓN DE ENVÍO          -->
+        <!-- ========================================================= -->
+        <section id="checkout-step-cart" class="checkout-section cart-section">
+            <h2 class="section-title">1. Resumen de tu Carrito</h2>
+
+            <!-- Listado de entradas seleccionadas -->
+            <div class="cart-group tickets-cart-group">
+                <h3 class="subsection-title">Entradas (<span id="cart-festival-id">Sin festival</span>)</h3>
+                <ul id="cart-tickets-list" class="cart-items-list">
+                    <li class="empty-msg">No hay entradas en el carrito.</li>
+                </ul>
+            </div>
+
+            <!-- Listado de productos físicos (merchandising) -->
+            <div class="cart-group merch-cart-group">
+                <h3 class="subsection-title">Merchandising</h3>
+                <ul id="cart-merch-list" class="cart-items-list">
+                    <li class="empty-msg">No hay productos físicos en el carrito.</li>
+                </ul>
+            </div>
+
+            <!-- Formulario de Dirección de Envío (Obligatorio si hay merchandising) -->
+            <div id="shipping-address-panel" class="form-card shipping-card" hidden>
+                <h3 class="card-title">Dirección de Envío (Requerida para Merchandising)</h3>
+                <form id="form-shipping-address" class="checkout-form">
+                    <div class="form-group">
+                        <label for="ship-street" class="form-label">Calle y número:</label>
+                        <input type="text" id="ship-street" class="form-input" placeholder="Ej. Calle Mayor 14, 2ºB">
+                    </div>
+                    <div class="form-group">
+                        <label for="ship-city" class="form-label">Ciudad:</label>
+                        <input type="text" id="ship-city" class="form-input" placeholder="Ej. Madrid">
+                    </div>
+                    <div class="form-group">
+                        <label for="ship-zip" class="form-label">Código Postal:</label>
+                        <input type="text" id="ship-zip" class="form-input" placeholder="Ej. 28013">
+                    </div>
+                    <div class="form-group">
+                        <label for="ship-country" class="form-label">País:</label>
+                        <input type="text" id="ship-country" class="form-input" value="España">
+                    </div>
+                    <div class="form-group">
+                        <label for="ship-phone" class="form-label">Teléfono de contacto:</label>
+                        <input type="tel" id="ship-phone" class="form-input" placeholder="Ej. +34600112233">
+                    </div>
+                </form>
+            </div>
+
+            <div class="cart-actions">
+                <button type="button" id="btn-clear-cart" class="btn-secondary">Vaciar Carrito</button>
+                <button type="button" id="btn-init-reservation" class="btn-primary">Reservar Stock y Continuar al Pago</button>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- PASO 2: PASARELA DE PAGO (BLOQUEO DE 10 MINUTOS)          -->
+        <!-- ========================================================= -->
+        <section id="checkout-step-payment" class="checkout-section payment-section" hidden>
+            <h2 class="section-title">2. Confirmar Pago</h2>
+
+            <div class="reservation-summary-card">
+                <p class="summary-item">ID de Transacción: <strong id="tx-id" class="mono-text">-</strong></p>
+                <p class="summary-item">Estado: <span id="tx-status" class="status-badge">PENDING</span></p>
+                <p class="summary-item">Reserva válida hasta: <span id="tx-expiration" class="expiration-text">-</span></p>
+                <p class="summary-total">Total a Pagar: <strong id="tx-total" class="total-amount">0.00 EUR</strong></p>
+            </div>
+
+            <form id="form-payment" class="checkout-form payment-form">
+                <div class="form-group">
+                    <label for="payment-method" class="form-label">Método de Pago:</label>
+                    <select id="payment-method" class="form-select" required>
+                        <option value="tarjeta">Tarjeta de Crédito / Débito</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="bizum">Bizum</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="payment-token" class="form-label">Token de Pasarela (Simulado):</label>
+                    <input type="text" id="payment-token" class="form-input" value="tok_1N4L8s2eZvKYlo2C0V" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="btn-confirm-payment" class="btn-primary">Pagar Ahora</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- PASO 3: CONFIRMACIÓN Y RECIBO DE COMPRA                   -->
+        <!-- ========================================================= -->
+        <section id="checkout-step-receipt" class="checkout-section receipt-section" hidden>
+            <h2 class="section-title">¡Compra Completada con Éxito!</h2>
+            
+            <div class="receipt-card">
+                <p class="receipt-item">Transacción: <strong id="receipt-tx-id">-</strong></p>
+                <p class="receipt-item">Estado: <span id="receipt-status" class="status-badge success">PAID</span></p>
+                <p class="receipt-item">Total Cobrado: <strong id="receipt-amount">0.00 EUR</strong></p>
+                <p class="receipt-item">Fecha de Pago: <span id="receipt-date">-</span></p>
+                <p class="receipt-item">Recibo Oficial: <a id="receipt-url" href="#" target="_blank" class="receipt-link">Ver Recibo</a></p>
+            </div>
+
+            <div class="receipt-actions">
+                <a href="./wallet.html" class="btn-primary">Ir a Mis Entradas (Ver QR)</a>
+                <a href="./index.html" class="btn-secondary">Volver al Inicio</a>
+            </div>
+        </section>
+
+        <!-- Contenedor para mensajes de error (ej. 409 Stock insuficiente o reserva expirada) -->
+        <div id="checkout-error-box" class="alert-box error-box" hidden>
+            <p id="checkout-error-msg" class="alert-text"></p>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p class="footer-text">Subsonic Checkout Service</p>
+    </footer>
+
+    <!-- Scripts compartidos y de dominio -->
+    <script src="./js/shared/session.js"></script>
+    <script src="./js/shared/api.js"></script>
+    <script src="./js/purchase/api-checkout.js"></script>
+
+    <!-- Script de control de interfaz de esta vista -->
+    <script src="./js/purchase/checkout-view.js"></script>
+</body>
+</html>

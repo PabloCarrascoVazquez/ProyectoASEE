@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsonic - Acceso y Registro</title>
+    <!-- Archivo CSS vacío por ahora para decorar más adelante -->
+    <link rel="stylesheet" href="./css/custom.css">
+</head>
+<body class="app-body auth-body">
+
+    <!-- Barra de navegación minimalista -->
+    <header class="main-header auth-header">
+        <div class="header-logo">
+            <a href="./index.html" class="brand-link">Subsonic</a>
+        </div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="./index.html" class="nav-link">← Volver al Catálogo</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-container auth-container">
+        <section class="auth-panel">
+            <h1 class="page-title">Bienvenido a Subsonic</h1>
+
+            <!-- Selector de modo: Iniciar Sesión / Crear Cuenta -->
+            <div class="auth-switcher">
+                <button type="button" id="btn-tab-login" class="switch-btn active">Iniciar Sesión</button>
+                <button type="button" id="btn-tab-register" class="switch-btn">Crear Cuenta</button>
+            </div>
+
+            <!-- Contenedor de mensajes de alerta/error -->
+            <div id="auth-message-box" class="alert-box" hidden>
+                <p id="auth-message-text" class="alert-text"></p>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- FORMULARIO 1: INICIO DE SESIÓN (LOGIN)                    -->
+            <!-- ========================================================= -->
+            <form id="form-login" class="auth-form login-form">
+                <h2 class="form-title">Accede a tu cuenta</h2>
+
+                <div class="form-group">
+                    <label for="login-email" class="form-label">Correo Electrónico:</label>
+                    <input type="email" id="login-email" class="form-input" required placeholder="laura@subsonic.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password" class="form-label">Contraseña:</label>
+                    <input type="password" id="login-password" class="form-input" required placeholder="••••••••">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Entrar</button>
+                </div>
+            </form>
+
+            <!-- ========================================================= -->
+            <!-- FORMULARIO 2: REGISTRO DE NUEVO USUARIO                   -->
+            <!-- ========================================================= -->
+            <form id="form-register" class="auth-form register-form" hidden>
+                <h2 class="form-title">Regístrate en Subsonic</h2>
+
+                <div class="form-group">
+                    <label for="reg-name" class="form-label">Nombre Completo:</label>
+                    <input type="text" id="reg-name" class="form-input" required placeholder="Ej. Laura Gómez">
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-email" class="form-label">Correo Electrónico:</label>
+                    <input type="email" id="reg-email" class="form-input" required placeholder="laura@subsonic.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-password" class="form-label">Contraseña:</label>
+                    <input type="password" id="reg-password" class="form-input" required placeholder="Mínimo 8 caracteres">
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-avatar" class="form-label">URL del Avatar (Opcional):</label>
+                    <input type="url" id="reg-avatar" class="form-input" placeholder="https://ejemplo.com/avatar.png">
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-rol" class="form-label">Tipo de Cuenta (Rol):</label>
+                    <select id="reg-rol" class="form-select">
+                        <option value="client" selected>Asistente / Cliente</option>
+                        <option value="supplier">Proveedor (Espacios/Parcelas)</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Crear Cuenta</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <p class="footer-text">Subsonic Identity Service</p>
+    </footer>
+
+    <!-- Scripts compartidos y de dominio -->
+    <script src="./js/shared/session.js"></script>
+    <script src="./js/shared/api.js"></script>
+    <script src="./js/auth/api-login.js"></script>
+    <script src="./js/auth/login.js"></script>
+</body>
+</html>

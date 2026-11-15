@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsonic - Mi Billetera y Entradas</title>
+    <!-- Archivo CSS vacío por ahora para decorar más adelante -->
+    <link rel="stylesheet" href="./css/custom.css">
+</head>
+<body class="app-body wallet-body">
+
+    <!-- Barra de navegación principal -->
+    <header class="main-header">
+        <div class="header-logo">
+            <a href="./index.html" class="brand-link">Subsonic</a>
+        </div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="./index.html" class="nav-link">Explorar</a></li>
+                <li class="nav-item"><a href="./wallet.html" class="nav-link active">Mis Entradas</a></li>
+                <li class="nav-item"><a href="./checkout.html" class="nav-link">Carrito</a></li>
+                <li class="nav-item"><button type="button" id="btn-logout" class="btn-logout">Cerrar Sesión</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-container wallet-container">
+        <h1 class="page-title">Mi Billetera Digital (Wallet)</h1>
+
+        <!-- Contenedor de mensajes de alerta/error -->
+        <div id="wallet-message-box" class="alert-box" hidden>
+            <p id="wallet-message-text" class="alert-text"></p>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN 1: LISTADO DE ENTRADAS DEL USUARIO                -->
+        <!-- ========================================================= -->
+        <section id="wallet-tickets-section" class="wallet-section tickets-section">
+            <h2 class="section-title">Mis Entradas Adquiridas</h2>
+
+            <!-- Grid o lista donde se pintan las tarjetas de cada entrada -->
+            <div id="tickets-grid" class="items-grid tickets-grid">
+                <p class="loading-text">Cargando tus entradas...</p>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN 2: DETALLE Y RENDERIZADO DE CÓDIGO QR             -->
+        <!-- ========================================================= -->
+        <section id="qr-viewer-panel" class="detail-panel qr-panel" hidden>
+            <button type="button" id="btn-close-qr" class="btn-back">← Volver a mis entradas</button>
+
+            <div class="qr-card">
+                <h2 class="detail-title">Pase de Acceso Digital</h2>
+                <p class="detail-meta">ID Entrada: <strong id="qr-ticket-id" class="mono-text">-</strong></p>
+                <p class="detail-meta">Festival: <span id="qr-festival-id">-</span></p>
+                <p class="detail-meta">Modalidad: <span id="qr-ticket-type">-</span></p>
+
+                <!-- Contenedor donde una librería como qrcode.js dibujará el QR -->
+                <div id="qr-canvas-container" class="qr-box">
+                    <p class="loading-text">Generando código QR...</p>
+                </div>
+
+                <!-- Token criptográfico en texto plano (útil para copiar y probar validación) -->
+                <div class="qr-token-box">
+                    <label for="qr-raw-token" class="form-label">Token Criptográfico:</label>
+                    <input type="text" id="qr-raw-token" class="form-input mono-text" readonly>
+                    <p class="expiration-text">Expira: <span id="qr-expiration">-</span></p>
+                </div>
+
+                <!-- Acción de cancelación de entrada -->
+                <div class="qr-actions">
+                    <button type="button" id="btn-cancel-ticket" class="btn-danger">Solicitar Cancelación / Devolución</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN 3: VALIDADOR DE ACCESO EN PUERTA (STAFF / ADMIN)  -->
+        <!-- ========================================================= -->
+        <section id="staff-scanner-section" class="wallet-section scanner-section" hidden>
+            <h2 class="section-title">Control de Acceso en Puerta (Staff)</h2>
+            
+            <div class="form-card scanner-card">
+                <form id="form-validate-qr" class="wallet-form">
+                    <div class="form-group">
+                        <label for="scan-token-input" class="form-label">Token QR Escaneado:</label>
+                        <input type="text" id="scan-token-input" class="form-input mono-text" required placeholder="Pega aquí el token_qr del asistente">
+                    </div>
+                    <button type="submit" class="btn-primary">Validar Acceso</button>
+                </form>
+
+                <!-- Resultado de la validación en puerta -->
+                <div id="scan-result-box" class="scan-result" hidden>
+                    <p id="scan-result-status" class="status-badge"></p>
+                    <p id="scan-result-msg" class="result-text"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <p class="footer-text">Subsonic Orders & Access Service</p>
+    </footer>
+
+    <!-- Librería ligera por CDN para pintar el código QR en HTML (opcional, cero configuración) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Scripts compartidos y de dominio -->
+    <script src="./js/shared/session.js"></script>
+    <script src="./js/shared/api.js"></script>
+    <script src="./js/orders/api-wallet.js"></script>
+
+    <!-- Script de control de interfaz de esta vista -->
+    <script src="./js/orders/wallet-view.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsonic - Catálogo y Merchandising</title>
+    <!-- Archivo CSS vacío por ahora para decorar más adelante -->
+    <link rel="stylesheet" href="./css/custom.css">
+</head>
+<body class="app-body">
+
+    <!-- Barra de navegación principal -->
+    <header class="main-header">
+        <div class="header-logo">
+            <a href="./index.html" class="brand-link">Subsonic</a>
+        </div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="./index.html" class="nav-link active">Explorar</a></li>
+                <li class="nav-item"><a href="./wallet.html" class="nav-link">Mis Entradas</a></li>
+                <li class="nav-item"><a href="./checkout.html" class="nav-link">Carrito (<span id="cart-count" class="cart-badge">0</span>)</a></li>
+                <li class="nav-item" id="nav-admin" hidden><a href="./dashboard-admin.html" class="nav-link admin-link">Panel Admin</a></li>
+                <li class="nav-item" id="nav-auth"><a href="./login.html" class="nav-link auth-link">Iniciar Sesión</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Panel inicial con las dos opciones principales -->
+    <main class="main-container">
+        <section class="selector-panel">
+            <h1 class="page-title">Explora Subsonic</h1>
+            <div class="view-switcher">
+                <button type="button" id="btn-show-catalog" class="switch-btn active">Mostrar Catálogo de Festivales</button>
+                <button type="button" id="btn-show-merch" class="switch-btn">Mostrar Merchandising</button>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN 1: CATÁLOGO DE FESTIVALES                         -->
+        <!-- ========================================================= -->
+        <section id="section-catalog" class="content-section catalog-section">
+            <h2 class="section-title">Festivales Disponibles</h2>
+            
+            <!-- Listado general de festivales (se rellena dinámicamente con JS) -->
+            <div id="festivals-grid" class="items-grid festivals-grid">
+                <p class="loading-text">Cargando festivales...</p>
+            </div>
+
+            <!-- Panel de enfoque: Detalle de un festival seleccionado -->
+            <article id="festival-detail-view" class="detail-panel festival-detail" hidden>
+                <button type="button" id="btn-close-festival" class="btn-back">← Volver a festivales</button>
+                
+                <div class="detail-header">
+                    <h3 id="detail-fest-name" class="detail-title">Nombre del Festival</h3>
+                    <p id="detail-fest-dates" class="detail-meta">Fechas</p>
+                    <p id="detail-fest-location" class="detail-meta">Ubicación</p>
+                </div>
+
+                <div class="detail-subsection artists-subsection">
+                    <h4 class="subsection-title">Artistas Destacados</h4>
+                    <ul id="detail-fest-artists" class="artists-list"></ul>
+                </div>
+
+                <div class="detail-subsection tickets-subsection">
+                    <h4 class="subsection-title">Entradas y Tarifas</h4>
+                    <div id="detail-fest-tickets" class="tickets-list"></div>
+                </div>
+
+                <div class="detail-subsection spaces-subsection">
+                    <h4 class="subsection-title">Espacios y Parcelas del Recinto</h4>
+                    <div id="detail-fest-spaces" class="spaces-list"></div>
+                </div>
+            </article>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN 2: MERCHANDISING / PRODUCTOS                      -->
+        <!-- ========================================================= -->
+        <section id="section-merch" class="content-section merch-section" hidden>
+            <h2 class="section-title">Tienda Oficial y Merchandising</h2>
+            
+            <!-- Listado general de productos (se rellena dinámicamente con JS) -->
+            <div id="merch-grid" class="items-grid merch-grid">
+                <p class="loading-text">Cargando productos...</p>
+            </div>
+
+            <!-- Panel de enfoque: Detalle de un producto seleccionado -->
+            <article id="merch-detail-view" class="detail-panel merch-detail" hidden>
+                <button type="button" id="btn-close-merch" class="btn-back">← Volver a productos</button>
+                
+                <div class="detail-header">
+                    <h3 id="detail-merch-name" class="detail-title">Nombre del Producto</h3>
+                    <p id="detail-merch-variant" class="detail-meta">Variante / Talla</p>
+                    <p id="detail-merch-price" class="detail-price">0.00 €</p>
+                    <p id="detail-merch-stock" class="detail-stock">Unidades disponibles: 0</p>
+                </div>
+
+                <div class="detail-actions">
+                    <label for="merch-qty" class="qty-label">Cantidad:</label>
+                    <input type="number" id="merch-qty" class="qty-input" value="1" min="1">
+                    <button type="button" id="btn-add-merch-cart" class="btn-primary">Añadir al carrito</button>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <p class="footer-text">Subsonic Microservices Architecture</p>
+    </footer>
+
+    <!-- Scripts compartidos y de dominio -->
+    <script src="./js/shared/session.js"></script>
+    <script src="./js/shared/api.js"></script>
+    <script src="./js/catalog/api-catalog.js"></script>
+    <script src="./js/stockNship/api-inventory-shipping.js"></script>
+    
+    <!-- Script de control de interfaz de esta vista (opcional o en archivo aparte) -->
+    <script src="./js/catalog/index-view.js"></script>
+</body>
+</html>

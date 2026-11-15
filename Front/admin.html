@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsonic - Panel de Administración</title>
+    <!-- Archivo CSS vacío por ahora para decorar más adelante -->
+    <link rel="stylesheet" href="./css/custom.css">
+</head>
+<body class="app-body admin-body">
+
+    <!-- Barra de navegación principal -->
+    <header class="main-header admin-header">
+        <div class="header-logo">
+            <a href="./index.html" class="brand-link">Subsonic Admin</a>
+        </div>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="./index.html" class="nav-link">Volver a la Tienda</a></li>
+                <li class="nav-item"><button type="button" id="btn-logout" class="btn-logout">Cerrar Sesión</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-container admin-container">
+        <h1 class="page-title">Panel de Control y Administración</h1>
+
+        <!-- Selector de módulos administrativos -->
+        <nav class="admin-tabs">
+            <button type="button" id="tab-festivals" class="tab-btn active">Festivales y Recintos</button>
+            <button type="button" id="tab-artists" class="tab-btn">Artistas</button>
+            <button type="button" id="tab-inventory" class="tab-btn">Inventario y Stock</button>
+            <button type="button" id="tab-shipping" class="tab-btn">Logística y Envíos</button>
+        </nav>
+
+        <!-- ========================================================= -->
+        <!-- MÓDULO 1: GESTIÓN DE FESTIVALES, ESPACIOS Y ENTRADAS      -->
+        <!-- ========================================================= -->
+        <section id="admin-section-festivals" class="admin-section festivals-admin-section">
+            <h2 class="section-title">Gestión de Festivales</h2>
+
+            <!-- Formulario: Crear o Modificar Festival -->
+            <div class="form-card create-festival-card">
+                <h3 class="card-title">Crear / Editar Festival</h3>
+                <form id="form-festival" class="admin-form">
+                    <input type="hidden" id="fest-id" name="id_festival">
+                    
+                    <div class="form-group">
+                        <label for="fest-name" class="form-label">Nombre del Festival:</label>
+                        <input type="text" id="fest-name" class="form-input" required placeholder="Ej. Subsonic Summer Fest">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fest-start" class="form-label">Fecha Inicio:</label>
+                        <input type="date" id="fest-start" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fest-end" class="form-label">Fecha Fin:</label>
+                        <input type="date" id="fest-end" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fest-location" class="form-label">Ubicación:</label>
+                        <input type="text" id="fest-location" class="form-input" placeholder="Ej. Recinto Ferial, Madrid">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fest-artists" class="form-label">Artistas Destacados (separados por comas):</label>
+                        <input type="text" id="fest-artists" class="form-input" placeholder="Ej. Peggy Gou, Carl Cox">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Guardar Festival</button>
+                        <button type="button" id="btn-cancel-edit-fest" class="btn-secondary" hidden>Cancelar Edición</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Listado de festivales existentes para editar/borrar o añadir detalles -->
+            <div class="list-container festivals-admin-list">
+                <h3 class="subsection-title">Festivales Activos</h3>
+                <div id="admin-festivals-grid" class="admin-grid">
+                    <p class="loading-text">Cargando festivales...</p>
+                </div>
+            </div>
+
+            <!-- Sub-formularios para añadir Espacios o Entradas a un festival seleccionado -->
+            <div id="festival-subresources-panel" class="subresources-panel" hidden>
+                <h3 class="subsection-title">Configurar Recursos para: <span id="selected-fest-title"></span></h3>
+                
+                <!-- Añadir Espacio / Parcela -->
+                <div class="form-card">
+                    <h4 class="card-title">Añadir Espacio / Parcela</h4>
+                    <form id="form-space" class="admin-form">
+                        <div class="form-group">
+                            <label for="space-type" class="form-label">Tipo de Espacio:</label>
+                            <select id="space-type" class="form-select" required>
+                                <option value="foodtruck">Foodtruck</option>
+                                <option value="mercadillo">Mercadillo</option>
+                                <option value="vip_zone">Zona VIP</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="space-sqm" class="form-label">Metros Cuadrados:</label>
+                            <input type="number" id="space-sqm" class="form-input" min="0" value="15">
+                        </div>
+                        <div class="form-group">
+                            <label for="space-price" class="form-label">Precio Alquiler (€):</label>
+                            <input type="number" id="space-price" class="form-input" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Añadir Espacio</button>
+                    </form>
+                </div>
+
+                <!-- Añadir Tipo de Entrada -->
+                <div class="form-card">
+                    <h4 class="card-title">Añadir Tipo de Entrada</h4>
+                    <form id="form-ticket-type" class="admin-form">
+                        <div class="form-group">
+                            <label for="ticket-type" class="form-label">Modalidad:</label>
+                            <select id="ticket-type" class="form-select" required>
+                                <option value="day">Entrada de Día (day)</option>
+                                <option value="weekend">Abono Fin de Semana (weekend)</option>
+                                <option value="vip">Pase VIP (vip)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticket-price" class="form-label">Precio (€):</label>
+                            <input type="number" id="ticket-price" class="form-input" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticket-stock" class="form-label">Cupo Disponible:</label>
+                            <input type="number" id="ticket-stock" class="form-input" min="1" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Añadir Tarifas</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MÓDULO 2: GESTIÓN DE ARTISTAS                             -->
+        <!-- ========================================================= -->
+        <section id="admin-section-artists" class="admin-section artists-admin-section" hidden>
+            <h2 class="section-title">Gestión de Artistas</h2>
+            
+            <div class="form-card create-artist-card">
+                <h3 class="card-title">Añadir Artista al Catálogo General</h3>
+                <form id="form-artist" class="admin-form">
+                    <div class="form-group">
+                        <label for="artist-name" class="form-label">Nombre del Artista:</label>
+                        <input type="text" id="artist-name" class="form-input" required placeholder="Ej. Peggy Gou">
+                    </div>
+                    <div class="form-group">
+                        <label for="artist-genre" class="form-label">Género Musical:</label>
+                        <input type="text" id="artist-genre" class="form-input" placeholder="Ej. House / Techno">
+                    </div>
+                    <div class="form-group">
+                        <label for="artist-popularity" class="form-label">Popularidad (0 - 100):</label>
+                        <input type="number" id="artist-popularity" class="form-input" min="0" max="100" value="50">
+                    </div>
+                    <button type="submit" class="btn-primary">Registrar Artista</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MÓDULO 3: CONTROL DE INVENTARIO Y STOCK (MERCH)           -->
+        <!-- ========================================================= -->
+        <section id="admin-section-inventory" class="admin-section inventory-admin-section" hidden>
+            <h2 class="section-title">Control de Inventario Físico</h2>
+            
+            <div id="admin-stock-list" class="admin-table-container">
+                <table class="data-table stock-table">
+                    <thead class="table-head">
+                        <tr class="table-row">
+                            <th class="table-header">Producto</th>
+                            <th class="table-header">Variante</th>
+                            <th class="table-header">Ubicación</th>
+                            <th class="table-header">Precio</th>
+                            <th class="table-header">Stock Actual</th>
+                            <th class="table-header">Ajuste Rápido (+/-)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-table-body" class="table-body">
+                        <!-- Se rellena dinámicamente con JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MÓDULO 4: LOGÍSTICA Y TRACKING DE ENVÍOS                  -->
+        <!-- ========================================================= -->
+        <section id="admin-section-shipping" class="admin-section shipping-admin-section" hidden>
+            <h2 class="section-title">Logística y Despacho de Envíos</h2>
+            
+            <div id="admin-shipping-list" class="admin-table-container">
+                <table class="data-table shipping-table">
+                    <thead class="table-head">
+                        <tr class="table-row">
+                            <th class="table-header">ID Envío / Pedido</th>
+                            <th class="table-header">Dirección Entrega</th>
+                            <th class="table-header">Empresa / Tracking</th>
+                            <th class="table-header">Estado Actual</th>
+                            <th class="table-header">Actualizar Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipping-table-body" class="table-body">
+                        <!-- Se rellena dinámicamente con JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <p class="footer-text">Subsonic Admin Panel</p>
+    </footer>
+
+    <!-- Scripts compartidos y de dominio -->
+    <script src="./js/shared/session.js"></script>
+    <script src="./js/shared/api.js"></script>
+    <script src="./js/catalog/catalog.js"></script>
+    <script src="./js/stockNship/inventory-shipping.js"></script>
+
+    <!-- Script de control para la vista de administración -->
+    <script src="./js/auth/admin-view.js"></script>
+</body>
+</html>
