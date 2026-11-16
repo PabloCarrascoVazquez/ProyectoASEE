@@ -3,10 +3,10 @@ import sys
 import sqlite3
 
 try:
-    import mysql.connector
-    from mysql.connector import pooling
+    import psycopg2
+    from psycopg2 import pool
 except ImportError:
-    mysql = None
+    psycopg2 = None
 
 SCHEMA_SQLITE = """
 CREATE TABLE IF NOT EXISTS Festivales (
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS Artistas (
 );
 """
 
-SCHEMA_MYSQL = [
+SCHEMA_POSTGRES = [
     """
     CREATE TABLE IF NOT EXISTS festivales (
         id_festival VARCHAR(50) PRIMARY KEY,
@@ -73,57 +73,53 @@ SCHEMA_MYSQL = [
         fecha_fin DATE NOT NULL,
         ubicacion VARCHAR(255) NOT NULL,
         artistas_destacados TEXT
-    ) ENGINE=InnoDB;
+    );
     """,
     """
     CREATE TABLE IF NOT EXISTS espacios (
         id_espacio VARCHAR(36) PRIMARY KEY,
-        id_festival VARCHAR(50) NOT NULL,
+        id_festival VARCHAR(50) NOT NULL REFERENCES festivales(id_festival) ON DELETE CASCADE,
         tipo VARCHAR(50) NOT NULL,
         metros_cuadrados INT NOT NULL,
         precio_alquiler DECIMAL(10, 2) NOT NULL,
-        estado VARCHAR(20) NOT NULL DEFAULT 'disponible',
-        FOREIGN KEY (id_festival) REFERENCES festivales(id_festival)
-    ) ENGINE=InnoDB;
+        estado VARCHAR(20) NOT NULL DEFAULT 'disponible'
+    );
     """,
     """
     CREATE TABLE IF NOT EXISTS alquileres (
         id_contrato VARCHAR(36) PRIMARY KEY,
-        id_espacio VARCHAR(36) NOT NULL,
+        id_espacio VARCHAR(36) NOT NULL REFERENCES espacios(id_espacio) ON DELETE CASCADE,
         nombre_negocio VARCHAR(100) NOT NULL,
         tipo_negocio VARCHAR(100) NOT NULL,
-        necesita_conexion_electrica BOOLEAN NOT NULL DEFAULT 0,
+        necesita_conexion_electrica BOOLEAN NOT NULL DEFAULT FALSE,
         estado VARCHAR(50) NOT NULL DEFAULT 'Pendiente de firma',
-        fecha_solicitud DATETIME NOT NULL,
-        FOREIGN KEY (id_espacio) REFERENCES espacios(id_espacio)
-    ) ENGINE=InnoDB;
+        fecha_solicitud TIMESTAMP NOT NULL
+    );
     """,
     """
     CREATE TABLE IF NOT EXISTS tipos_entrada (
-        id_festival VARCHAR(50) NOT NULL,
+        id_festival VARCHAR(50) NOT NULL REFERENCES festivales(id_festival) ON DELETE CASCADE,
         tipo VARCHAR(20) NOT NULL,
         precio DECIMAL(10, 2) NOT NULL,
         disponibles INT NOT NULL DEFAULT 0,
-        PRIMARY KEY (id_festival, tipo),
-        FOREIGN KEY (id_festival) REFERENCES festivales(id_festival)
-    ) ENGINE=InnoDB;
+        PRIMARY KEY (id_festival, tipo)
+    );
     """,
     """
     CREATE TABLE IF NOT EXISTS artistas_favoritos (
         user_id VARCHAR(36) NOT NULL,
-        id_festival VARCHAR(50) NOT NULL,
+        id_festival VARCHAR(50) NOT NULL REFERENCES festivales(id_festival) ON DELETE CASCADE,
         nombre_artista VARCHAR(100) NOT NULL,
-        PRIMARY KEY (user_id, id_festival, nombre_artista),
-        FOREIGN KEY (id_festival) REFERENCES festivales(id_festival)
-    ) ENGINE=InnoDB;
+        PRIMARY KEY (user_id, id_festival, nombre_artista)
+    );
     """,
     """
     CREATE TABLE IF NOT EXISTS artistas (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         nombre VARCHAR(100) NOT NULL,
         genero VARCHAR(50),
         popularidad INT DEFAULT 0
-    ) ENGINE=InnoDB;
+    );
     """
 ]
 
@@ -163,7 +159,7 @@ SEED_DATA = {
         ("esp-4920-8444", "fest_subsonic_winter_2026", "mercadillo", 20, 700.00, "disponible")
     ],
     "alquileres": [
-        ("alq-1001-2026", "esp-4920-8442", "Burger Master Foodtruck", "Restauración", 1, "Confirmado", "2026-06-01 10:00:00")
+        ("alq-1001-2026", "esp-4920-8442", "Burger Master Foodtruck", "Restauración", True, "Confirmado", "2026-06-01 10:00:00")
     ],
     "artistas": [
         ("Daft Punk", "Electronic / French House", 100),
@@ -181,10 +177,10 @@ SEED_DATA = {
 
 
 class DatabaseConnectionFactory:
-    _mysql_pool = None
+    _pg_pool = None
+    _pg_initialized = False
     _sqlite_conn = None
     _sqlite_initialized = False
-    _mysql_initialized = False
 
     @classmethod
     def _is_test_env(cls) -> bool:
@@ -201,40 +197,36 @@ class DatabaseConnectionFactory:
     def get_connection(cls):
         engine = os.getenv("DB_ENGINE", "sqlite").lower()
 
-        if engine == "mysql":
-            if mysql is None:
-                raise ImportError("El módulo 'mysql-connector-python' no está instalado. Instálalo con: pip install mysql-connector-python")
-            if cls._mysql_pool is None:
-                cls._mysql_pool = mysql.connector.pooling.MySQLConnectionPool(
-                    pool_name="catalog_pool",
-                    pool_size=5,
+        if engine in ("postgres", "postgresql"):
+            if cls._pg_pool is None:
+                cls._pg_pool = psycopg2.pool.ThreadedConnectionPool(
+                    minconn=1,
+                    maxconn=5,
                     host=os.getenv("DB_HOST", "127.0.0.1"),
-                    port=int(os.getenv("DB_PORT", 3306)),
-                    database=os.getenv("DB_NAME", "catalogo_db"),
-                    user=os.getenv("DB_USER", "root"),
-                    password=os.getenv("DB_PASSWORD", "")
+                    port=int(os.getenv("DB_PORT", 5432)),
+                    dbname=os.getenv("DB_NAME", "catalogo_db"),
+                    user=os.getenv("DB_USER", "subsonic"),
+                    password=os.getenv("DB_PASSWORD", "subsonic123")
                 )
-            
-            conn = cls._mysql_pool.get_connection()
-            if not cls._mysql_initialized:
-                cls._initialize_mysql(conn)
+
+            conn = cls._pg_pool.getconn()
+            if not cls._pg_initialized:
+                cls._initialize_postgres(conn)
                 if not cls._is_test_env():
-                    cls.seed_sample_data(conn, "mysql")
-                cls._mysql_initialized = True
+                    cls.seed_sample_data(conn, "postgres")
+                cls._pg_initialized = True
             return conn
 
         elif engine == "sqlite":
             db_path = os.getenv("SQLITE_DB_PATH")
             if not db_path:
                 current_dir = os.path.dirname(os.path.abspath(__file__))
-                # Se creará el archivo catalogo.db en la raíz del microservicio
                 db_path = os.path.abspath(os.path.join(current_dir, "../../catalogo.db"))
 
             if cls._sqlite_conn is None:
                 conn = sqlite3.connect(db_path, check_same_thread=False)
                 conn.row_factory = sqlite3.Row
-                # Vital en el catálogo para que funcionen las Claves Foráneas entre Festivales y Espacios
-                conn.execute("PRAGMA foreign_keys = ON") 
+                conn.execute("PRAGMA foreign_keys = ON")
                 cls._sqlite_conn = conn
 
                 if not cls._sqlite_initialized:
@@ -246,6 +238,12 @@ class DatabaseConnectionFactory:
             return cls._sqlite_conn
         else:
             raise ValueError(f"Motor de base de datos no soportado: {engine}")
+
+    @classmethod
+    def release_postgres_connection(cls, conn):
+        """Devuelve la conexión al pool de PostgreSQL."""
+        if cls._pg_pool is not None and conn is not None:
+            cls._pg_pool.putconn(conn)
 
     @classmethod
     def close_sqlite(cls):
@@ -267,78 +265,90 @@ class DatabaseConnectionFactory:
         cursor.close()
 
     @classmethod
-    def _initialize_mysql(cls, conn):
-        """Inicializa exclusivamente las tablas del microservicio de catálogo en MySQL."""
+    def _initialize_postgres(cls, conn):
+        """Inicializa exclusivamente las tablas del microservicio de catálogo en PostgreSQL."""
         cursor = conn.cursor()
-        for statement in SCHEMA_MYSQL:
-            cursor.execute(statement)
-        conn.commit()
-        cursor.close()
+        try:
+            for statement in SCHEMA_POSTGRES:
+                cursor.execute(statement)
+            conn.commit()
+        except Exception as err:
+            conn.rollback()
+            raise err
+        finally:
+            cursor.close()
 
     @classmethod
     def seed_sample_data(cls, conn, engine: str, force: bool = False):
         """
         Inserta datos semilla si las tablas del catálogo están vacías (o si force=True).
-        Compatible con SQLite y MySQL.
+        Compatible con SQLite y PostgreSQL.
         """
         cursor = conn.cursor()
         try:
-            # Comprobar si ya existen festivales
-            cursor.execute("SELECT COUNT(*) FROM Festivales")
+            cursor.execute("SELECT COUNT(*) FROM festivales")
             row = cursor.fetchone()
             count = row[0] if row else 0
 
             if count > 0 and not force:
                 return
 
-            placeholder = "?" if engine == "sqlite" else "%s"
-            insert_cmd = "INSERT OR IGNORE INTO" if engine == "sqlite" else "INSERT IGNORE INTO"
+            is_sqlite = (engine == "sqlite")
+            placeholder = "?" if is_sqlite else "%s"
+            insert_prefix = "INSERT OR IGNORE INTO" if is_sqlite else "INSERT INTO"
+            conflict_suffix = "" if is_sqlite else "ON CONFLICT DO NOTHING"
 
             # 1. Festivales
             for fest in SEED_DATA["festivales"]:
                 query = f"""
-                    {insert_cmd} Festivales (id_festival, nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
+                    {insert_prefix} festivales (id_festival, nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados)
                     VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    {conflict_suffix}
                 """
                 cursor.execute(query, fest)
 
             # 2. Tipos de Entrada
             for entrada in SEED_DATA["tipos_entrada"]:
                 query = f"""
-                    {insert_cmd} Tipos_Entrada (id_festival, tipo, precio, disponibles)
+                    {insert_prefix} tipos_entrada (id_festival, tipo, precio, disponibles)
                     VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    {conflict_suffix}
                 """
                 cursor.execute(query, entrada)
 
             # 3. Espacios
             for espacio in SEED_DATA["espacios"]:
                 query = f"""
-                    {insert_cmd} Espacios (id_espacio, id_festival, tipo, metros_cuadrados, precio_alquiler, estado)
+                    {insert_prefix} espacios (id_espacio, id_festival, tipo, metros_cuadrados, precio_alquiler, estado)
                     VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    {conflict_suffix}
                 """
                 cursor.execute(query, espacio)
 
             # 4. Alquileres
             for alq in SEED_DATA["alquileres"]:
                 query = f"""
-                    {insert_cmd} Alquileres (id_contrato, id_espacio, nombre_negocio, tipo_negocio, necesita_conexion_electrica, estado, fecha_solicitud)
+                    {insert_prefix} alquileres (id_contrato, id_espacio, nombre_negocio, tipo_negocio, necesita_conexion_electrica, estado, fecha_solicitud)
                     VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    {conflict_suffix}
                 """
                 cursor.execute(query, alq)
 
             # 5. Artistas
             for artista in SEED_DATA["artistas"]:
                 query = f"""
-                    {insert_cmd} Artistas (nombre, genero, popularidad)
+                    {insert_prefix} artistas (nombre, genero, popularidad)
                     VALUES ({placeholder}, {placeholder}, {placeholder})
+                    {conflict_suffix}
                 """
                 cursor.execute(query, artista)
 
             # 6. Artistas Favoritos
             for fav in SEED_DATA["artistas_favoritos"]:
                 query = f"""
-                    {insert_cmd} Artistas_Favoritos (user_id, id_festival, nombre_artista)
+                    {insert_prefix} artistas_favoritos (user_id, id_festival, nombre_artista)
                     VALUES ({placeholder}, {placeholder}, {placeholder})
+                    {conflict_suffix}
                 """
                 cursor.execute(query, fav)
 
@@ -359,9 +369,9 @@ class DAOFactory:
         engine = os.getenv("DB_ENGINE", "sqlite").lower()
         conn = DatabaseConnectionFactory.get_connection()
 
-        if engine == "mysql":
-            from app.daos.mysql_impl.catalog_dao import CatalogDAOMySQL
-            return CatalogDAOMySQL(conn)
+        if engine in ("postgres", "postgresql"):
+            from app.daos.postgres_impl.catalog_dao import CatalogDAOPostgres
+            return CatalogDAOPostgres(conn)
         else:
             from app.daos.sqlite_impl.catalog_dao import CatalogDAOSQLite
             return CatalogDAOSQLite(conn)

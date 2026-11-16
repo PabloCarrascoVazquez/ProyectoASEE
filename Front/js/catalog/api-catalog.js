@@ -80,7 +80,7 @@ const CatalogAPI = {
      * @param {string} idFestival ID del festival[cite: 6]
      */
     async obtenerEntradasFestival(idFestival) {
-        return await apiRequest(`/festivales/{idFestival}/entradas`, {
+        return await apiRequest(`/festivales/${idFestival}/entradas`, {
             method: "GET"
         });
     },
@@ -92,7 +92,7 @@ const CatalogAPI = {
      * @param {Object} entradaData Datos de la entrada (TipoEntradaCreateRequest)[cite: 6]
      */
     async crearEntradaFestival(idFestival, entradaData) {
-        return await apiRequest(`/festivales/{idFestival}/entradas`, {
+        return await apiRequest(`/festivales/${idFestival}/entradas`, {
             method: "POST",
             body: JSON.stringify(entradaData)
         });

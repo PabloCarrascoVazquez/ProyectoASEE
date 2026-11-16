@@ -5,3 +5,5 @@ flasgger
 pydantic-settings==2.0.3
 PyJWT
 mysql-connector-python
+pytest
+psycopg2-binary
