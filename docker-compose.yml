@@ -6,6 +6,87 @@ services:
       - "${RABBITMQ_PORT:-5672}:5672"
       - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
 
+  # =========================================================================
+  # BASES DE DATOS POSTGRESQL (Database per Service)
+  # =========================================================================
+  users-db:
+    image: postgres:16-alpine
+    container_name: subsonic-users-db
+    environment:
+      POSTGRES_DB: ${USER_DB_NAME:-users_db}
+      POSTGRES_USER: ${DB_USER:-subsonic}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-subsonic123}
+    volumes:
+      - users_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-subsonic} -d ${USER_DB_NAME:-users_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  catalog-db:
+    image: postgres:16-alpine
+    container_name: subsonic-catalog-db
+    environment:
+      POSTGRES_DB: ${CATALOG_DB_NAME:-catalogo_db}
+      POSTGRES_USER: ${DB_USER:-subsonic}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-subsonic123}
+    volumes:
+      - catalog_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-subsonic} -d ${CATALOG_DB_NAME:-catalogo_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  purchase-db:
+    image: postgres:16-alpine
+    container_name: subsonic-purchase-db
+    environment:
+      POSTGRES_DB: ${PURCHASE_DB_NAME:-purchases_db}
+      POSTGRES_USER: ${DB_USER:-subsonic}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-subsonic123}
+    volumes:
+      - purchase_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-subsonic} -d ${PURCHASE_DB_NAME:-purchases_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  shipinventory-db:
+    image: postgres:16-alpine
+    container_name: subsonic-shipinventory-db
+    environment:
+      POSTGRES_DB: ${INVENTORY_DB_NAME:-shipinventory_db}
+      POSTGRES_USER: ${DB_USER:-subsonic}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-subsonic123}
+    volumes:
+      - shipinventory_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-subsonic} -d ${INVENTORY_DB_NAME:-shipinventory_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  orders-db:
+    image: postgres:16-alpine
+    container_name: subsonic-orders-db
+    environment:
+      POSTGRES_DB: ${ORDER_DB_NAME:-orders_db}
+      POSTGRES_USER: ${DB_USER:-subsonic}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-subsonic123}
+    volumes:
+      - orders_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-subsonic} -d ${ORDER_DB_NAME:-orders_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # =========================================================================
+  # MICROSERVICIOS
+  # =========================================================================
   userservice:
     build: ./UserService
     container_name: subsonic-userservice
@@ -13,10 +94,16 @@ services:
       - .env
     environment:
       - PORT=${USER_SERVICE_PORT:-8001}
+      - DB_HOST=users-db
+      - DB_PORT=5432
       - DB_NAME=${USER_DB_NAME:-users_db}
-      - SQLITE_DB_PATH=${USER_SQLITE_PATH:-users.db}
+      - DB_USER=${DB_USER:-subsonic}
+      - DB_PASSWORD=${DB_PASSWORD:-subsonic123}
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_started
+      users-db:
+        condition: service_healthy
 
   catalogservice:
     build: ./CatalogService
@@ -25,8 +112,14 @@ services:
       - .env
     environment:
       - PORT=${CATALOG_SERVICE_PORT:-8002}
+      - DB_HOST=catalog-db
+      - DB_PORT=5432
       - DB_NAME=${CATALOG_DB_NAME:-catalogo_db}
-      - SQLITE_DB_PATH=${CATALOG_SQLITE_PATH:-catalogo.db}
+      - DB_USER=${DB_USER:-subsonic}
+      - DB_PASSWORD=${DB_PASSWORD:-subsonic123}
+    depends_on:
+      catalog-db:
+        condition: service_healthy
 
   purchaseservice:
     build: ./PurchaseService
@@ -35,15 +128,23 @@ services:
       - .env
     environment:
       - PORT=${PURCHASE_SERVICE_PORT:-8003}
+      - DB_HOST=purchase-db
+      - DB_PORT=5432
       - DB_NAME=${PURCHASE_DB_NAME:-purchases_db}
-      - SQLITE_DB_PATH=${PURCHASE_SQLITE_PATH:-purchases.db}
+      - DB_USER=${DB_USER:-subsonic}
+      - DB_PASSWORD=${DB_PASSWORD:-subsonic123}
       - RABBITMQ_HOST=rabbitmq
       - CATALOG_SERVICE_URL=http://catalogservice:8002/api
       - INVENTORY_SERVICE_URL=http://shipinventoryservice:8004/api
     depends_on:
-      - rabbitmq
-      - catalogservice
-      - shipinventoryservice
+      rabbitmq:
+        condition: service_started
+      purchase-db:
+        condition: service_healthy
+      catalogservice:
+        condition: service_started
+      shipinventoryservice:
+        condition: service_started
 
   shipinventoryservice:
     build: ./ShipInventoryService
@@ -52,12 +153,18 @@ services:
       - .env
     environment:
       - PORT=${INVENTORY_SERVICE_PORT:-8004}
+      - DB_HOST=shipinventory-db
+      - DB_PORT=5432
       - DB_NAME=${INVENTORY_DB_NAME:-shipinventory_db}
-      - SQLITE_DB_PATH=${INVENTORY_SQLITE_PATH:-shipinventory.db}
+      - DB_USER=${DB_USER:-subsonic}
+      - DB_PASSWORD=${DB_PASSWORD:-subsonic123}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_started
+      shipinventory-db:
+        condition: service_healthy
 
   orderservice:
     build: ./OrderService
@@ -66,13 +173,22 @@ services:
       - .env
     environment:
       - PORT=${ORDER_SERVICE_PORT:-8005}
+      - DB_HOST=orders-db
+      - DB_PORT=5432
       - DB_NAME=${ORDER_DB_NAME:-orders_db}
-      - SQLITE_DB_PATH=${ORDER_SQLITE_PATH:-orders.db}
+      - DB_USER=${DB_USER:-subsonic}
+      - DB_PASSWORD=${DB_PASSWORD:-subsonic123}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_started
+      orders-db:
+        condition: service_healthy
 
+  # =========================================================================
+  # GATEWAY Y FRONTEND
+  # =========================================================================
   gateway:
     image: nginx:alpine
     container_name: subsonic-gateway
@@ -96,3 +212,10 @@ services:
       - "48080:80"
     depends_on:
       - gateway
+
+volumes:
+  users_pgdata:
+  catalog_pgdata:
+  purchase_pgdata:
+  shipinventory_pgdata:
+  orders_pgdata:
