@@ -1,23 +1,45 @@
-Festivales (
+-- =============================================================================
+-- ESQUEMA DE BASE DE DATOS: SERVICIO DE CATÁLOGO (CatalogService)
+-- Base de datos independiente (Patrón Database-per-Service)
+-- Soporta SQLite y MySQL
+-- =============================================================================
+
+-- MySQL:
+-- CREATE DATABASE IF NOT EXISTS catalogo_db;
+-- USE catalogo_db;
+
+-- -----------------------------------------------------------------------------
+-- 1. Tabla: Festivales
+-- Agrupa festivales musicales, fechas, ubicaciones y escaleta de artistas
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS Festivales (
     id_festival VARCHAR(50) PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     ubicacion VARCHAR(255) NOT NULL,
-    artistas_destacados TEXT NULL -- Se guardará como un string en formato JSON, ej: '["Daft Punk", "Peggy Gou"]'
+    artistas_destacados TEXT NULL -- Formato JSON, ej: '["Daft Punk", "Carl Cox"]'
 );
 
-Espacios (
+-- -----------------------------------------------------------------------------
+-- 2. Tabla: Espacios
+-- Parcelas y puestos disponibles dentro del recinto del festival
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS Espacios (
     id_espacio VARCHAR(36) PRIMARY KEY,
     id_festival VARCHAR(50) NOT NULL,
-    tipo VARCHAR(50) NOT NULL,
+    tipo VARCHAR(50) NOT NULL, -- foodtruck, mercadillo, vip_zone
     metros_cuadrados INT NOT NULL,
     precio_alquiler DECIMAL(10, 2) NOT NULL,
-    estado VARCHAR(20) NOT NULL DEFAULT 'disponible',
+    estado VARCHAR(20) NOT NULL DEFAULT 'disponible', -- disponible, reservado, alquilado
     FOREIGN KEY (id_festival) REFERENCES Festivales(id_festival)
 );
 
-Alquileres (
+-- -----------------------------------------------------------------------------
+-- 3. Tabla: Alquileres
+-- Contratos y solicitudes de alquiler de parcelas por parte de proveedores
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS Alquileres (
     id_contrato VARCHAR(36) PRIMARY KEY,
     id_espacio VARCHAR(36) NOT NULL,
     nombre_negocio VARCHAR(100) NOT NULL,
@@ -28,19 +50,83 @@ Alquileres (
     FOREIGN KEY (id_espacio) REFERENCES Espacios(id_espacio)
 );
 
-Tipos_Entrada (
+-- -----------------------------------------------------------------------------
+-- 4. Tabla: Tipos_Entrada
+-- Tipos de abonos y entradas disponibles por festival con tarifas y cupo
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS Tipos_Entrada (
     id_festival VARCHAR(50) NOT NULL,
-    tipo VARCHAR(20) NOT NULL,
+    tipo VARCHAR(20) NOT NULL, -- day, weekend, vip
     precio DECIMAL(10, 2) NOT NULL,
     disponibles INT NOT NULL DEFAULT 0,
     PRIMARY KEY (id_festival, tipo),
     FOREIGN KEY (id_festival) REFERENCES Festivales(id_festival)
 );
 
-Artistas_Favoritos (
+-- -----------------------------------------------------------------------------
+-- 5. Tabla: Artistas_Favoritos
+-- Artistas guardados como favoritos por cada usuario en un festival concreto
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS Artistas_Favoritos (
     user_id VARCHAR(36) NOT NULL,
     id_festival VARCHAR(50) NOT NULL,
     nombre_artista VARCHAR(100) NOT NULL,
-    PRIMARY KEY (user_id, id_festival, nombre_artista), -- Evita que un usuario guarde el mismo artista dos veces en el mismo festival
+    PRIMARY KEY (user_id, id_festival, nombre_artista),
     FOREIGN KEY (id_festival) REFERENCES Festivales(id_festival)
 );
+
+-- -----------------------------------------------------------------------------
+-- 6. Tabla: Artistas
+-- Catálogo general de artistas con géneros y niveles de popularidad
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS Artistas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, -- en MySQL: INT AUTO_INCREMENT PRIMARY KEY
+    nombre VARCHAR(100) NOT NULL,
+    genero VARCHAR(50),
+    popularidad INT DEFAULT 0
+);
+
+-- =============================================================================
+-- DATOS SEMILLA (SEED DATA)
+-- =============================================================================
+
+-- 1. Festivales
+INSERT INTO Festivales (id_festival, nombre, fecha_inicio, fecha_fin, ubicacion, artistas_destacados) VALUES
+('fest_subsonic_2026', 'Subsonic Festival 2026', '2026-07-15', '2026-07-18', 'Recinto Ferial, Madrid', '["Daft Punk", "Carl Cox", "Peggy Gou", "The Chemical Brothers", "Rosalia"]'),
+('fest_subsonic_winter_2026', 'Subsonic Winter Fest 2026', '2026-12-05', '2026-12-07', 'Palacio Vistalegre, Madrid', '["Amelie Lens", "Boris Brejcha", "Tale Of Us", "Solomun"]');
+
+-- 2. Tipos de Entrada
+INSERT INTO Tipos_Entrada (id_festival, tipo, precio, disponibles) VALUES
+('fest_subsonic_2026', 'day', 60.00, 300),
+('fest_subsonic_2026', 'weekend', 125.00, 450),
+('fest_subsonic_2026', 'vip', 250.00, 100),
+('fest_subsonic_winter_2026', 'day', 50.00, 200),
+('fest_subsonic_winter_2026', 'weekend', 95.00, 350),
+('fest_subsonic_winter_2026', 'vip', 180.00, 50);
+
+-- 3. Espacios (parcelas del recinto)
+INSERT INTO Espacios (id_espacio, id_festival, tipo, metros_cuadrados, precio_alquiler, estado) VALUES
+('esp-4920-8439', 'fest_subsonic_2026', 'foodtruck', 15, 1200.50, 'disponible'),
+('esp-4920-8440', 'fest_subsonic_2026', 'mercadillo', 25, 850.00, 'disponible'),
+('esp-4920-8441', 'fest_subsonic_2026', 'vip_zone', 50, 3500.00, 'disponible'),
+('esp-4920-8442', 'fest_subsonic_2026', 'foodtruck', 20, 1500.00, 'alquilado'),
+('esp-4920-8443', 'fest_subsonic_winter_2026', 'foodtruck', 12, 950.00, 'disponible'),
+('esp-4920-8444', 'fest_subsonic_winter_2026', 'mercadillo', 20, 700.00, 'disponible');
+
+-- 4. Alquileres
+INSERT INTO Alquileres (id_contrato, id_espacio, nombre_negocio, tipo_negocio, necesita_conexion_electrica, estado, fecha_solicitud) VALUES
+('alq-1001-2026', 'esp-4920-8442', 'Burger Master Foodtruck', 'Restauración', 1, 'Confirmado', '2026-06-01 10:00:00');
+
+-- 5. Artistas
+INSERT INTO Artistas (nombre, genero, popularidad) VALUES
+('Daft Punk', 'Electronic / French House', 100),
+('Carl Cox', 'Techno', 98),
+('Peggy Gou', 'House / Techno', 95),
+('The Chemical Brothers', 'Big Beat / Electronic', 94),
+('Amelie Lens', 'Acid Techno', 92),
+('Boris Brejcha', 'High-Tech Minimal', 90);
+
+-- 6. Artistas Favoritos
+INSERT INTO Artistas_Favoritos (user_id, id_festival, nombre_artista) VALUES
+('0afb22d5-69c8-4d5e-93ad-492a5f6bd2d0', 'fest_subsonic_2026', 'Daft Punk'),
+('0afb22d5-69c8-4d5e-93ad-492a5f6bd2d0', 'fest_subsonic_2026', 'Peggy Gou');
