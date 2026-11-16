@@ -31,10 +31,10 @@ OrderService/
 │   │   └── responses.go        # DTOs conforme a api-pedidos.yaml
 │   ├── daos/
 │   │   ├── interfaces.go       # Contratos IEntradaDAO, ICancelacionDAO
-│   │   ├── factories.go        # DatabaseConnectionFactory y DAOFactory (SQLite / MySQL)
+│   │   ├── factories.go        # DatabaseConnectionFactory y DAOFactory (SQLite / PostgreSQL)
 │   │   ├── esquemaBD.txt       # DDL documentado del servicio
 │   │   ├── sqlite_impl/        # Implementación con SQLite
-│   │   └── mysql_impl/         # Implementación con MySQL
+│   │   └── postgres_impl/      # Implementación con PostgreSQL
 │   ├── services/
 │   │   ├── order_service.go    # Lógica de Wallet y cancelaciones
 │   │   ├── qr_service.go       # Generación y validación atómica de QR
@@ -78,7 +78,7 @@ Variables principales:
 - `SECRET_KEY=super-secret-subsonic-key-jwt-2026` (Misma clave secreta compartida con UserService / PurchaseService).
 - `QR_SECRET_KEY=super-secret-subsonic-qr-key-2026` (Clave de firma de los códigos QR).
 - `STAFF_ROLES=["admin", "staff"]` (Roles con permiso para escanear en puertas).
-- `DB_ENGINE=sqlite` (Soporta `sqlite` o `mysql`).
+- `DB_ENGINE=sqlite` (Soporta `sqlite` o `postgres`).
 - `RABBITMQ_ENABLED=true`
 - `RABBITMQ_HOST=localhost`
 - `RABBITMQ_PORT=5672`
