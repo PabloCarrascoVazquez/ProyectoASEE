@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipinventoryservice
+  labels:
+    app: shipinventoryservice
+    app.kubernetes.io/part-of: subsonic-festival
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shipinventoryservice
+  template:
+    metadata:
+      labels:
+        app: shipinventoryservice
+    spec:
+      containers:
+        - name: shipinventoryservice
+          image: subsonic-shipinventoryservice:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8004
+          envFrom:
+            - configMapRef:
+                name: subsonic-config
+            - secretRef:
+                name: subsonic-secrets
+          env:
+            - name: PORT
+              value: "8004"
+            - name: DB_NAME
+              value: "shipinventory_db"
+            - name: SQLITE_DB_PATH
+              value: "/app/shipinventory.db"
+          readinessProbe:
+            tcpSocket:
+              port: 8004
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8004
+            initialDelaySeconds: 25
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipinventoryservice
+  labels:
+    app: shipinventoryservice
+    app.kubernetes.io/part-of: subsonic-festival
+spec:
+  type: ClusterIP
+  selector:
+    app: shipinventoryservice
+  ports:
+    - name: http
+      port: 8004
+      targetPort: 8004

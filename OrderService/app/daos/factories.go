@@ -8,10 +8,10 @@ import (
 	"sync"
 
 	"orderservice/app/core"
-	mysqlimpl "orderservice/app/daos/mysql_impl"
+	postgresimpl "orderservice/app/daos/postgres_impl"
 	sqliteimpl "orderservice/app/daos/sqlite_impl"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	_ "modernc.org/sqlite"
 )
 
@@ -29,18 +29,18 @@ type DatabaseConnectionFactory struct{}
 func (f *DatabaseConnectionFactory) GetConnection(cfg *core.Settings) (*sql.DB, error) {
 	dbOnce.Do(func() {
 		switch cfg.DBEngine {
-		case "mysql":
-			dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8mb4",
-				cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
-			db, err := sql.Open("mysql", dsn)
+		case "postgres", "postgresql":
+			dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+				cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+			db, err := sql.Open("postgres", dsn)
 			if err != nil {
-				initErr = fmt.Errorf("error al conectar con MySQL: %w", err)
+				initErr = fmt.Errorf("error al conectar con PostgreSQL: %w", err)
 				return
 			}
 			db.SetMaxOpenConns(25)
 			db.SetMaxIdleConns(5)
-			if err := initMySQLSchema(db); err != nil {
-				initErr = fmt.Errorf("error al inicializar esquema MySQL: %w", err)
+			if err := initPostgresSchema(db); err != nil {
+				initErr = fmt.Errorf("error al inicializar esquema PostgreSQL: %w", err)
 				return
 			}
 			dbInstance = db
@@ -127,37 +127,36 @@ func initSQLiteSchema(db *sql.DB) error {
 	return err
 }
 
-func initMySQLSchema(db *sql.DB) error {
-	schemaEntradas := `
+func initPostgresSchema(db *sql.DB) error {
+	schema := `
 	CREATE TABLE IF NOT EXISTS entradas (
 		id_entrada VARCHAR(36) PRIMARY KEY,
 		id_festival VARCHAR(100) NOT NULL,
 		user_id VARCHAR(36) NOT NULL,
 		tipo VARCHAR(20) NOT NULL,
-		fecha_compra DATETIME NOT NULL,
+		fecha_compra TIMESTAMP NOT NULL,
 		estado VARCHAR(20) NOT NULL DEFAULT 'Valida',
 		transaccion_id VARCHAR(100) NULL,
-		fecha_uso DATETIME NULL,
-		INDEX idx_entradas_user_id (user_id),
-		INDEX idx_entradas_transaccion_id (transaccion_id)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-	`
-	schemaCancelaciones := `
+		fecha_uso TIMESTAMP NULL
+	);
+
+	CREATE INDEX IF NOT EXISTS idx_entradas_user_id ON entradas(user_id);
+	CREATE INDEX IF NOT EXISTS idx_entradas_transaccion_id ON entradas(transaccion_id);
+
 	CREATE TABLE IF NOT EXISTS cancelaciones (
 		id_cancelacion VARCHAR(36) PRIMARY KEY,
 		id_entrada VARCHAR(36) NOT NULL,
 		user_id VARCHAR(36) NOT NULL,
 		estado_devolucion VARCHAR(50) NOT NULL DEFAULT 'En proceso',
-		fecha_solicitud DATETIME NOT NULL,
+		fecha_solicitud TIMESTAMP NOT NULL,
 		motivo VARCHAR(255) NULL,
-		INDEX idx_cancelaciones_entrada (id_entrada),
-		INDEX idx_cancelaciones_user (user_id)
-	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+		FOREIGN KEY (id_entrada) REFERENCES entradas(id_entrada)
+	);
+
+	CREATE INDEX IF NOT EXISTS idx_cancelaciones_entrada ON cancelaciones(id_entrada);
+	CREATE INDEX IF NOT EXISTS idx_cancelaciones_user ON cancelaciones(user_id);
 	`
-	if _, err := db.Exec(schemaEntradas); err != nil {
-		return err
-	}
-	_, err := db.Exec(schemaCancelaciones)
+	_, err := db.Exec(schema)
 	return err
 }
 
@@ -172,15 +171,15 @@ func NewDAOFactory(db *sql.DB, engine string) *DAOFactory {
 }
 
 func (f *DAOFactory) GetEntradaDAO() IEntradaDAO {
-	if f.engine == "mysql" {
-		return mysqlimpl.NewEntradaDAOMySQL(f.db)
+	if f.engine == "postgres" || f.engine == "postgresql" {
+		return postgresimpl.NewEntradaDAOPostgres(f.db)
 	}
 	return sqliteimpl.NewEntradaDAOSQLite(f.db)
 }
 
 func (f *DAOFactory) GetCancelacionDAO() ICancelacionDAO {
-	if f.engine == "mysql" {
-		return mysqlimpl.NewCancelacionDAOMySQL(f.db)
+	if f.engine == "postgres" || f.engine == "postgresql" {
+		return postgresimpl.NewCancelacionDAOPostgres(f.db)
 	}
 	return sqliteimpl.NewCancelacionDAOSQLite(f.db)
 }
