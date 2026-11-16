@@ -1,4 +1,4 @@
-package com.subsonic.purchaseservice.dao.mysql;
+package com.subsonic.purchaseservice.dao.postgres;
 
 import com.subsonic.purchaseservice.dao.PurchaseDao;
 import com.subsonic.purchaseservice.models.*;
@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public class PurchaseDaoMySql implements PurchaseDao {
+public class PurchaseDaoPostgres implements PurchaseDao {
     private final JdbcTemplate jdbcTemplate;
 
-    public PurchaseDaoMySql(JdbcTemplate jdbcTemplate) {
+    public PurchaseDaoPostgres(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -175,4 +175,3 @@ public class PurchaseDaoMySql implements PurchaseDao {
         return jdbcTemplate.query(sql, transactionRowMapper, Timestamp.valueOf(now));
     }
 }
-

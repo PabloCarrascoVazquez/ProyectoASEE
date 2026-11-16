@@ -4,9 +4,13 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class TestJwtUtils {
-    public static final String SECRET = "super-secret-subsonic-key-jwt-2026";
+    public static final String SECRET = Objects.requireNonNull(
+            System.getenv("SECRET_KEY"),
+            "La variable de entorno SECRET_KEY es obligatoria para ejecutar los tests"
+    );
 
     public static String generateToken(String userId) {
         return JWT.create()
@@ -26,4 +30,3 @@ public class TestJwtUtils {
                 .sign(Algorithm.HMAC256(SECRET));
     }
 }
-

@@ -1,4 +1,4 @@
-package com.subsonic.purchaseservice.dao.mysql;
+package com.subsonic.purchaseservice.dao.postgres;
 
 import com.subsonic.purchaseservice.dao.OutboxDao;
 import com.subsonic.purchaseservice.models.OutboxEvent;
@@ -11,10 +11,10 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class OutboxDaoMySql implements OutboxDao {
+public class OutboxDaoPostgres implements OutboxDao {
     private final JdbcTemplate jdbcTemplate;
 
-    public OutboxDaoMySql(JdbcTemplate jdbcTemplate) {
+    public OutboxDaoPostgres(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -75,4 +75,3 @@ public class OutboxDaoMySql implements OutboxDao {
         jdbcTemplate.batchUpdate(sql, eventIds, eventIds.size(), (ps, id) -> ps.setString(1, id));
     }
 }
-

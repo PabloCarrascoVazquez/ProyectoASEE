@@ -2,8 +2,8 @@ package com.subsonic.purchaseservice.config;
 
 import com.subsonic.purchaseservice.dao.OutboxDao;
 import com.subsonic.purchaseservice.dao.PurchaseDao;
-import com.subsonic.purchaseservice.dao.mysql.OutboxDaoMySql;
-import com.subsonic.purchaseservice.dao.mysql.PurchaseDaoMySql;
+import com.subsonic.purchaseservice.dao.postgres.OutboxDaoPostgres;
+import com.subsonic.purchaseservice.dao.postgres.PurchaseDaoPostgres;
 import com.subsonic.purchaseservice.dao.sqlite.OutboxDaoSqlite;
 import com.subsonic.purchaseservice.dao.sqlite.PurchaseDaoSqlite;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,16 +18,16 @@ public class DaoConfig {
 
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "db.engine", havingValue = "mysql")
-    public PurchaseDao purchaseDaoMySql(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
-        return new PurchaseDaoMySql(jdbcTemplate);
+    @ConditionalOnProperty(name = "db.engine", havingValue = "postgres")
+    public PurchaseDao purchaseDaoPostgres(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
+        return new PurchaseDaoPostgres(jdbcTemplate);
     }
 
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "db.engine", havingValue = "mysql")
-    public OutboxDao outboxDaoMySql(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
-        return new OutboxDaoMySql(jdbcTemplate);
+    @ConditionalOnProperty(name = "db.engine", havingValue = "postgres")
+    public OutboxDao outboxDaoPostgres(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
+        return new OutboxDaoPostgres(jdbcTemplate);
     }
 
     @Bean
@@ -44,4 +44,3 @@ public class DaoConfig {
         return new OutboxDaoSqlite(jdbcTemplate);
     }
 }
-
