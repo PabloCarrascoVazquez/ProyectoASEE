@@ -108,11 +108,13 @@ class CatalogDAOSQLite(ICatalogDAO):
             cursor.close()
 
     def create_espacio(self, id_festival: str, espacio_data: dict) -> bool:
+        import uuid
         cursor = self.conn.cursor()
-        query = "INSERT INTO espacios (id_festival, tipo, metros_cuadrados, precio_alquiler, estado) VALUES (?, ?, ?, ?, 'disponible')"
+        id_espacio = espacio_data.get('id_espacio') or f"esp-{uuid.uuid4().hex[:8]}"
+        query = "INSERT INTO espacios (id_espacio, id_festival, tipo, metros_cuadrados, precio_alquiler, estado) VALUES (?, ?, ?, ?, ?, 'disponible')"
         try:
             cursor.execute(query, (
-                id_festival, espacio_data.get('tipo'), 
+                id_espacio, id_festival, espacio_data.get('tipo'), 
                 espacio_data.get('metros_cuadrados', 0), espacio_data.get('precio_alquiler')
             ))
             self.conn.commit()
