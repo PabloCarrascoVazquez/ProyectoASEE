@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-nginx-config
+  labels:
+    app: gateway
+    app.kubernetes.io/part-of: subsonic-festival
+data:
+  nginx.conf: |
+    worker_processes 1;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include       mime.types;
+        default_type  application/octet-stream;
+
+        sendfile        on;
+        keepalive_timeout  65;
+
+        upstream servicio_usuarios {
+            server userservice:8001;
+        }
+
+        upstream servicio_compras {
+            server purchaseservice:8003;
+        }
+
+        upstream servicio_pedidos {
+            server orderservice:8005;
+        }
+
+        upstream servicio_inventario {
+            server shipinventoryservice:8004;
+        }
+
+        upstream servicio_catalogo {
+            server catalogservice:8002;
+        }
+
+        server {
+            listen 8000;
+            server_name localhost;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            location /auth/ {
+                proxy_pass http://servicio_usuarios;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 10s;
+            }
+
+            location /compras/ {
+                proxy_pass http://servicio_compras/compras/;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location /pedidos/ {
+                proxy_pass http://servicio_pedidos/api/pedidos/;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 10s;
+            }
+
+            location /acceso/ {
+                proxy_pass http://servicio_pedidos/api/acceso/;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 10s;
+            }
+
+            location /inventario/ {
+                proxy_pass http://servicio_inventario/inventario/;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location /envios/ {
+                proxy_pass http://servicio_inventario/envios/;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location = /envios {
+                proxy_pass http://servicio_inventario/envios;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location /festivales {
+                proxy_pass http://servicio_catalogo/api/festivales;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location /espacios {
+                proxy_pass http://servicio_catalogo/api/espacios;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location /artistas-favoritos {
+                proxy_pass http://servicio_catalogo/api/artistas-favoritos;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location /health {
+                return 200 '{"status":"UP","gateway":"Subsonic NGINX (Kubernetes)"}';
+                add_header Content-Type application/json;
+            }
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+    app.kubernetes.io/part-of: subsonic-festival
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: nginx:alpine
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 15
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: gateway-nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  labels:
+    app: gateway
+    app.kubernetes.io/part-of: subsonic-festival
+spec:
+  type: LoadBalancer
+  selector:
+    app: gateway
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
