@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Esquema de Base de Datos - OrderService (Wallet de Entradas y Acceso)
--- Compatible con SQLite y MySQL
+-- Compatible con SQLite y PostgreSQL
 -- =====================================================================
 
 -- Tabla de Entradas Digitales (Wallet)
@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS entradas (
     id_festival VARCHAR(100) NOT NULL,
     user_id VARCHAR(36) NOT NULL,
     tipo VARCHAR(20) NOT NULL,          -- 'General', 'VIP', 'Abono'
-    fecha_compra DATETIME NOT NULL,
+    fecha_compra TIMESTAMP NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'Valida', -- 'Valida', 'Usada', 'Cancelada'
     transaccion_id VARCHAR(100) NULL,   -- ID de transacción de PurchaseService (idempotencia)
-    fecha_uso DATETIME NULL             -- Fecha y hora del escaneo en puerta
+    fecha_uso TIMESTAMP NULL            -- Fecha y hora del escaneo en puerta
 );
 
 CREATE INDEX IF NOT EXISTS idx_entradas_user_id ON entradas(user_id);
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS cancelaciones (
     id_entrada VARCHAR(36) NOT NULL,
     user_id VARCHAR(36) NOT NULL,
     estado_devolucion VARCHAR(50) NOT NULL DEFAULT 'En proceso', -- 'En proceso', 'Completada', 'Rechazada'
-    fecha_solicitud DATETIME NOT NULL,
+    fecha_solicitud TIMESTAMP NOT NULL,
     motivo VARCHAR(255) NULL,
     FOREIGN KEY (id_entrada) REFERENCES entradas(id_entrada)
 );

@@ -1,4 +1,4 @@
-package mysqlimpl
+package postgresimpl
 
 import (
 	"database/sql"
@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-type EntradaDAOMySQL struct {
+type EntradaDAOPostgres struct {
 	db *sql.DB
 }
 
-func NewEntradaDAOMySQL(db *sql.DB) *EntradaDAOMySQL {
-	return &EntradaDAOMySQL{db: db}
+func NewEntradaDAOPostgres(db *sql.DB) *EntradaDAOPostgres {
+	return &EntradaDAOPostgres{db: db}
 }
 
-func (dao *EntradaDAOMySQL) Create(entrada *models.Entrada) error {
+func (dao *EntradaDAOPostgres) Create(entrada *models.Entrada) error {
 	query := `
 		INSERT INTO entradas (id_entrada, id_festival, user_id, tipo, fecha_compra, estado, transaccion_id, fecha_uso)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
 	_, err := dao.db.Exec(
 		query,
@@ -32,27 +32,27 @@ func (dao *EntradaDAOMySQL) Create(entrada *models.Entrada) error {
 		entrada.FechaUso,
 	)
 	if err != nil {
-		return fmt.Errorf("error al insertar entrada en mysql: %w", err)
+		return fmt.Errorf("error al insertar entrada en postgres: %w", err)
 	}
 	return nil
 }
 
-func (dao *EntradaDAOMySQL) CreateBatch(entradas []*models.Entrada) error {
+func (dao *EntradaDAOPostgres) CreateBatch(entradas []*models.Entrada) error {
 	if len(entradas) == 0 {
 		return nil
 	}
 	tx, err := dao.db.Begin()
 	if err != nil {
-		return fmt.Errorf("error al iniciar transaccion mysql: %w", err)
+		return fmt.Errorf("error al iniciar transaccion postgres: %w", err)
 	}
 	defer tx.Rollback()
 
 	stmt, err := tx.Prepare(`
 		INSERT INTO entradas (id_entrada, id_festival, user_id, tipo, fecha_compra, estado, transaccion_id, fecha_uso)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`)
 	if err != nil {
-		return fmt.Errorf("error al preparar insert batch mysql: %w", err)
+		return fmt.Errorf("error al preparar insert batch postgres: %w", err)
 	}
 	defer stmt.Close()
 
@@ -68,18 +68,18 @@ func (dao *EntradaDAOMySQL) CreateBatch(entradas []*models.Entrada) error {
 			e.FechaUso,
 		)
 		if err != nil {
-			return fmt.Errorf("error al insertar item en batch mysql: %w", err)
+			return fmt.Errorf("error al insertar item en batch postgres: %w", err)
 		}
 	}
 
 	return tx.Commit()
 }
 
-func (dao *EntradaDAOMySQL) GetByID(idEntrada string) (*models.Entrada, error) {
+func (dao *EntradaDAOPostgres) GetByID(idEntrada string) (*models.Entrada, error) {
 	query := `
 		SELECT id_entrada, id_festival, user_id, tipo, fecha_compra, estado, transaccion_id, fecha_uso
 		FROM entradas
-		WHERE id_entrada = ?
+		WHERE id_entrada = $1
 	`
 	row := dao.db.QueryRow(query, idEntrada)
 
@@ -102,7 +102,7 @@ func (dao *EntradaDAOMySQL) GetByID(idEntrada string) (*models.Entrada, error) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("error al consultar entrada por id en mysql: %w", err)
+		return nil, fmt.Errorf("error al consultar entrada por id en postgres: %w", err)
 	}
 
 	e.Tipo = models.TipoEntrada(tipoStr)
@@ -117,16 +117,16 @@ func (dao *EntradaDAOMySQL) GetByID(idEntrada string) (*models.Entrada, error) {
 	return &e, nil
 }
 
-func (dao *EntradaDAOMySQL) GetByUserID(userID string) ([]*models.Entrada, error) {
+func (dao *EntradaDAOPostgres) GetByUserID(userID string) ([]*models.Entrada, error) {
 	query := `
 		SELECT id_entrada, id_festival, user_id, tipo, fecha_compra, estado, transaccion_id, fecha_uso
 		FROM entradas
-		WHERE user_id = ?
+		WHERE user_id = $1
 		ORDER BY fecha_compra DESC
 	`
 	rows, err := dao.db.Query(query, userID)
 	if err != nil {
-		return nil, fmt.Errorf("error al consultar entradas por usuario en mysql: %w", err)
+		return nil, fmt.Errorf("error al consultar entradas por usuario en postgres: %w", err)
 	}
 	defer rows.Close()
 
@@ -147,7 +147,7 @@ func (dao *EntradaDAOMySQL) GetByUserID(userID string) ([]*models.Entrada, error
 			&transaccionID,
 			&fechaUso,
 		); err != nil {
-			return nil, fmt.Errorf("error al escanear fila de entrada en mysql: %w", err)
+			return nil, fmt.Errorf("error al escanear fila de entrada en postgres: %w", err)
 		}
 
 		e.Tipo = models.TipoEntrada(tipoStr)
@@ -164,8 +164,8 @@ func (dao *EntradaDAOMySQL) GetByUserID(userID string) ([]*models.Entrada, error
 	return lista, nil
 }
 
-func (dao *EntradaDAOMySQL) ExistsByTransactionID(transaccionID string) (bool, error) {
-	query := `SELECT 1 FROM entradas WHERE transaccion_id = ? LIMIT 1`
+func (dao *EntradaDAOPostgres) ExistsByTransactionID(transaccionID string) (bool, error) {
+	query := `SELECT 1 FROM entradas WHERE transaccion_id = $1 LIMIT 1`
 	var dummy int
 	err := dao.db.QueryRow(query, transaccionID).Scan(&dummy)
 	if err == sql.ErrNoRows {
@@ -177,11 +177,11 @@ func (dao *EntradaDAOMySQL) ExistsByTransactionID(transaccionID string) (bool, e
 	return true, nil
 }
 
-func (dao *EntradaDAOMySQL) MarcarComoUsada(idEntrada string, fechaUso time.Time) (bool, error) {
+func (dao *EntradaDAOPostgres) MarcarComoUsada(idEntrada string, fechaUso time.Time) (bool, error) {
 	query := `
 		UPDATE entradas
-		SET estado = ?, fecha_uso = ?
-		WHERE id_entrada = ? AND estado = ?
+		SET estado = $1, fecha_uso = $2
+		WHERE id_entrada = $3 AND estado = $4
 	`
 	res, err := dao.db.Exec(
 		query,
@@ -191,7 +191,7 @@ func (dao *EntradaDAOMySQL) MarcarComoUsada(idEntrada string, fechaUso time.Time
 		string(models.EstadoValida),
 	)
 	if err != nil {
-		return false, fmt.Errorf("error al marcar entrada como usada en mysql: %w", err)
+		return false, fmt.Errorf("error al marcar entrada como usada en postgres: %w", err)
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {
@@ -200,11 +200,11 @@ func (dao *EntradaDAOMySQL) MarcarComoUsada(idEntrada string, fechaUso time.Time
 	return affected > 0, nil
 }
 
-func (dao *EntradaDAOMySQL) ActualizarEstado(idEntrada string, nuevoEstado models.EstadoEntrada) (bool, error) {
-	query := `UPDATE entradas SET estado = ? WHERE id_entrada = ?`
+func (dao *EntradaDAOPostgres) ActualizarEstado(idEntrada string, nuevoEstado models.EstadoEntrada) (bool, error) {
+	query := `UPDATE entradas SET estado = $1 WHERE id_entrada = $2`
 	res, err := dao.db.Exec(query, string(nuevoEstado), idEntrada)
 	if err != nil {
-		return false, fmt.Errorf("error al actualizar estado de entrada en mysql: %w", err)
+		return false, fmt.Errorf("error al actualizar estado de entrada en postgres: %w", err)
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {

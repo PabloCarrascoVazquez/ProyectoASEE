@@ -30,7 +30,7 @@ type Settings struct {
 	StaffRoles           []string // Roles autorizados a validar QR en puerta
 
 	// --- Base de Datos ---
-	DBEngine     string // 'sqlite' o 'mysql'
+	DBEngine     string // 'sqlite' o 'postgres'
 	DBHost       string
 	DBPort       int
 	DBUser       string
@@ -52,6 +52,11 @@ type Settings struct {
 func LoadSettings() (*Settings, error) {
 	_ = godotenv.Load() // El .env es opcional
 
+	engine := strings.ToLower(getEnv("DB_ENGINE", "sqlite"))
+	if engine == "postgresql" {
+		engine = "postgres"
+	}
+
 	s := &Settings{
 		ProjectName: getEnv("PROJECT_NAME", "Subsonic Festival API - Order Service"),
 		Version:     getEnv("VERSION", "1.0.0"),
@@ -68,11 +73,11 @@ func LoadSettings() (*Settings, error) {
 		QRTokenExpireMinutes: getEnvInt("QR_TOKEN_EXPIRE_MINUTES", 60),
 		StaffRoles:           getEnvList("STAFF_ROLES", []string{"admin", "staff"}),
 
-		DBEngine:     strings.ToLower(getEnv("DB_ENGINE", "sqlite")),
+		DBEngine:     engine,
 		DBHost:       getEnv("DB_HOST", "127.0.0.1"),
-		DBPort:       getEnvInt("DB_PORT", 3306),
-		DBUser:       getEnv("DB_USER", "root"),
-		DBPassword:   getEnv("DB_PASSWORD", ""),
+		DBPort:       getEnvInt("DB_PORT", 5432),
+		DBUser:       getEnv("DB_USER", "postgres"),
+		DBPassword:   getEnv("DB_PASSWORD", "postgres"),
 		DBName:       getEnv("DB_NAME", "orders_db"),
 		SQLiteDBPath: getEnv("SQLITE_DB_PATH", "orders.db"),
 
@@ -91,7 +96,7 @@ func LoadSettings() (*Settings, error) {
 	if s.QRSecretKey == "" {
 		s.QRSecretKey = s.SecretKey + "-qr"
 	}
-	if s.DBEngine != "sqlite" && s.DBEngine != "mysql" {
+	if s.DBEngine != "sqlite" && s.DBEngine != "postgres" {
 		return nil, fmt.Errorf("motor de base de datos no soportado: %s", s.DBEngine)
 	}
 	return s, nil
