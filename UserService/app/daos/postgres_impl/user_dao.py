@@ -1,16 +1,17 @@
-import mysql.connector
-from typing import Optional, List
+from typing import Optional
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from app.daos.interfaces import IUserDAO
 
 
-class UserDAOMySQL(IUserDAO):
+class UserDAOPostgres(IUserDAO):
     def __init__(self, connection):
         self.conn = connection
 
     def create(self, user_data: dict) -> str:
         cursor = self.conn.cursor()
         query = """
-            INSERT INTO users (id, name, email, password_hash, avatar, rol) 
+            INSERT INTO users (id, name, email, password_hash, avatar, rol)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
         try:
@@ -20,41 +21,35 @@ class UserDAOMySQL(IUserDAO):
                 user_data['email'],
                 user_data['password_hash'],
                 user_data.get('avatar'),
-                user_data.get('rol', 'cliente')
+                user_data.get('rol', user_data.get('role', 'client'))
             ))
             self.conn.commit()
             return user_data['id']
-        except mysql.connector.Error as err:
+        except Exception as err:
             self.conn.rollback()
             raise err
         finally:
             cursor.close()
 
     def get_by_email(self, email: str) -> Optional[dict]:
-        """Crítico para el Login: Recupera el usuario con su password_hash y rol."""
-        cursor = self.conn.cursor(dictionary=True)
-        query = """
-            SELECT id, name, email, password_hash, avatar, rol 
-            FROM users 
-            WHERE email = %s
-        """
+        """Recupera el usuario por su email."""
+        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+        query = "SELECT id, name, email, password_hash, avatar, rol FROM users WHERE email = %s"
         try:
             cursor.execute(query, (email,))
-            return cursor.fetchone()
+            row = cursor.fetchone()
+            return dict(row) if row else None
         finally:
             cursor.close()
 
     def get_by_id(self, user_id: str) -> Optional[dict]:
-        """Recupera el usuario por su ID (usando %s y diccionario)."""
-        cursor = self.conn.cursor(dictionary=True)
-        query = """
-            SELECT id, name, email, password_hash, avatar, rol 
-            FROM users 
-            WHERE id = %s
-        """
+        """Recupera el usuario por su ID."""
+        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+        query = "SELECT id, name, email, password_hash, avatar, rol FROM users WHERE id = %s"
         try:
             cursor.execute(query, (user_id,))
-            return cursor.fetchone()
+            row = cursor.fetchone()
+            return dict(row) if row else None
         finally:
             cursor.close()
 
@@ -68,6 +63,7 @@ class UserDAOMySQL(IUserDAO):
         if not clean:
             return False
 
+        # Si viene 'role', mapear a 'rol' para que coincida con la columna SQL
         if 'role' in clean and 'rol' not in clean:
             clean['rol'] = clean.pop('role')
 
@@ -79,29 +75,21 @@ class UserDAOMySQL(IUserDAO):
             cursor.execute(f"UPDATE users SET {set_clause} WHERE id = %s", values)
             self.conn.commit()
             return cursor.rowcount > 0
-        except mysql.connector.Error as err:
+        except Exception as err:
             self.conn.rollback()
             raise err
         finally:
             cursor.close()
 
-    def update_profile(self, user_id: str, name: str, avatar: Optional[str]) -> bool:
-        """Actualiza la información editable del perfil."""
-        return self.update(user_id, {"name": name, "avatar": avatar})
-
-    def update_role(self, user_id: str, rol: str) -> bool:
-        """Permite a un admin cambiar el rol (admin, cliente, proveedor)."""
-        return self.update(user_id, {"rol": rol})
-
     def delete(self, user_id: str) -> bool:
-        """Eliminación de cuenta."""
+        """Eliminación de usuario."""
         cursor = self.conn.cursor()
         query = "DELETE FROM users WHERE id = %s"
         try:
             cursor.execute(query, (user_id,))
             self.conn.commit()
             return cursor.rowcount > 0
-        except mysql.connector.Error as err:
+        except Exception as err:
             self.conn.rollback()
             raise err
         finally:

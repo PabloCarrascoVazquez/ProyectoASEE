@@ -1,11 +1,12 @@
 import os
 import sqlite3
-import mysql.connector
-from mysql.connector import pooling
+import psycopg2
+from psycopg2 import pool
 
 
 class DatabaseConnectionFactory:
-    _mysql_pool = None
+    _pg_pool = None
+    _pg_initialized = False
     _sqlite_conn = None
     _sqlite_initialized = False
 
@@ -13,18 +14,23 @@ class DatabaseConnectionFactory:
     def get_connection(cls):
         engine = os.getenv("DB_ENGINE", "sqlite").lower()
 
-        if engine == "mysql":
-            if cls._mysql_pool is None:
-                cls._mysql_pool = mysql.connector.pooling.MySQLConnectionPool(
-                    pool_name="users_pool",
-                    pool_size=5,
+        if engine in ("postgres", "postgresql"):
+            if cls._pg_pool is None:
+                cls._pg_pool = psycopg2.pool.ThreadedConnectionPool(
+                    minconn=1,
+                    maxconn=5,
                     host=os.getenv("DB_HOST", "127.0.0.1"),
-                    port=int(os.getenv("DB_PORT", 3306)),
-                    database=os.getenv("DB_NAME", "users_db"),
-                    user=os.getenv("DB_USER", "root"),
-                    password=os.getenv("DB_PASSWORD", "")
+                    port=int(os.getenv("DB_PORT", 5432)),
+                    dbname=os.getenv("DB_NAME", "users_db"),
+                    user=os.getenv("DB_USER", "subsonic"),
+                    password=os.getenv("DB_PASSWORD", "subsonic123")
                 )
-            return cls._mysql_pool.get_connection()
+
+            conn = cls._pg_pool.getconn()
+            if not cls._pg_initialized:
+                cls._initialize_postgres(conn)
+                cls._pg_initialized = True
+            return conn
 
         elif engine == "sqlite":
             db_path = os.getenv("SQLITE_DB_PATH")
@@ -47,6 +53,12 @@ class DatabaseConnectionFactory:
             raise ValueError(f"Motor de base de datos no soportado: {engine}")
 
     @classmethod
+    def release_postgres_connection(cls, conn):
+        """Devuelve la conexión al pool de PostgreSQL."""
+        if cls._pg_pool is not None and conn is not None:
+            cls._pg_pool.putconn(conn)
+
+    @classmethod
     def close_sqlite(cls):
         """Cierra la conexión activa de SQLite si existe."""
         if cls._sqlite_conn is not None:
@@ -58,13 +70,53 @@ class DatabaseConnectionFactory:
             cls._sqlite_initialized = False
 
     @classmethod
+    def _initialize_postgres(cls, conn):
+        """Inicializa la tabla de usuarios y siembra el usuario Admin por defecto en PostgreSQL."""
+        import bcrypt
+
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id VARCHAR(36) PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(150) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                avatar VARCHAR(255),
+                rol VARCHAR(20) NOT NULL DEFAULT 'client'
+            );
+            """)
+
+            cursor.execute("SELECT id FROM users WHERE email = %s", ("admin@subsonic.com",))
+            if not cursor.fetchone():
+                admin_password = "admin123"
+                hashed_pw = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+                cursor.execute("""
+                    INSERT INTO users (id, name, email, password_hash, avatar, rol)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (
+                    "00000000-0000-0000-0000-000000000001",
+                    "Administrador Subsonic",
+                    "admin@subsonic.com",
+                    hashed_pw,
+                    "https://bucket.com/avatars/admin.png",
+                    "admin"
+                ))
+            conn.commit()
+        except Exception as err:
+            conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
+    @classmethod
     def _initialize_sqlite(cls, conn):
         """Inicializa la tabla de usuarios y siembra el usuario Admin por defecto."""
         import bcrypt
-        
+
         cursor = conn.cursor()
-        
-        # 1. Crear tabla si no existe
+
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id VARCHAR(36) PRIMARY KEY,
@@ -76,13 +128,11 @@ class DatabaseConnectionFactory:
         );
         """)
 
-        # 2. Verificar si el admin ya existe en la BD
         cursor.execute("SELECT id FROM users WHERE email = ?", ("admin@subsonic.com",))
         if not cursor.fetchone():
-            # Generación dinámica del hash exacto usando bcrypt de Python
             admin_password = "admin123"
             hashed_pw = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            
+
             cursor.execute("""
                 INSERT INTO users (id, name, email, password_hash, avatar, rol)
                 VALUES (?, ?, ?, ?, ?, ?)
@@ -107,9 +157,9 @@ class DAOFactory:
         engine = os.getenv("DB_ENGINE", "sqlite").lower()
         conn = DatabaseConnectionFactory.get_connection()
 
-        if engine == "mysql":
-            from app.daos.mysql_impl.user_dao import UserDAOMySQL
-            return UserDAOMySQL(conn)
+        if engine in ("postgres", "postgresql"):
+            from app.daos.postgres_impl.user_dao import UserDAOPostgres
+            return UserDAOPostgres(conn)
         else:
             from app.daos.sqlite_impl.user_dao import UserDAOSQLite
             return UserDAOSQLite(conn)

@@ -6,3 +6,4 @@ bcrypt
 mysql-connector-python
 pydantic-settings
 pytest
+psycopg2-binary

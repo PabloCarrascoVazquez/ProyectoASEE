@@ -20,7 +20,7 @@ class TestHealthCheckRoute:
 class TestAuthRegisterRoute:
     def test_register_success(self, client, sample_user_data):
         response = client.post(
-            "/api/auth/register",
+            "/auth/register",
             data=json.dumps(sample_user_data),
             content_type="application/json"
         )
@@ -35,7 +35,7 @@ class TestAuthRegisterRoute:
 
     def test_register_empty_json(self, client):
         response = client.post(
-            "/api/auth/register",
+            "/auth/register",
             data="",
             content_type="application/json"
         )
@@ -45,7 +45,7 @@ class TestAuthRegisterRoute:
 
     def test_register_missing_fields(self, client):
         response = client.post(
-            "/api/auth/register",
+            "/auth/register",
             data=json.dumps({"name": "Test"}),
             content_type="application/json"
         )
@@ -55,12 +55,12 @@ class TestAuthRegisterRoute:
 
     def test_register_duplicate_email(self, client, sample_user_data):
         client.post(
-            "/api/auth/register",
+            "/auth/register",
             data=json.dumps(sample_user_data),
             content_type="application/json"
         )
         response = client.post(
-            "/api/auth/register",
+            "/auth/register",
             data=json.dumps(sample_user_data),
             content_type="application/json"
         )
@@ -72,7 +72,7 @@ class TestAuthRegisterRoute:
     def test_register_internal_server_error(self, client, sample_user_data):
         with patch("app.services.user_service.UserService.register_user", side_effect=Exception("Database failure")):
             response = client.post(
-                "/api/auth/register",
+                "/auth/register",
                 data=json.dumps(sample_user_data),
                 content_type="application/json"
             )
@@ -85,13 +85,13 @@ class TestAuthRegisterRoute:
 class TestAuthLoginRoute:
     def test_login_success(self, client, sample_user_data):
         client.post(
-            "/api/auth/register",
+            "/auth/register",
             data=json.dumps(sample_user_data),
             content_type="application/json"
         )
 
         response = client.post(
-            "/api/auth/login",
+            "/auth/login",
             data=json.dumps({
                 "email": sample_user_data["email"],
                 "password": sample_user_data["password"]
@@ -106,13 +106,13 @@ class TestAuthLoginRoute:
 
     def test_login_invalid_password(self, client, sample_user_data):
         client.post(
-            "/api/auth/register",
+            "/auth/register",
             data=json.dumps(sample_user_data),
             content_type="application/json"
         )
 
         response = client.post(
-            "/api/auth/login",
+            "/auth/login",
             data=json.dumps({
                 "email": sample_user_data["email"],
                 "password": "wrongpassword"
@@ -126,7 +126,7 @@ class TestAuthLoginRoute:
 
     def test_login_unregistered_email(self, client):
         response = client.post(
-            "/api/auth/login",
+            "/auth/login",
             data=json.dumps({
                 "email": "notfound@subsonic.com",
                 "password": "password"
@@ -139,7 +139,7 @@ class TestAuthLoginRoute:
 
     def test_login_empty_body(self, client):
         response = client.post(
-            "/api/auth/login",
+            "/auth/login",
             data="",
             content_type="application/json"
         )
@@ -150,7 +150,7 @@ class TestAuthLoginRoute:
     def test_login_other_value_error(self, client):
         with patch("app.services.auth_service.AuthService.login", side_effect=ValueError("INVALID_FORMAT")):
             response = client.post(
-                "/api/auth/login",
+                "/auth/login",
                 data=json.dumps({"email": "valid@email.com", "password": "pass"}),
                 content_type="application/json"
             )
@@ -162,7 +162,7 @@ class TestAuthLoginRoute:
     def test_login_internal_error(self, client):
         with patch("app.services.auth_service.AuthService.login", side_effect=Exception("Auth error")):
             response = client.post(
-                "/api/auth/login",
+                "/auth/login",
                 data=json.dumps({"email": "valid@email.com", "password": "pass"}),
                 content_type="application/json"
             )
@@ -173,7 +173,7 @@ class TestAuthLoginRoute:
 
 class TestAuthProfileRoute:
     def test_get_profile_success(self, client, auth_headers, registered_user):
-        response = client.get("/api/auth/perfil", headers=auth_headers)
+        response = client.get("/auth/perfil", headers=auth_headers)
         assert response.status_code == 200
         data = response.get_json()
         assert data["id"] == registered_user.id
@@ -181,7 +181,7 @@ class TestAuthProfileRoute:
         assert data["name"] == registered_user.name
 
     def test_get_profile_missing_token(self, client):
-        response = client.get("/api/auth/perfil")
+        response = client.get("/auth/perfil")
         assert response.status_code == 401
         data = response.get_json()
         assert data["codigo"] == 401
@@ -189,7 +189,7 @@ class TestAuthProfileRoute:
 
     def test_get_profile_malformed_token_header(self, client):
         response = client.get(
-            "/api/auth/perfil",
+            "/auth/perfil",
             headers={"Authorization": "Basic dXNlcjpwYXNz"}
         )
         assert response.status_code == 401
@@ -198,7 +198,7 @@ class TestAuthProfileRoute:
 
     def test_get_profile_invalid_token(self, client):
         response = client.get(
-            "/api/auth/perfil",
+            "/auth/perfil",
             headers={"Authorization": "Bearer invalid.jwt.token"}
         )
         assert response.status_code == 401
@@ -216,7 +216,7 @@ class TestAuthProfileRoute:
         }
         expired_token = jwt.encode(expired_payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         response = client.get(
-            "/api/auth/perfil",
+            "/auth/perfil",
             headers={"Authorization": f"Bearer {expired_token}"}
         )
         assert response.status_code == 401
@@ -232,7 +232,7 @@ class TestAuthProfileRoute:
         }
         ghost_token = jwt.encode(ghost_payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         response = client.get(
-            "/api/auth/perfil",
+            "/auth/perfil",
             headers={"Authorization": f"Bearer {ghost_token}"}
         )
         assert response.status_code == 404
@@ -241,14 +241,14 @@ class TestAuthProfileRoute:
 
     def test_get_profile_other_value_error(self, client, auth_headers):
         with patch("app.services.user_service.UserService.get_profile", side_effect=ValueError("INVALID_ID")):
-            response = client.get("/api/auth/perfil", headers=auth_headers)
+            response = client.get("/auth/perfil", headers=auth_headers)
             assert response.status_code == 400
             data = response.get_json()
             assert data["codigo"] == 400
 
     def test_get_profile_internal_error(self, client, auth_headers):
         with patch("app.services.user_service.UserService.get_profile", side_effect=Exception("Fatal read error")):
-            response = client.get("/api/auth/perfil", headers=auth_headers)
+            response = client.get("/auth/perfil", headers=auth_headers)
             assert response.status_code == 500
             data = response.get_json()
             assert data["codigo"] == 500
@@ -259,7 +259,7 @@ class TestAuthProfileRoute:
             "avatar": "https://new.bucket/avatar.jpg"
         }
         response = client.put(
-            "/api/auth/perfil",
+            "/auth/perfil",
             data=json.dumps(update_data),
             headers=auth_headers
         )
@@ -269,13 +269,13 @@ class TestAuthProfileRoute:
         assert data["avatar"] == "https://new.bucket/avatar.jpg"
 
         # Verificar que el GET subsiguiente devuelve los datos actualizados
-        get_res = client.get("/api/auth/perfil", headers=auth_headers)
+        get_res = client.get("/auth/perfil", headers=auth_headers)
         assert get_res.status_code == 200
         assert get_res.get_json()["name"] == "Laura Modified"
 
     def test_update_profile_empty_json(self, client, auth_headers):
         response = client.put(
-            "/api/auth/perfil",
+            "/auth/perfil",
             data="",
             headers=auth_headers
         )
@@ -292,7 +292,7 @@ class TestAuthProfileRoute:
         }
         ghost_token = jwt.encode(ghost_payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         response = client.put(
-            "/api/auth/perfil",
+            "/auth/perfil",
             data=json.dumps({"name": "Ghost"}),
             headers={"Authorization": f"Bearer {ghost_token}", "Content-Type": "application/json"}
         )
@@ -303,7 +303,7 @@ class TestAuthProfileRoute:
     def test_update_profile_other_value_error(self, client, auth_headers):
         with patch("app.services.user_service.UserService.update_profile", side_effect=ValueError("INVALID_DATA")):
             response = client.put(
-                "/api/auth/perfil",
+                "/auth/perfil",
                 data=json.dumps({"name": "Test"}),
                 headers=auth_headers
             )
@@ -314,7 +314,7 @@ class TestAuthProfileRoute:
     def test_update_profile_internal_error(self, client, auth_headers):
         with patch("app.services.user_service.UserService.update_profile", side_effect=Exception("Fatal write error")):
             response = client.put(
-                "/api/auth/perfil",
+                "/auth/perfil",
                 data=json.dumps({"name": "Test"}),
                 headers=auth_headers
             )

@@ -2,10 +2,10 @@ import os
 import sqlite3
 import pytest
 from unittest.mock import MagicMock, patch
-import mysql.connector
+import psycopg2
 
 from app.daos.sqlite_impl.user_dao import UserDAOSQLite
-from app.daos.mysql_impl.user_dao import UserDAOMySQL
+from app.daos.postgres_impl.user_dao import UserDAOPostgres
 from app.daos.factories import DatabaseConnectionFactory, DAOFactory
 
 
@@ -97,7 +97,7 @@ class TestUserDAOSQLite:
         updated = user_dao.update("u-update", {
             "name": "Brand New Name",
             "avatar": "new.png",
-            "role": "admin"  # tests role -> rol mapping
+            "role": "admin"
         })
         assert updated is True
 
@@ -134,98 +134,88 @@ class TestUserDAOSQLite:
         assert user_dao.delete("u-del") is False
 
 
-class TestUserDAOMySQL:
-    def test_create_mysql(self):
+class TestUserDAOPostgres:
+    def test_create_postgres(self):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_conn.cursor.return_value = mock_cursor
 
-        dao = UserDAOMySQL(mock_conn)
+        dao = UserDAOPostgres(mock_conn)
         user_data = {
-            "id": "my-1",
-            "name": "MySQL User",
-            "email": "my@example.com",
+            "id": "pg-1",
+            "name": "Postgres User",
+            "email": "pg@example.com",
             "password_hash": "hashed",
-            "avatar": "my.png",
+            "avatar": "pg.png",
             "rol": "client"
         }
         res = dao.create(user_data)
-        assert res == "my-1"
+        assert res == "pg-1"
         assert mock_cursor.execute.called
         assert mock_conn.commit.called
         assert mock_cursor.close.called
 
-    def test_create_mysql_error_rollback(self):
+    def test_create_postgres_error_rollback(self):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.execute.side_effect = mysql.connector.Error("Connection error")
+        mock_cursor.execute.side_effect = psycopg2.Error("Connection error")
         mock_conn.cursor.return_value = mock_cursor
 
-        dao = UserDAOMySQL(mock_conn)
-        with pytest.raises(mysql.connector.Error):
+        dao = UserDAOPostgres(mock_conn)
+        with pytest.raises(psycopg2.Error):
             dao.create({"id": "1", "name": "A", "email": "a@a.com", "password_hash": "h"})
 
         assert mock_conn.rollback.called
         assert mock_cursor.close.called
 
-    def test_get_by_email_mysql(self):
+    def test_get_by_email_postgres(self):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = {"id": "my-1", "email": "test@sub.com"}
+        mock_cursor.fetchone.return_value = {"id": "pg-1", "email": "test@sub.com"}
         mock_conn.cursor.return_value = mock_cursor
 
-        dao = UserDAOMySQL(mock_conn)
+        dao = UserDAOPostgres(mock_conn)
         res = dao.get_by_email("test@sub.com")
-        assert res["id"] == "my-1"
+        assert res["id"] == "pg-1"
         assert mock_cursor.close.called
 
-    def test_get_by_id_mysql(self):
+    def test_get_by_id_postgres(self):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = {"id": "my-2", "name": "Test"}
+        mock_cursor.fetchone.return_value = {"id": "pg-2", "name": "Test"}
         mock_conn.cursor.return_value = mock_cursor
 
-        dao = UserDAOMySQL(mock_conn)
-        res = dao.get_by_id("my-2")
-        assert res["id"] == "my-2"
+        dao = UserDAOPostgres(mock_conn)
+        res = dao.get_by_id("pg-2")
+        assert res["id"] == "pg-2"
         assert mock_cursor.close.called
 
-    def test_update_mysql(self):
+    def test_update_postgres(self):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.rowcount = 1
         mock_conn.cursor.return_value = mock_cursor
 
-        dao = UserDAOMySQL(mock_conn)
-        success = dao.update("my-1", {"name": "New Name", "role": "admin"})
+        dao = UserDAOPostgres(mock_conn)
+        success = dao.update("pg-1", {"name": "New Name", "role": "admin"})
         assert success is True
         assert mock_conn.commit.called
         assert mock_cursor.close.called
 
-    def test_update_mysql_empty(self):
+    def test_update_postgres_empty(self):
         mock_conn = MagicMock()
-        dao = UserDAOMySQL(mock_conn)
-        assert dao.update("my-1", {}) is False
-        assert dao.update("my-1", {"invalid_col": 123}) is False
+        dao = UserDAOPostgres(mock_conn)
+        assert dao.update("pg-1", {}) is False
+        assert dao.update("pg-1", {"invalid_col": 123}) is False
 
-    def test_update_profile_and_role_mysql(self):
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_cursor.rowcount = 1
-        mock_conn.cursor.return_value = mock_cursor
-
-        dao = UserDAOMySQL(mock_conn)
-        assert dao.update_profile("my-1", "Name", "avatar.jpg") is True
-        assert dao.update_role("my-1", "admin") is True
-
-    def test_delete_mysql(self):
+    def test_delete_postgres(self):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.rowcount = 1
         mock_conn.cursor.return_value = mock_cursor
 
-        dao = UserDAOMySQL(mock_conn)
-        res = dao.delete("my-1")
+        dao = UserDAOPostgres(mock_conn)
+        res = dao.delete("pg-1")
         assert res is True
         assert mock_conn.commit.called
         assert mock_cursor.close.called
@@ -247,10 +237,9 @@ class TestFactories:
         dao = DAOFactory.get_user_dao()
         assert isinstance(dao, UserDAOSQLite)
 
-    def test_dao_factory_mysql(self, monkeypatch):
-        monkeypatch.setenv("DB_ENGINE", "mysql")
+    def test_dao_factory_postgres(self, monkeypatch):
+        monkeypatch.setenv("DB_ENGINE", "postgres")
         with patch.object(DatabaseConnectionFactory, "get_connection") as mock_conn:
             mock_conn.return_value = MagicMock()
             dao = DAOFactory.get_user_dao()
-            assert isinstance(dao, UserDAOMySQL)
-
+            assert isinstance(dao, UserDAOPostgres)
