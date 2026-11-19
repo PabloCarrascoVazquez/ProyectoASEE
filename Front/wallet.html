@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subsonic - Mi Billetera y Entradas</title>
+    <title>Subsonic - Mi Billetera, Entradas y Pedidos</title>
     <!-- Archivo CSS vacío por ahora para decorar más adelante -->
     <link rel="stylesheet" href="./css/custom.css">
 </head>
@@ -17,7 +17,7 @@
         <nav class="main-nav">
             <ul class="nav-list">
                 <li class="nav-item"><a href="./index.html" class="nav-link">Explorar</a></li>
-                <li class="nav-item"><a href="./wallet.html" class="nav-link active">Mis Entradas</a></li>
+                <li class="nav-item"><a href="./wallet.html" class="nav-link active">Mis Entradas y Pedidos</a></li>
                 <li class="nav-item"><a href="./checkout.html" class="nav-link">Carrito</a></li>
                 <li class="nav-item"><button type="button" id="btn-logout" class="btn-logout">Cerrar Sesión</button></li>
             </ul>
@@ -33,7 +33,7 @@
         </div>
 
         <!-- ========================================================= -->
-        <!-- SECCIÓN 1: LISTADO DE ENTRADAS DEL USUARIO                -->
+        <!-- SECCIÓN 1.A: LISTADO DE ENTRADAS DEL USUARIO                -->
         <!-- ========================================================= -->
         <section id="wallet-tickets-section" class="wallet-section tickets-section">
             <h2 class="section-title">Mis Entradas Adquiridas</h2>
@@ -41,6 +41,17 @@
             <!-- Grid o lista donde se pintan las tarjetas de cada entrada -->
             <div id="tickets-grid" class="items-grid tickets-grid">
                 <p class="loading-text">Cargando tus entradas...</p>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN 1.B: LISTADO DE PEDIDOS DE MERCHANDISING          -->
+        <!-- ========================================================= -->
+        <section id="wallet-merch-section" class="wallet-section merch-orders-section" style="margin-top: 2.5rem;">
+            <h2 class="section-title">Mis Pedidos de Merchandising y Envíos</h2>
+
+            <div id="merch-orders-grid" class="items-grid tickets-grid">
+                <p class="loading-text">Cargando tus pedidos de merchandising...</p>
             </div>
         </section>
 
@@ -112,6 +123,6 @@
     <script src="./js/orders/api-wallet.js"></script>
 
     <!-- Script de control de interfaz de esta vista -->
-    <script src="./js/orders/wallet-view.js"></script>
+    <script src="./js/orders/wallet-view.js?v=2"></script>
 </body>
 </html>

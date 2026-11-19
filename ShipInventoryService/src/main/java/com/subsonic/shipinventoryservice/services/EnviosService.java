@@ -35,6 +35,12 @@ public class EnviosService {
                 .collect(Collectors.toList());
     }
 
+     public EnvioLogisticoResponse obtenerPorIdOPedido(String id) {
+        EnvioLogistico envio = enviosDao.findById(id)
+                .orElseThrow(() -> new NotFoundException("Envío no encontrado para el pedido: " + id));
+        return toResponse(envio);
+    }
+
     /**
      * PUT /envios/{id_envio}/tracking — Actualiza el estado logístico de un envío (solo Admin).
      */

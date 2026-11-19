@@ -138,7 +138,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-subsonic123}
       - RABBITMQ_HOST=rabbitmq
       - CATALOG_SERVICE_URL=http://catalogservice:8002/api
-      - INVENTORY_SERVICE_URL=http://shipinventoryservice:8004/api
+      - INVENTORY_SERVICE_URL=http://shipinventoryservice:8004
     depends_on:
       rabbitmq:
         condition: service_started

@@ -46,6 +46,16 @@ public class EnviosController {
     }
 
     /**
+     * GET /envios/pedido/{id_pedido}
+     * Permite al cliente consultar el estado logístico y tracking de su pedido de merchandising.
+     */
+    @GetMapping("/pedido/{id_pedido}")
+    public ResponseEntity<EnvioLogisticoResponse> obtenerEnvioPorPedido(
+            @PathVariable("id_pedido") String idPedido) {
+        return ResponseEntity.ok(enviosService.obtenerPorIdOPedido(idPedido));
+    }
+
+    /**
      * PUT /envios/{id_envio}/tracking
      * Rol requerido: Admin.
      * Actualizar el estado logístico de un envío.

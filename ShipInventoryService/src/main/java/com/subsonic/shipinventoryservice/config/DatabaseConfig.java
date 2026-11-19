@@ -80,7 +80,7 @@ public class DatabaseConfig {
 
                 stmt.execute("""
                     CREATE TABLE IF NOT EXISTS stock_productos (
-                        id_producto VARCHAR(36) PRIMARY KEY,
+                        id_producto VARCHAR(100) PRIMARY KEY,
                         nombre_producto VARCHAR(200) NOT NULL,
                         variante VARCHAR(100),
                         unidades_disponibles INT NOT NULL DEFAULT 0,
@@ -95,8 +95,8 @@ public class DatabaseConfig {
 
                 stmt.execute("""
                     CREATE TABLE IF NOT EXISTS envios (
-                        id_envio VARCHAR(36) PRIMARY KEY,
-                        id_pedido VARCHAR(36) NOT NULL,
+                        id_envio VARCHAR(100) PRIMARY KEY,
+                        id_pedido VARCHAR(100) NOT NULL,
                         estado_envio VARCHAR(30) NOT NULL DEFAULT 'Pendiente',
                         empresa_transporte VARCHAR(100),
                         tracking_number VARCHAR(100),

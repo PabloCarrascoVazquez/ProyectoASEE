@@ -188,6 +188,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 tokenPasarela
             );
 
+            
+
+            // Si la compra incluye merchandising, guardar el pedido en el historial del usuario
+            const carritoPagado = obtenerCarrito();
+            if (carritoPagado.merchandising && carritoPagado.merchandising.length > 0) {
+                const user = SessionManager.getUser();
+                const userKey = user && (user.id || user.email) ? (user.id || user.email) : "default";
+                const storageKey = `subsonic_merch_orders_${userKey}`;
+                const pedidosGuardados = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+                const calle = document.getElementById("ship-street").value.trim();
+                const ciudad = document.getElementById("ship-city").value.trim();
+                const cp = document.getElementById("ship-zip").value.trim();
+                const pais = document.getElementById("ship-country").value.trim();
+
+                pedidosGuardados.unshift({
+                    id_pedido: recibo.id_transaccion,
+                    fecha_compra: recibo.fecha_pago || new Date().toISOString(),
+                    total: recibo.total_cobrado,
+                    direccion_entrega: `${calle}, ${cp} ${ciudad}, ${pais}`,
+                    items: carritoPagado.merchandising
+                });
+                localStorage.setItem(storageKey, JSON.stringify(pedidosGuardados));
+            }
+
             // Vaciar el carrito tras completar la compra con éxito
             localStorage.removeItem("subsonic_cart");
 

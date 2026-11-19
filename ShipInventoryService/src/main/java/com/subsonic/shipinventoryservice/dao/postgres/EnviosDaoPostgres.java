@@ -72,8 +72,7 @@ public class EnviosDaoPostgres implements EnviosDao {
         return jdbcTemplate.query(
                 """
                 SELECT * FROM envios
-                WHERE estado_envio IN ('Pendiente', 'Preparando')
-                ORDER BY created_at ASC
+                ORDER BY created_at DESC
                 """,
                 rowMapper
         );
@@ -82,11 +81,11 @@ public class EnviosDaoPostgres implements EnviosDao {
     @Override
     public Optional<EnvioLogistico> findById(String idEnvio) {
         try {
-            EnvioLogistico envio = jdbcTemplate.queryForObject(
-                    "SELECT * FROM envios WHERE id_envio = ?",
-                    rowMapper, idEnvio
+            List<EnvioLogistico> list = jdbcTemplate.query(
+                    "SELECT * FROM envios WHERE id_envio = ? OR id_pedido = ? ORDER BY created_at DESC LIMIT 1",
+                    rowMapper, idEnvio, idEnvio
             );
-            return Optional.ofNullable(envio);
+            return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
