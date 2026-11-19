@@ -47,16 +47,15 @@ public class DatabaseConfig {
         String engine = (dbEngine != null ? dbEngine.trim().toLowerCase() : "sqlite");
         HikariConfig config = new HikariConfig();
 
-        if ("mysql".equals(engine)) {
-            log.info("Configurando DataSource MySQL hacia {}:{}/{}", dbHost, dbPort, dbName);
-            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
-            config.setJdbcUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName +
-                    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true");
+        if ("postgres".equals(engine) || "postgresql".equals(engine)) {
+            log.info("Configurando DataSource PostgreSQL hacia {}:{}/{}", dbHost, dbPort, dbName);
+            config.setDriverClassName("org.postgresql.Driver");
+            config.setJdbcUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName);
             config.setUsername(dbUser);
             config.setPassword(dbPassword);
             config.setMaximumPoolSize(10);
             config.setMinimumIdle(2);
-            config.setPoolName("MySQL-PurchasesPool");
+            config.setPoolName("Postgres-PurchasesPool");
         } else {
             log.info("Configurando DataSource SQLite hacia {}", sqliteDbPath);
             config.setDriverClassName("org.sqlite.JDBC");
@@ -75,56 +74,49 @@ public class DatabaseConfig {
         try (Connection conn = ds.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            if ("mysql".equals(engine)) {
-                log.info("Inicializando/verificando tablas en base de datos MySQL...");
+            if ("postgres".equals(engine) || "postgresql".equals(engine)) {
+                log.info("Inicializando/verificando tablas en base de datos PostgreSQL...");
                 stmt.execute("""
                     CREATE TABLE IF NOT EXISTS transactions (
-                        id VARCHAR(36) PRIMARY KEY,
-                        user_id VARCHAR(36) NOT NULL,
+                        id VARCHAR(100) PRIMARY KEY,
+                        user_id VARCHAR(100) NOT NULL,
                         type VARCHAR(20) NOT NULL,
                         total_amount DECIMAL(10, 2) NOT NULL,
                         currency VARCHAR(3) NOT NULL DEFAULT 'EUR',
                         status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-                        reservation_expires_at DATETIME NOT NULL,
+                        reservation_expires_at TIMESTAMP NOT NULL,
                         payment_method VARCHAR(20) NULL,
                         gateway_token VARCHAR(255) NULL,
                         gateway_transaction_id VARCHAR(255) NULL,
                         receipt_url VARCHAR(500) NULL,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_user_id (user_id),
-                        INDEX idx_status_expires (status, reservation_expires_at)
-                    ) ENGINE=InnoDB;
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
                 """);
 
                 stmt.execute("""
                     CREATE TABLE IF NOT EXISTS transaction_items (
-                        id VARCHAR(36) PRIMARY KEY,
-                        transaction_id VARCHAR(36) NOT NULL,
+                        id VARCHAR(100) PRIMARY KEY,
+                        transaction_id VARCHAR(100) NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
                         item_type VARCHAR(20) NOT NULL,
-                        item_id VARCHAR(36) NOT NULL,
+                        item_id VARCHAR(100) NOT NULL,
                         ticket_type VARCHAR(20) NULL,
                         quantity INT NOT NULL DEFAULT 1,
                         unit_price DECIMAL(10, 2) NOT NULL,
-                        subtotal DECIMAL(10, 2) NOT NULL,
-                        CONSTRAINT fk_items_transaction
-                            FOREIGN KEY (transaction_id) 
-                            REFERENCES transactions(id) 
-                            ON DELETE CASCADE
-                    ) ENGINE=InnoDB;
+                        subtotal DECIMAL(10, 2) NOT NULL
+                    );
                 """);
 
                 stmt.execute("""
                     CREATE TABLE IF NOT EXISTS outbox_events (
-                        id VARCHAR(36) PRIMARY KEY,
+                        id VARCHAR(100) PRIMARY KEY,
                         aggregate_type VARCHAR(50) NOT NULL DEFAULT 'TRANSACTION',
-                        aggregate_id VARCHAR(36) NOT NULL,
+                        aggregate_id VARCHAR(100) NOT NULL,
                         event_type VARCHAR(50) NOT NULL,
-                        payload JSON NOT NULL,
+                        payload TEXT NOT NULL,
                         published BOOLEAN NOT NULL DEFAULT FALSE,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        INDEX idx_unpublished (published, created_at)
-                    ) ENGINE=InnoDB;
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
                 """);
             } else {
                 log.info("Inicializando/verificando tablas en base de datos SQLite...");

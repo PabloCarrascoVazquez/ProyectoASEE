@@ -94,6 +94,7 @@ services:
       - .env
     environment:
       - PORT=${USER_SERVICE_PORT:-8001}
+      - DB_ENGINE=postgres
       - DB_HOST=users-db
       - DB_PORT=5432
       - DB_NAME=${USER_DB_NAME:-users_db}
@@ -112,6 +113,7 @@ services:
       - .env
     environment:
       - PORT=${CATALOG_SERVICE_PORT:-8002}
+      - DB_ENGINE=postgres
       - DB_HOST=catalog-db
       - DB_PORT=5432
       - DB_NAME=${CATALOG_DB_NAME:-catalogo_db}
@@ -128,6 +130,7 @@ services:
       - .env
     environment:
       - PORT=${PURCHASE_SERVICE_PORT:-8003}
+      - DB_ENGINE=postgres
       - DB_HOST=purchase-db
       - DB_PORT=5432
       - DB_NAME=${PURCHASE_DB_NAME:-purchases_db}
@@ -153,6 +156,7 @@ services:
       - .env
     environment:
       - PORT=${INVENTORY_SERVICE_PORT:-8004}
+      - DB_ENGINE=postgres
       - DB_HOST=shipinventory-db
       - DB_PORT=5432
       - DB_NAME=${INVENTORY_DB_NAME:-shipinventory_db}
@@ -173,6 +177,7 @@ services:
       - .env
     environment:
       - PORT=${ORDER_SERVICE_PORT:-8005}
+      - DB_ENGINE=postgres
       - DB_HOST=orders-db
       - DB_PORT=5432
       - DB_NAME=${ORDER_DB_NAME:-orders_db}
@@ -213,9 +218,19 @@ services:
     depends_on:
       - gateway
 
+  # =========================================================================
+  # ADMINER (BD DOCKER)
+  # =========================================================================
+  adminer:
+    image: adminer:latest
+    container_name: subsonic-db-viewer
+    ports:
+      - "8080:8080"
+
 volumes:
   users_pgdata:
   catalog_pgdata:
   purchase_pgdata:
   shipinventory_pgdata:
   orders_pgdata:
+

@@ -15,22 +15,19 @@ class DatabaseConnectionFactory:
         engine = os.getenv("DB_ENGINE", "sqlite").lower()
 
         if engine in ("postgres", "postgresql"):
-            if cls._pg_pool is None:
-                cls._pg_pool = psycopg2.pool.ThreadedConnectionPool(
-                    minconn=1,
-                    maxconn=5,
-                    host=os.getenv("DB_HOST", "127.0.0.1"),
-                    port=int(os.getenv("DB_PORT", 5432)),
-                    dbname=os.getenv("DB_NAME", "users_db"),
-                    user=os.getenv("DB_USER", "subsonic"),
-                    password=os.getenv("DB_PASSWORD", "subsonic123")
-                )
-
-            conn = cls._pg_pool.getconn()
-            if not cls._pg_initialized:
-                cls._initialize_postgres(conn)
-                cls._pg_initialized = True
-            return conn
+         if cls._pg_pool is None or cls._pg_pool.closed:
+             conn = psycopg2.connect(
+                 host=os.getenv("DB_HOST", "127.0.0.1"),
+                 port=int(os.getenv("DB_PORT", 5432)),
+                 dbname=os.getenv("DB_NAME", "users_db"),
+                 user=os.getenv("DB_USER", "subsonic"),
+                 password=os.getenv("DB_PASSWORD", "subsonic123")
+             )
+             cls._pg_pool = conn
+             if not cls._pg_initialized:
+                 cls._initialize_postgres(conn)
+                 cls._pg_initialized = True
+         return cls._pg_pool
 
         elif engine == "sqlite":
             db_path = os.getenv("SQLITE_DB_PATH")
