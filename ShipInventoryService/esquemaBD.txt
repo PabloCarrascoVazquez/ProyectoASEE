@@ -1,12 +1,11 @@
 -- =============================================================================
 -- ESQUEMA DE BASE DE DATOS: SERVICIO DE INVENTARIO Y ENVÍOS (ShipInventoryService)
 -- Base de datos independiente (Patrón Database-per-Service)
--- Soporta SQLite y MySQL
+-- Soporta SQLite y PostgreSQL
 -- =============================================================================
 
--- MySQL:
--- CREATE DATABASE IF NOT EXISTS shipinventory_db;
--- USE shipinventory_db;
+-- PostgreSQL: crear la base de datos antes de arrancar el servicio
+-- CREATE DATABASE shipinventory_db;
 
 -- -----------------------------------------------------------------------------
 -- 1. Tabla: stock_productos
@@ -21,9 +20,9 @@ CREATE TABLE IF NOT EXISTS stock_productos (
     precio DECIMAL(10, 2) NOT NULL,
     ubicacion_almacen VARCHAR(200),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_nombre (nombre_producto)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS idx_nombre ON stock_productos (nombre_producto);
 
 -- -----------------------------------------------------------------------------
 -- 2. Tabla: envios
@@ -38,10 +37,10 @@ CREATE TABLE IF NOT EXISTS envios (
     direccion_entrega VARCHAR(500),
     notas_incidencia TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_pedido (id_pedido),
-    INDEX idx_estado (estado_envio)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS idx_pedido ON envios (id_pedido);
+CREATE INDEX IF NOT EXISTS idx_estado ON envios (estado_envio);
 
 -- -----------------------------------------------------------------------------
 -- DATOS SEMILLA (SEED DATA)

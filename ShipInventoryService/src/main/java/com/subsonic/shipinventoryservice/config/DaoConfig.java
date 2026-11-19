@@ -2,8 +2,8 @@ package com.subsonic.shipinventoryservice.config;
 
 import com.subsonic.shipinventoryservice.dao.EnviosDao;
 import com.subsonic.shipinventoryservice.dao.InventarioDao;
-import com.subsonic.shipinventoryservice.dao.mysql.EnviosDaoMySql;
-import com.subsonic.shipinventoryservice.dao.mysql.InventarioDaoMySql;
+import com.subsonic.shipinventoryservice.dao.postgres.EnviosDaoPostgres;
+import com.subsonic.shipinventoryservice.dao.postgres.InventarioDaoPostgres;
 import com.subsonic.shipinventoryservice.dao.sqlite.EnviosDaoSqlite;
 import com.subsonic.shipinventoryservice.dao.sqlite.InventarioDaoSqlite;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,20 +16,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Configuration
 public class DaoConfig {
 
-    // --- MySQL ---
+    // --- PostgreSQL ---
 
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "db.engine", havingValue = "mysql")
-    public InventarioDao inventarioDaoMySql(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
-        return new InventarioDaoMySql(jdbcTemplate);
+    @ConditionalOnProperty(name = "db.engine", havingValue = "postgres")
+    public InventarioDao inventarioDaoPostgres(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
+        return new InventarioDaoPostgres(jdbcTemplate);
     }
 
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "db.engine", havingValue = "mysql")
-    public EnviosDao enviosDaoMySql(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
-        return new EnviosDaoMySql(jdbcTemplate);
+    @ConditionalOnProperty(name = "db.engine", havingValue = "postgres")
+    public EnviosDao enviosDaoPostgres(@Qualifier("appJdbcTemplate") JdbcTemplate jdbcTemplate) {
+        return new EnviosDaoPostgres(jdbcTemplate);
     }
 
     // --- SQLite (por defecto) ---

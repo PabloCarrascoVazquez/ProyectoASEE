@@ -1,4 +1,4 @@
-package com.subsonic.shipinventoryservice.dao.mysql;
+package com.subsonic.shipinventoryservice.dao.postgres;
 
 import com.subsonic.shipinventoryservice.dao.EnviosDao;
 import com.subsonic.shipinventoryservice.models.EnvioLogistico;
@@ -9,15 +9,16 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public class EnviosDaoMySql implements EnviosDao {
+public class EnviosDaoPostgres implements EnviosDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public EnviosDaoMySql(JdbcTemplate jdbcTemplate) {
+    public EnviosDaoPostgres(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -32,6 +33,16 @@ public class EnviosDaoMySql implements EnviosDao {
             e.setTrackingNumber(rs.getString("tracking_number"));
             e.setDireccionEntrega(rs.getString("direccion_entrega"));
             e.setNotasIncidencia(rs.getString("notas_incidencia"));
+
+            Timestamp createdAt = rs.getTimestamp("created_at");
+            if (createdAt != null) {
+                e.setCreatedAt(createdAt.toLocalDateTime());
+            }
+
+            Timestamp updatedAt = rs.getTimestamp("updated_at");
+            if (updatedAt != null) {
+                e.setUpdatedAt(updatedAt.toLocalDateTime());
+            }
             return e;
         }
     };
@@ -41,8 +52,8 @@ public class EnviosDaoMySql implements EnviosDao {
         jdbcTemplate.update("""
             INSERT INTO envios
                 (id_envio, id_pedido, estado_envio, empresa_transporte,
-                 tracking_number, direccion_entrega, notas_incidencia)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                 tracking_number, direccion_entrega, notas_incidencia, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 envio.getIdEnvio(),
                 envio.getIdPedido(),
@@ -50,7 +61,9 @@ public class EnviosDaoMySql implements EnviosDao {
                 envio.getEmpresaTransporte(),
                 envio.getTrackingNumber(),
                 envio.getDireccionEntrega(),
-                envio.getNotasIncidencia()
+                envio.getNotasIncidencia(),
+                Timestamp.valueOf(envio.getCreatedAt() != null ? envio.getCreatedAt() : LocalDateTime.now()),
+                Timestamp.valueOf(envio.getUpdatedAt() != null ? envio.getUpdatedAt() : LocalDateTime.now())
         );
     }
 
@@ -83,10 +96,10 @@ public class EnviosDaoMySql implements EnviosDao {
     public int updateTracking(String idEnvio, EstadoEnvio estadoEnvio, String trackingNumber, String notasIncidencia) {
         return jdbcTemplate.update("""
             UPDATE envios
-            SET estado_envio     = ?,
-                tracking_number  = COALESCE(?, tracking_number),
-                notas_incidencia = ?,
-                updated_at       = NOW()
+            SET estado_envio       = ?,
+                tracking_number    = COALESCE(?, tracking_number),
+                notas_incidencia   = ?,
+                updated_at         = NOW()
             WHERE id_envio = ?
             """,
                 estadoEnvio.getValor(),

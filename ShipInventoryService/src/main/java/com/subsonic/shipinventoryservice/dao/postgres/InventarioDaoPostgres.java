@@ -1,4 +1,4 @@
-package com.subsonic.shipinventoryservice.dao.mysql;
+package com.subsonic.shipinventoryservice.dao.postgres;
 
 import com.subsonic.shipinventoryservice.dao.InventarioDao;
 import com.subsonic.shipinventoryservice.models.StockProducto;
@@ -8,14 +8,15 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
-public class InventarioDaoMySql implements InventarioDao {
+public class InventarioDaoPostgres implements InventarioDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public InventarioDaoMySql(JdbcTemplate jdbcTemplate) {
+    public InventarioDaoPostgres(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -30,6 +31,16 @@ public class InventarioDaoMySql implements InventarioDao {
             s.setUnidadesBloqueadas(rs.getInt("unidades_bloqueadas"));
             s.setPrecio(rs.getBigDecimal("precio"));
             s.setUbicacionAlmacen(rs.getString("ubicacion_almacen"));
+
+            Timestamp createdAt = rs.getTimestamp("created_at");
+            if (createdAt != null) {
+                s.setCreatedAt(createdAt.toLocalDateTime());
+            }
+
+            Timestamp updatedAt = rs.getTimestamp("updated_at");
+            if (updatedAt != null) {
+                s.setUpdatedAt(updatedAt.toLocalDateTime());
+            }
             return s;
         }
     };
@@ -69,6 +80,7 @@ public class InventarioDaoMySql implements InventarioDao {
 
     @Override
     public int bloquearStock(String idProducto, int cantidad) {
+        // Solo bloquea si hay stock suficiente disponible
         return jdbcTemplate.update("""
             UPDATE stock_productos
             SET unidades_disponibles = unidades_disponibles - ?,
@@ -96,6 +108,7 @@ public class InventarioDaoMySql implements InventarioDao {
 
     @Override
     public void confirmarConsumoStock(String idProducto, int cantidad) {
+        // El stock disponible ya fue descontado al bloquear; solo reducimos el contador de bloqueadas
         jdbcTemplate.update("""
             UPDATE stock_productos
             SET unidades_bloqueadas = GREATEST(0, unidades_bloqueadas - ?),

@@ -30,13 +30,13 @@ public class DatabaseConfig {
     @Value("${db.host:127.0.0.1}")
     private String dbHost;
 
-    @Value("${db.port:3306}")
+    @Value("${db.port:5432}")
     private int dbPort;
 
     @Value("${db.name:shipinventory_db}")
     private String dbName;
 
-    @Value("${db.user:root}")
+    @Value("${db.user:postgres}")
     private String dbUser;
 
     @Value("${db.password:}")
@@ -48,16 +48,15 @@ public class DatabaseConfig {
         String engine = (dbEngine != null ? dbEngine.trim().toLowerCase() : "sqlite");
         HikariConfig config = new HikariConfig();
 
-        if ("mysql".equals(engine)) {
-            log.info("Configurando DataSource MySQL hacia {}:{}/{}", dbHost, dbPort, dbName);
-            config.setDriverClassName("com.mysql.cj.jdbc.Driver");
-            config.setJdbcUrl("jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName +
-                    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true");
+        if ("postgres".equals(engine)) {
+            log.info("Configurando DataSource PostgreSQL hacia {}:{}/{}", dbHost, dbPort, dbName);
+            config.setDriverClassName("org.postgresql.Driver");
+            config.setJdbcUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName);
             config.setUsername(dbUser);
             config.setPassword(dbPassword);
             config.setMaximumPoolSize(10);
             config.setMinimumIdle(2);
-            config.setPoolName("MySQL-ShipInventoryPool");
+            config.setPoolName("Postgres-ShipInventoryPool");
         } else {
             log.info("Configurando DataSource SQLite hacia {}", sqliteDbPath);
             config.setDriverClassName("org.sqlite.JDBC");
@@ -76,8 +75,8 @@ public class DatabaseConfig {
         try (Connection conn = ds.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            if ("mysql".equals(engine)) {
-                log.info("Inicializando/verificando tablas en base de datos MySQL...");
+            if ("postgres".equals(engine)) {
+                log.info("Inicializando/verificando tablas en base de datos PostgreSQL...");
 
                 stmt.execute("""
                     CREATE TABLE IF NOT EXISTS stock_productos (
@@ -89,10 +88,10 @@ public class DatabaseConfig {
                         precio DECIMAL(10, 2) NOT NULL,
                         ubicacion_almacen VARCHAR(200),
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_nombre (nombre_producto)
-                    ) ENGINE=InnoDB;
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
                 """);
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_nombre ON stock_productos (nombre_producto);");
 
                 stmt.execute("""
                     CREATE TABLE IF NOT EXISTS envios (
@@ -104,11 +103,11 @@ public class DatabaseConfig {
                         direccion_entrega VARCHAR(500),
                         notas_incidencia TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                        INDEX idx_pedido (id_pedido),
-                        INDEX idx_estado (estado_envio)
-                    ) ENGINE=InnoDB;
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
                 """);
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_pedido ON envios (id_pedido);");
+                stmt.execute("CREATE INDEX IF NOT EXISTS idx_estado ON envios (estado_envio);");
 
             } else {
                 log.info("Inicializando/verificando tablas en base de datos SQLite...");

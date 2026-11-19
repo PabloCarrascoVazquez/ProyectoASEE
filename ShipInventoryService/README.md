@@ -5,7 +5,7 @@ Microservicio encargado de la gestión de stock físico de merchandising en alma
 ## Tecnologías
 - **Java 17 / 21**
 - **Spring Boot 3.3.4** (Web, JDBC, AMQP / RabbitMQ, Validation)
-- **Base de datos dual**: SQLite (por defecto en local) y MySQL (producción / Docker)
+- **Base de datos dual**: SQLite (por defecto en local) y PostgreSQL (producción / Docker)
 - **RabbitMQ**: Consumidor asíncrono de eventos `ORDER_PAID` en la cola `merch_queue`
 - **Seguridad**: Autenticación JWT con verificación de rol `Admin` en endpoints protegidos
 
