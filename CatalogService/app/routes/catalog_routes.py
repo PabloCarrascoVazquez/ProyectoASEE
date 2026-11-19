@@ -171,6 +171,17 @@ def solicitar_alquiler(current_user_id: str, id_espacio: str):
     except Exception as e:
         return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
 
+@catalog_bp.route("/espacios/<id_espacio>/alquileres/cancelar", methods=["POST"])
+@token_required
+def cancelar_alquiler_espacio(current_user_id: str, id_espacio: str):
+    """Cancelar alquiler de parcela y devolver el espacio a estado disponible."""
+    try:
+        catalog_service = CatalogService(DAOFactory.get_catalog_dao())
+        catalog_service.cancelar_alquiler(id_espacio)
+        return jsonify({"mensaje": "Alquiler cancelado y espacio liberado correctamente.", "estado_devolucion": "Cancelado"}), 200
+    except Exception as e:
+        return jsonify({"codigo": 500, "mensaje": "Error interno", "detalle": str(e)}), 500
+
 @catalog_bp.route("/artistas-favoritos", methods=["POST"])
 @token_required
 def guardar_artista_favorito(current_user_id: str):

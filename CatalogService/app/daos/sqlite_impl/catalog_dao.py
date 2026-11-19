@@ -152,6 +152,19 @@ class CatalogDAOSQLite(ICatalogDAO):
         finally:
             cursor.close()
 
+    def cancelar_alquiler(self, id_espacio: str) -> bool:
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("UPDATE espacios SET estado = 'disponible' WHERE id_espacio = ?", (id_espacio,))
+            cursor.execute("UPDATE alquileres SET estado = 'Cancelado' WHERE id_espacio = ?", (id_espacio,))
+            self.conn.commit()
+            return True
+        except Exception as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
     # ==========================================
     # ENTRADAS
     # ==========================================

@@ -41,6 +41,12 @@ const SessionManager = {
         return user && user.rol === "admin";
     },
 
+    // Comprueba si el usuario actual es proveedor
+    isSupplier() {
+        const user = this.getUser();
+        return user && (user.rol === "supplier" || user.rol === "proveedor");
+    },
+
     // Cierra la sesión limpiando todo el almacenamiento local
     clearSession() {
         localStorage.removeItem("jwtToken");

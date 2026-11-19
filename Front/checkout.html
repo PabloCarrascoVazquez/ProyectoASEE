@@ -33,19 +33,53 @@
             <h2 class="section-title">1. Resumen de tu Carrito</h2>
 
             <!-- Listado de entradas seleccionadas -->
-            <div class="cart-group tickets-cart-group">
+            <div id="tickets-cart-group" class="cart-group tickets-cart-group">
                 <h3 class="subsection-title">Entradas (<span id="cart-festival-id">Sin festival</span>)</h3>
                 <ul id="cart-tickets-list" class="cart-items-list">
                     <li class="empty-msg">No hay entradas en el carrito.</li>
                 </ul>
             </div>
 
+            <!-- Listado de espacios/parcelas (Solo Proveedores) -->
+            <div id="spaces-cart-group" class="cart-group spaces-cart-group" hidden>
+                <h3 class="subsection-title">Espacios y Parcelas a Alquilar</h3>
+                <ul id="cart-spaces-list" class="cart-items-list">
+                    <li class="empty-msg">No hay espacios en el carrito.</li>
+                </ul>
+            </div>
+
             <!-- Listado de productos físicos (merchandising) -->
-            <div class="cart-group merch-cart-group">
+            <div id="merch-cart-group" class="cart-group merch-cart-group">
                 <h3 class="subsection-title">Merchandising</h3>
                 <ul id="cart-merch-list" class="cart-items-list">
                     <li class="empty-msg">No hay productos físicos en el carrito.</li>
                 </ul>
+            </div>
+
+            <!-- Formulario de Datos del Negocio (Obligatorio si hay alquiler de espacios) -->
+            <div id="business-details-panel" class="form-card shipping-card" hidden>
+                <h3 class="card-title">Datos del Negocio (Requerido para Alquiler de Espacios)</h3>
+                <form id="form-business-details" class="checkout-form">
+                    <div class="form-group">
+                        <label for="biz-name" class="form-label">Nombre del Negocio:</label>
+                        <input type="text" id="biz-name" class="form-input" placeholder="Ej. Burger Master Foodtruck">
+                    </div>
+                    <div class="form-group">
+                        <label for="biz-type" class="form-label">Tipo de Negocio:</label>
+                        <select id="biz-type" class="form-select">
+                            <option value="Restauración / Foodtruck">Restauración / Foodtruck</option>
+                            <option value="Merchandising / Mercadillo">Merchandising / Mercadillo</option>
+                            <option value="Bebidas / Coctelería">Bebidas / Coctelería</option>
+                            <option value="Patrocinador / Zona VIP">Patrocinador / Zona VIP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="display:flex; align-items:center; gap:0.6rem; cursor:pointer; text-transform:none; font-size:0.95rem; color:var(--text-main);">
+                            <input type="checkbox" id="biz-electric" style="width:auto; transform:scale(1.2);">
+                            ¿Necesita conexión eléctrica de alta potencia en la parcela?
+                        </label>
+                    </div>
+                </form>
             </div>
 
             <!-- Formulario de Dirección de Envío (Obligatorio si hay merchandising) -->
@@ -148,9 +182,10 @@
     <!-- Scripts compartidos y de dominio -->
     <script src="./js/shared/session.js"></script>
     <script src="./js/shared/api.js"></script>
+    <script src="./js/catalog/api-catalog.js"></script>
     <script src="./js/purchase/api-checkout.js"></script>
 
     <!-- Script de control de interfaz de esta vista -->
-    <script src="./js/purchase/checkout-view.js?v=2"></script>
+    <script src="./js/purchase/checkout-view.js"></script>
 </body>
 </html>

@@ -85,6 +85,10 @@ class CatalogService:
             
         return nuevo_alquiler.to_response_dto()
 
+    def cancelar_alquiler(self, id_espacio: str) -> bool:
+        """Cancela el alquiler de un espacio y lo vuelve a dejar disponible."""
+        return self.catalog_dao.cancelar_alquiler(id_espacio)
+
     # ==========================================
     # ENTRADAS
     # ==========================================

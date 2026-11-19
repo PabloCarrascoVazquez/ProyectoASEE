@@ -174,6 +174,20 @@ class CatalogDAOPostgres(ICatalogDAO):
         finally:
             cursor.close()
 
+    def cancelar_alquiler(self, id_espacio: str) -> bool:
+        """Libera un espacio alquilado volviéndolo a poner disponible y marcando el contrato como Cancelado."""
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("UPDATE espacios SET estado = 'disponible' WHERE id_espacio = %s", (id_espacio,))
+            cursor.execute("UPDATE alquileres SET estado = 'Cancelado' WHERE id_espacio = %s", (id_espacio,))
+            self.conn.commit()
+            return True
+        except Exception as err:
+            self.conn.rollback()
+            raise err
+        finally:
+            cursor.close()
+
     # ==========================================
     # ENTRADAS
     # ==========================================

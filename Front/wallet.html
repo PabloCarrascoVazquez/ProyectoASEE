@@ -45,7 +45,18 @@
         </section>
 
         <!-- ========================================================= -->
-        <!-- SECCIÓN 1.B: LISTADO DE PEDIDOS DE MERCHANDISING          -->
+        <!-- SECCIÓN 1.B: LISTADO DE ESPACIOS ALQUILADOS (PROVEEDORES) -->
+        <!-- ========================================================= -->
+        <section id="wallet-spaces-section" class="wallet-section spaces-orders-section" hidden>
+            <h2 class="section-title">Mis Espacios y Parcelas Alquiladas</h2>
+
+            <div id="spaces-rentals-grid" class="items-grid tickets-grid">
+                <p class="loading-text">Cargando tus espacios alquilados...</p>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN 1.C: LISTADO DE PEDIDOS DE MERCHANDISING          -->
         <!-- ========================================================= -->
         <section id="wallet-merch-section" class="wallet-section merch-orders-section" style="margin-top: 2.5rem;">
             <h2 class="section-title">Mis Pedidos de Merchandising y Envíos</h2>
@@ -123,6 +134,6 @@
     <script src="./js/orders/api-wallet.js"></script>
 
     <!-- Script de control de interfaz de esta vista -->
-    <script src="./js/orders/wallet-view.js?v=2"></script>
+    <script src="./js/orders/wallet-view.js"></script>
 </body>
 </html>

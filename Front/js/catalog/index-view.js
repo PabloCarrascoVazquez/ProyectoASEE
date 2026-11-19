@@ -35,15 +35,21 @@ document.addEventListener("DOMContentLoaded", () => {
             if (SessionManager.isAdmin()) {
                 navAdmin.hidden = false;
             }
+            if (SessionManager.isSupplier()) {
+                const walletLink = document.querySelector('a[href="./wallet.html"]');
+                if (walletLink) walletLink.textContent = "Mis Espacios";
+            }
         }
         actualizarContadorCarrito();
     }
 
     function obtenerCarrito() {
-        return JSON.parse(localStorage.getItem("subsonic_cart")) || {
-            id_festival: null,
-            entradas: [],
-            merchandising: []
+        const raw = JSON.parse(localStorage.getItem("subsonic_cart")) || {};
+        return {
+            id_festival: raw.id_festival || null,
+            entradas: raw.entradas || [],
+            merchandising: raw.merchandising || [],
+            espacios: raw.espacios || []
         };
     }
 
@@ -56,7 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const carrito = obtenerCarrito();
         const totalEntradas = carrito.entradas.reduce((acc, item) => acc + item.cantidad, 0);
         const totalMerch = carrito.merchandising.reduce((acc, item) => acc + item.cantidad, 0);
-        cartCountBadge.textContent = totalEntradas + totalMerch;
+        const totalEspacios = (carrito.espacios || []).length;
+        cartCountBadge.textContent = totalEntradas + totalMerch + totalEspacios;
     }
 
     // ==========================================
@@ -117,84 +124,115 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("detail-fest-dates").textContent = `${festival.fecha_inicio || ""} al ${festival.fecha_fin || ""}`;
         document.getElementById("detail-fest-location").textContent = festival.ubicacion || "";
 
-        // Pintar artistas destacados
-        const artistsList = document.getElementById("detail-fest-artists");
-        artistsList.innerHTML = "";
-        (festival.artistas_destacados || []).forEach(artista => {
-            const li = document.createElement("li");
-            li.className = "artist-item";
-            li.innerHTML = `<span>${artista}</span> `;
-            
-            if (SessionManager.isAuthenticated()) {
-                const btnFav = document.createElement("button");
-                btnFav.type = "button";
-                btnFav.className = "btn-fav";
-                btnFav.textContent = "★ Favorito";
-                btnFav.addEventListener("click", async () => {
-                    try {
-                        await CatalogAPI.guardarArtistaFavorito({ //[cite: 4]
-                            id_festival: festival.id_festival,
-                            nombre_artista: artista
-                        });
-                        alert(`¡${artista} añadido a tus favoritos!`);
-                    } catch (err) {
-                        alert(`Error: ${err.detalle}`);
-                    }
-                });
-                li.appendChild(btnFav);
-            }
-            artistsList.appendChild(li);
-        });
+        const esProveedor = SessionManager.isSupplier();
+        const artistsSubsection = festivalDetailView.querySelector(".artists-subsection");
+        const ticketsSubsection = festivalDetailView.querySelector(".tickets-subsection");
 
-        // Cargar entradas del festival
-        const ticketsContainer = document.getElementById("detail-fest-tickets");
-        ticketsContainer.innerHTML = `<p class="loading-text">Cargando tarifas...</p>`;
-        try {
-            const entradas = await CatalogAPI.obtenerEntradasFestival(festival.id_festival); //[cite: 4]
-            ticketsContainer.innerHTML = "";
-            if (!entradas || entradas.length === 0) {
-                ticketsContainer.innerHTML = `<p class="empty-msg">No hay entradas configuradas para este evento.</p>`;
-            } else {
-                entradas.forEach(ent => {
-                    const row = document.createElement("div");
-                    row.className = "ticket-row";
-                    row.innerHTML = `
-                        <span class="ticket-type">${ent.tipo.toUpperCase()}</span> - 
-                        <strong class="ticket-price">${ent.precio} €</strong> 
-                        <span class="ticket-stock">(${ent.disponibles} disponibles)</span>
-                        <button type="button" class="btn-primary btn-add-ticket" ${ent.disponibles <= 0 ? "disabled" : ""}>
-                            Añadir Entrada
-                        </button>
-                    `;
-                    row.querySelector(".btn-add-ticket").addEventListener("click", () => {
-                        agregarEntradaAlCarrito(festival.id_festival, ent.tipo, ent.precio);
+        if (artistsSubsection) artistsSubsection.hidden = esProveedor;
+        if (ticketsSubsection) ticketsSubsection.hidden = esProveedor;
+
+        if (!esProveedor) {
+            // Pintar artistas destacados
+            const artistsList = document.getElementById("detail-fest-artists");
+            artistsList.innerHTML = "";
+            (festival.artistas_destacados || []).forEach(artista => {
+                const li = document.createElement("li");
+                li.className = "artist-item";
+                li.innerHTML = `<span>${artista}</span> `;
+                
+                if (SessionManager.isAuthenticated()) {
+                    const btnFav = document.createElement("button");
+                    btnFav.type = "button";
+                    btnFav.className = "btn-fav";
+                    btnFav.textContent = "★ Favorito";
+                    btnFav.addEventListener("click", async () => {
+                        try {
+                            await CatalogAPI.guardarArtistaFavorito({
+                                id_festival: festival.id_festival,
+                                nombre_artista: artista
+                            });
+                            alert(`¡${artista} añadido a tus favoritos!`);
+                        } catch (err) {
+                            alert(`Error: ${err.detalle}`);
+                        }
                     });
-                    ticketsContainer.appendChild(row);
-                });
+                    li.appendChild(btnFav);
+                }
+                artistsList.appendChild(li);
+            });
+
+            // Cargar entradas del festival
+            const ticketsContainer = document.getElementById("detail-fest-tickets");
+            ticketsContainer.innerHTML = `<p class="loading-text">Cargando tarifas...</p>`;
+            try {
+                const entradas = await CatalogAPI.obtenerEntradasFestival(festival.id_festival);
+                ticketsContainer.innerHTML = "";
+                if (!entradas || entradas.length === 0) {
+                    ticketsContainer.innerHTML = `<p class="empty-msg">No hay entradas configuradas para este evento.</p>`;
+                } else {
+                    entradas.forEach(ent => {
+                        const row = document.createElement("div");
+                        row.className = "ticket-row";
+                        row.innerHTML = `
+                            <span class="ticket-type">${ent.tipo.toUpperCase()}</span> - 
+                            <strong class="ticket-price">${ent.precio} €</strong> 
+                            <span class="ticket-stock">(${ent.disponibles} disponibles)</span>
+                            <button type="button" class="btn-primary btn-add-ticket" ${ent.disponibles <= 0 ? "disabled" : ""}>
+                                Añadir Entrada
+                            </button>
+                        `;
+                        row.querySelector(".btn-add-ticket").addEventListener("click", () => {
+                            agregarEntradaAlCarrito(festival.id_festival, ent.tipo, ent.precio);
+                        });
+                        ticketsContainer.appendChild(row);
+                    });
+                }
+            } catch (err) {
+                ticketsContainer.innerHTML = `<p class="error-text">No se pudieron cargar las entradas.</p>`;
             }
-        } catch (err) {
-            ticketsContainer.innerHTML = `<p class="error-text">No se pudieron cargar las entradas.</p>`;
         }
 
         // Cargar espacios/parcelas del recinto
         const spacesContainer = document.getElementById("detail-fest-spaces");
         spacesContainer.innerHTML = `<p class="loading-text">Cargando mapa de espacios...</p>`;
         try {
-            const espacios = await CatalogAPI.obtenerEspaciosFestival(festival.id_festival); //[cite: 4]
+            const espacios = await CatalogAPI.obtenerEspaciosFestival(festival.id_festival);
             spacesContainer.innerHTML = "";
             if (!espacios || espacios.length === 0) {
                 spacesContainer.innerHTML = `<p class="empty-msg">No hay parcelas registradas.</p>`;
             } else {
-                espacios.forEach(esp => {
-                    const div = document.createElement("div");
-                    div.className = "space-row";
-                    div.innerHTML = `
-                        <span>Zona: <strong>${esp.tipo}</strong> (${esp.metros_cuadrados} m²)</span> - 
-                        <span>${esp.precio_alquiler} €</span> - 
-                        <span class="status-badge">${esp.estado}</span>
-                    `;
-                    spacesContainer.appendChild(div);
-                });
+                if (!esProveedor) {
+                    spacesContainer.className = "spaces-list client-spaces-grid";
+                    espacios.forEach(esp => {
+                        const div = document.createElement("div");
+                        div.className = "space-row client-space-item";
+                        div.innerHTML = `
+                            <span>Zona: <strong>${esp.tipo}</strong> (${esp.metros_cuadrados} m²)</span>
+                        `;
+                        spacesContainer.appendChild(div);
+                    });
+                } else {
+                    spacesContainer.className = "spaces-list";
+                    espacios.forEach(esp => {
+                        const disponible = (esp.estado || "").toLowerCase() === "disponible";
+                        const div = document.createElement("div");
+                        div.className = "space-row supplier-space-row";
+                        div.innerHTML = `
+                            <span>Zona: <strong>${esp.tipo}</strong> (${esp.metros_cuadrados} m²)</span>
+                            <strong class="ticket-price">${esp.precio_alquiler} €</strong>
+                            <span class="status-badge ${disponible ? "success" : "error"}">${(esp.estado || "").toUpperCase()}</span>
+                            <button type="button" class="btn-primary btn-rent-space" ${!disponible ? "disabled" : ""}>
+                                ${disponible ? "Alquilar Espacio" : "No Disponible"}
+                            </button>
+                        `;
+                        if (disponible) {
+                            div.querySelector(".btn-rent-space").addEventListener("click", () => {
+                                agregarEspacioAlCarrito(festival, esp);
+                            });
+                        }
+                        spacesContainer.appendChild(div);
+                    });
+                }
             }
         } catch (err) {
             spacesContainer.innerHTML = `<p class="error-text">No se pudieron cargar los espacios.</p>`;
@@ -226,6 +264,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
         guardarCarrito(carrito);
         alert(`Entrada ${tipoEntrada.toUpperCase()} añadida al carrito.`);
+    }
+
+    function agregarEspacioAlCarrito(festival, espacio) {
+        const carrito = obtenerCarrito();
+        if (!carrito.espacios) carrito.espacios = [];
+
+        const yaExiste = carrito.espacios.find(s => s.id_espacio === espacio.id_espacio);
+        if (yaExiste) {
+            alert("Este espacio ya está añadido en tu carrito.");
+            return;
+        }
+
+        carrito.espacios.push({
+            id_espacio: espacio.id_espacio,
+            id_festival: festival.id_festival,
+            nombre_festival: festival.nombre,
+            tipo: espacio.tipo,
+            metros_cuadrados: espacio.metros_cuadrados,
+            precio_alquiler: espacio.precio_alquiler
+        });
+
+        guardarCarrito(carrito);
+        alert(`Espacio ${espacio.tipo.toUpperCase()} (${espacio.metros_cuadrados} m²) añadido al carrito.`);
     }
 
     // ==========================================
