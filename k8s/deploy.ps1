@@ -19,4 +19,3 @@ Write-Host "`nEstado actual de los Pods y Servicios:" -ForegroundColor Green
 kubectl get pods
 kubectl get svc
 
-Write-Host "`n¡Despliegue completado! El Gateway está expuesto en http://localhost:8000" -ForegroundColor Green
