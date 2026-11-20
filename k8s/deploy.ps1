@@ -10,6 +10,7 @@ docker build -t subsonic-catalogservice:latest ./CatalogService
 docker build -t subsonic-purchaseservice:latest ./PurchaseService
 docker build -t subsonic-shipinventoryservice:latest ./ShipInventoryService
 docker build -t subsonic-orderservice:latest ./OrderService
+docker build -t subsonic-frontend:latest ./Front
 
 Write-Host "`n2/2 Aplicando manifiestos de Kubernetes (k8s/)..." -ForegroundColor Cyan
 kubectl apply -f ./k8s/

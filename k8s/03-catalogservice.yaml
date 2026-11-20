@@ -33,6 +33,8 @@ spec:
               value: "catalogo_db"
             - name: SQLITE_DB_PATH
               value: "/app/catalogo.db"
+            - name: DB_HOST
+              value: "catalog-db"
           readinessProbe:
             httpGet:
               path: /

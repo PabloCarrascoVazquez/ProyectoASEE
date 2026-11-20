@@ -44,10 +44,26 @@ data:
             listen 8000;
             server_name localhost;
 
+            # Configuración global de CORS (idéntica a Docker)
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept, Origin, X-Requested-With' always;
+
+            # Interceptar peticiones preflight (OPTIONS)
+            if ($request_method = 'OPTIONS') {
+                return 204;
+            }
+
+            # Cabeceras Proxy y limpieza de cabeceras CORS duplicadas del backend
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Origin "";
+
+            proxy_hide_header 'Access-Control-Allow-Origin';
+            proxy_hide_header 'Access-Control-Allow-Methods';
+            proxy_hide_header 'Access-Control-Allow-Headers';
 
             location /auth/ {
                 proxy_pass http://servicio_usuarios;
@@ -107,6 +123,18 @@ data:
                 proxy_pass http://servicio_catalogo/api/artistas-favoritos;
                 proxy_connect_timeout 3s;
                 proxy_read_timeout 15s;
+            }
+
+            location /artistas {
+                proxy_pass http://servicio_catalogo/api/artistas;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
+
+            location /catalogo/health {
+                proxy_pass http://servicio_catalogo/api/health;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 5s;
             }
 
             location /health {

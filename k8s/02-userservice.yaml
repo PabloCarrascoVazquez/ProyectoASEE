@@ -33,6 +33,8 @@ spec:
               value: "users_db"
             - name: SQLITE_DB_PATH
               value: "/app/users.db"
+            - name: DB_HOST
+              value: "users-db"
           readinessProbe:
             httpGet:
               path: /

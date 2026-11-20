@@ -33,6 +33,8 @@ spec:
               value: "orders_db"
             - name: SQLITE_DB_PATH
               value: "/app/orders.db"
+            - name: DB_HOST
+              value: "orders-db"
           readinessProbe:
             httpGet:
               path: /

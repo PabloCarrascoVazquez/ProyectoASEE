@@ -27,12 +27,14 @@ spec:
             - secretRef:
                 name: subsonic-secrets
           env:
-            - name: PORT
-              value: "8003"
-            - name: DB_NAME
-              value: "purchases_db"
             - name: SQLITE_DB_PATH
               value: "/app/purchases.db"
+            - name: PORT
+              value: "8003"
+            - name: DB_HOST
+              value: "purchase-db"
+            - name: DB_NAME
+              value: "purchases_db"
           readinessProbe:
             tcpSocket:
               port: 8003
