@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram name="Página-1" id="-3D0O7eCi4OQwrsl44eF">
-    <mxGraphModel dx="1172" dy="1026" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="810" dy="708" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -28,7 +28,7 @@
         <mxCell id="OIXRx69AMy-14koPmv80-5" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};" value="" vertex="1">
           <mxGeometry height="550" width="10" x="350" y="270" as="geometry" />
         </mxCell>
-        <mxCell id="OIXRx69AMy-14koPmv80-6" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" target="OIXRx69AMy-14koPmv80-5" value="buyRequest">
+        <mxCell id="OIXRx69AMy-14koPmv80-6" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=open;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=5;endFill=0;" target="OIXRx69AMy-14koPmv80-5" value="buyRequest">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="210" y="275" as="sourcePoint" />
           </mxGeometry>

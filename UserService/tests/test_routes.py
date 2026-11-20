@@ -1,4 +1,5 @@
 import json
+from urllib import response
 import jwt
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
@@ -136,7 +137,7 @@ class TestAuthLoginRoute:
         assert response.status_code == 401
         data = response.get_json()
         assert data["codigo"] == 401
-        assert "Email no registrado" in data["detalle"]
+        assert "Credenciales incorrectas" in data["detalle"]
     def test_login_empty_body(self, client):
         response = client.post(
             "/auth/login",
