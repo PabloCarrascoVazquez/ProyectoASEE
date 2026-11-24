@@ -6,15 +6,15 @@ PORT=8004
 # Debe coincidir con el SECRET_KEY del resto de microservicios
 SECRET_KEY=super-secret-subsonic-key-jwt-2026
 
-# DB_ENGINE=sqlite | postgres
-DB_ENGINE=postgres
+# DB_ENGINE=sqlite | mysql
+DB_ENGINE=sqlite
 SQLITE_DB_PATH=shipinventory.db
 
 DB_HOST=127.0.0.1
-DB_PORT=5432
+DB_PORT=3306
 DB_NAME=shipinventory_db
-DB_USER=subsonic
-DB_PASSWORD=subsonic123
+DB_USER=root
+DB_PASSWORD=root
 
 CORS_ORIGINS=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]
 
