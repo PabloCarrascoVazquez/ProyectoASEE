@@ -1,7 +1,9 @@
 /**
  * Cliente HTTP centralizado para conectar con el API Gateway de Subsonic.
  */
-const API_GATEWAY = "http://localhost:8000";
+const API_GATEWAY = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? "http://localhost:8000"
+  : window.location.origin;
 
 async function apiRequest(endpoint, options = {}) {
     const token = SessionManager.getToken();

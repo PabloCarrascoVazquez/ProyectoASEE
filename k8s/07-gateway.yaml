@@ -40,11 +40,15 @@ data:
             server catalogservice:8002;
         }
 
+        upstream servicio_frontend {
+            server frontend:80;
+        }
+
         server {
             listen 8000;
-            server_name localhost;
+            server_name _;
 
-            # Configuración global de CORS (idéntica a Docker)
+            # Configuración global de CORS
             add_header 'Access-Control-Allow-Origin' '*' always;
             add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
             add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept, Origin, X-Requested-With' always;
@@ -141,6 +145,12 @@ data:
                 return 200 '{"status":"UP","gateway":"Subsonic NGINX (Kubernetes)"}';
                 add_header Content-Type application/json;
             }
+
+            location / {
+                proxy_pass http://servicio_frontend;
+                proxy_connect_timeout 3s;
+                proxy_read_timeout 15s;
+            }
         }
     }
 ---
@@ -201,5 +211,5 @@ spec:
     app: gateway
   ports:
     - name: http
-      port: 8000
+      port: 80
       targetPort: 8000
