@@ -1,7 +1,8 @@
+import os
 import time
 from playwright.sync_api import sync_playwright, expect
 
-BASE_URL = "http://localhost:48080"
+BASE_URL = os.getenv("BASE_URL", "http://localhost").rstrip("/")
 
 def test_flujo_completo_subsonic():
     timestamp = int(time.time())

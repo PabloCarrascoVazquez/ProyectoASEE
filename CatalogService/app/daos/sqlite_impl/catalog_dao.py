@@ -232,9 +232,14 @@ class CatalogDAOSQLite(ICatalogDAO):
         finally:
             cursor.close()
 
+    def confirmar_cupo(self, id_festival: str, tipo_entrada: str, cantidad: int) -> bool:
+        """Consolida definitivamente la venta de entradas tras el pago."""
+        return True  # En SQLite ya se descontó en bloquear_cupo
+
     # ==========================================
     # ARTISTAS FAVORITOS
     # ==========================================
+
     def add_artista_favorito(self, user_id: str, id_festival: str, nombre_artista: str) -> bool:
         cursor = self.conn.cursor()
         query = """

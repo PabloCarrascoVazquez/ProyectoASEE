@@ -63,6 +63,11 @@ class ICatalogDAO(ABC):
         """Suma la cantidad devuelta al stock disponible."""
         pass
 
+    @abstractmethod
+    def confirmar_cupo(self, id_festival: str, tipo_entrada: str, cantidad: int) -> bool:
+        """Consolida definitivamente la venta de entradas tras el pago."""
+        pass
+
     # ==========================================
     # ARTISTAS FAVORITOS
     # ==========================================

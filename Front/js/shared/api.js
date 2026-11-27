@@ -1,7 +1,7 @@
 /**
  * Cliente HTTP centralizado para conectar con el API Gateway de Subsonic.
  */
-const API_GATEWAY = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+const API_GATEWAY = ["48080", "5173", "3000"].includes(window.location.port)
   ? "http://localhost:8000"
   : window.location.origin;
 

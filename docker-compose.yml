@@ -24,17 +24,28 @@ services:
       timeout: 5s
       retries: 5
 
-  catalog-db:
-    image: postgres:16-alpine
-    container_name: subsonic-catalog-db
-    environment:
-      POSTGRES_DB: ${CATALOG_DB_NAME:-catalogo_db}
-      POSTGRES_USER: ${DB_USER:-subsonic}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-subsonic123}
+# =========================================================================
+  # PERSISTENCIA POLÍGLOTA PARA CATALOGSERVICE (MongoDB + Redis)
+  # =========================================================================
+  catalog-mongo:
+    image: mongo:7
+    container_name: subsonic-catalog-mongo
     volumes:
-      - catalog_pgdata:/var/lib/postgresql/data
+      - catalog_mongodata:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-subsonic} -d ${CATALOG_DB_NAME:-catalogo_db}"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  catalog-redis:
+    image: redis:7-alpine
+    container_name: subsonic-catalog-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - catalog_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -113,15 +124,19 @@ services:
       - .env
     environment:
       - PORT=${CATALOG_SERVICE_PORT:-8002}
-      - DB_ENGINE=postgres
-      - DB_HOST=catalog-db
-      - DB_PORT=5432
-      - DB_NAME=${CATALOG_DB_NAME:-catalogo_db}
-      - DB_USER=${DB_USER:-subsonic}
-      - DB_PASSWORD=${DB_PASSWORD:-subsonic123}
+      - DB_ENGINE=mongo
+      - MONGO_URI=mongodb://catalog-mongo:27017/
+      - MONGO_DB=${CATALOG_DB_NAME:-catalogo_db}
+      - REDIS_URL=redis://catalog-redis:6379/0
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
     depends_on:
-      catalog-db:
+      catalog-mongo:
         condition: service_healthy
+      catalog-redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
 
   purchaseservice:
     build: ./PurchaseService
@@ -229,7 +244,8 @@ services:
 
 volumes:
   users_pgdata:
-  catalog_pgdata:
+  catalog_mongodata:
+  catalog_redisdata:
   purchase_pgdata:
   shipinventory_pgdata:
   orders_pgdata:

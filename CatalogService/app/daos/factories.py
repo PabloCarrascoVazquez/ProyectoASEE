@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import sqlite3
 
 try:
@@ -7,6 +8,16 @@ try:
     from psycopg2 import pool
 except ImportError:
     psycopg2 = None
+
+try:
+    from pymongo import MongoClient
+except ImportError:
+    MongoClient = None
+
+try:
+    import redis
+except ImportError:
+    redis = None
 
 SCHEMA_SQLITE = """
 CREATE TABLE IF NOT EXISTS Festivales (
@@ -181,6 +192,10 @@ class DatabaseConnectionFactory:
     _pg_initialized = False
     _sqlite_conn = None
     _sqlite_initialized = False
+    _mongo_client = None
+    _mongo_db = None
+    _mongo_initialized = False
+    _redis_client = None
 
     @classmethod
     def _is_test_env(cls) -> bool:
@@ -197,22 +212,39 @@ class DatabaseConnectionFactory:
     def get_connection(cls):
         engine = os.getenv("DB_ENGINE", "sqlite").lower()
 
-        if engine in ("postgres", "postgresql"):
-         if cls._pg_pool is None or cls._pg_pool.closed:
-             conn = psycopg2.connect(
-                 host=os.getenv("DB_HOST", "127.0.0.1"),
-                 port=int(os.getenv("DB_PORT", 5432)),
-                 dbname=os.getenv("DB_NAME", "catalogo_db"),
-                 user=os.getenv("DB_USER", "subsonic"),
-                 password=os.getenv("DB_PASSWORD", "subsonic123")
-             )
-             cls._pg_pool = conn
-             if not cls._pg_initialized:
-                 cls._initialize_postgres(conn)
-                 if not cls._is_test_env():
-                     cls.seed_sample_data(conn, "postgres")
-                 cls._pg_initialized = True
-         return cls._pg_pool
+        if engine in ("mongo", "mongodb"):
+            if MongoClient is None:
+                raise ImportError("pymongo no está instalado en el entorno.")
+
+            if cls._mongo_db is None:
+                mongo_uri = os.getenv("MONGO_URI", "mongodb://mongodb:27017/")
+                mongo_db_name = os.getenv("MONGO_DB", "catalogo_db")
+                cls._mongo_client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+                cls._mongo_db = cls._mongo_client[mongo_db_name]
+
+            if not cls._mongo_initialized:
+                if not cls._is_test_env():
+                    cls.seed_mongo_data(cls._mongo_db)
+                cls._mongo_initialized = True
+
+            return cls._mongo_db
+
+        elif engine in ("postgres", "postgresql"):
+            if cls._pg_pool is None or cls._pg_pool.closed:
+                conn = psycopg2.connect(
+                    host=os.getenv("DB_HOST", "127.0.0.1"),
+                    port=int(os.getenv("DB_PORT", 5432)),
+                    dbname=os.getenv("DB_NAME", "catalogo_db"),
+                    user=os.getenv("DB_USER", "subsonic"),
+                    password=os.getenv("DB_PASSWORD", "subsonic123")
+                )
+                cls._pg_pool = conn
+                if not cls._pg_initialized:
+                    cls._initialize_postgres(conn)
+                    if not cls._is_test_env():
+                        cls.seed_sample_data(conn, "postgres")
+                    cls._pg_initialized = True
+            return cls._pg_pool
 
         elif engine == "sqlite":
             db_path = os.getenv("SQLITE_DB_PATH")
@@ -235,6 +267,17 @@ class DatabaseConnectionFactory:
             return cls._sqlite_conn
         else:
             raise ValueError(f"Motor de base de datos no soportado: {engine}")
+
+    @classmethod
+    def get_redis_client(cls):
+        """Devuelve un cliente Redis singleton si REDIS_URL está configurado."""
+        redis_url = os.getenv("REDIS_URL")
+        if not redis_url or redis is None:
+            return None
+
+        if cls._redis_client is None:
+            cls._redis_client = redis.from_url(redis_url, decode_responses=True)
+        return cls._redis_client
 
     @classmethod
     def release_postgres_connection(cls, conn):
@@ -274,6 +317,76 @@ class DatabaseConnectionFactory:
             raise err
         finally:
             cursor.close()
+
+    @classmethod
+    def seed_mongo_data(cls, db, force: bool = False):
+        """
+        Inserta los datos semilla de SEED_DATA en MongoDB embebiendo espacios y tipos_entrada
+        dentro de cada documento de festival (si la colección está vacía o force=True).
+        """
+        try:
+            if db["festivales"].count_documents({}) > 0 and not force:
+                return
+
+            from app.daos.mongo_impl.catalog_dao import CatalogDAOMongo
+            dao = CatalogDAOMongo(db)
+
+            # 1. Festivales
+            for fest in SEED_DATA["festivales"]:
+                id_fest, nombre, f_ini, f_fin, ubicacion, artistas_raw = fest
+                dao.create_festival({
+                    "id_festival": id_fest,
+                    "nombre": nombre,
+                    "fecha_inicio": f_ini,
+                    "fecha_fin": f_fin,
+                    "ubicacion": ubicacion,
+                    "artistas_destacados": json.loads(artistas_raw)
+                })
+
+            # 2. Tipos de Entrada (embebidos en el festival)
+            for id_fest, tipo, precio, disponibles in SEED_DATA["tipos_entrada"]:
+                dao.create_entradas(id_fest, {
+                    "tipo": tipo,
+                    "precio": precio,
+                    "disponibles": disponibles
+                })
+
+            # 3. Espacios (embebidos en el festival)
+            for id_esp, id_fest, tipo, m2, precio, _estado in SEED_DATA["espacios"]:
+                dao.create_espacio(id_fest, {
+                    "id_espacio": id_esp,
+                    "tipo": tipo,
+                    "metros_cuadrados": m2,
+                    "precio_alquiler": precio
+                })
+
+            # 4. Alquileres (actualiza automáticamente el estado del espacio embebido a 'alquilado')
+            for id_contrato, id_esp, negocio, tipo_neg, elec, estado, fecha in SEED_DATA["alquileres"]:
+                dao.create_alquiler({
+                    "id_contrato": id_contrato,
+                    "id_espacio": id_esp,
+                    "nombre_negocio": negocio,
+                    "tipo_negocio": tipo_neg,
+                    "necesita_conexion_electrica": elec,
+                    "estado": estado,
+                    "fecha_solicitud": fecha
+                })
+
+            # 5. Artistas
+            for nombre, genero, popularidad in SEED_DATA["artistas"]:
+                dao.create_artista({
+                    "nombre": nombre,
+                    "genero": genero,
+                    "popularidad": popularidad
+                })
+
+            # 6. Artistas Favoritos
+            for user_id, id_fest, nombre_artista in SEED_DATA["artistas_favoritos"]:
+                dao.add_artista_favorito(user_id, id_fest, nombre_artista)
+
+            print("✅ Base de datos MongoDB de Catálogo poblada exitosamente con datos semilla.")
+        except Exception as e:
+            print(f"⚠️ Error al poblar datos semilla en MongoDB: {e}")
 
     @classmethod
     def seed_sample_data(cls, conn, engine: str, force: bool = False):
@@ -366,9 +479,19 @@ class DAOFactory:
         engine = os.getenv("DB_ENGINE", "sqlite").lower()
         conn = DatabaseConnectionFactory.get_connection()
 
-        if engine in ("postgres", "postgresql"):
+        if engine in ("mongo", "mongodb"):
+            from app.daos.mongo_impl.catalog_dao import CatalogDAOMongo
+            dao = CatalogDAOMongo(conn)
+        elif engine in ("postgres", "postgresql"):
             from app.daos.postgres_impl.catalog_dao import CatalogDAOPostgres
-            return CatalogDAOPostgres(conn)
+            dao = CatalogDAOPostgres(conn)
         else:
             from app.daos.sqlite_impl.catalog_dao import CatalogDAOSQLite
-            return CatalogDAOSQLite(conn)
+            dao = CatalogDAOSQLite(conn)
+
+        redis_client = DatabaseConnectionFactory.get_redis_client()
+        if redis_client is not None and not DatabaseConnectionFactory._is_test_env():
+            from app.daos.redis_impl.catalog_dao import CatalogDAORedis
+            return CatalogDAORedis(wrapped_dao=dao, redis_client=redis_client)
+
+        return dao
